@@ -20,7 +20,6 @@ volatile int flag_data = 0;
 //Variables for buffer
 char buffer_rec [PACKET_LENGTH] = {0};
 char buffer_send [PACKET_LENGTH] = {N_BLINKS_SEND};
-	
 
 //Function prototypes
 ISR(INT2_vect);
@@ -93,7 +92,6 @@ ISR(INT2_vect)
 	m_rf_read(buffer_rec,PACKET_LENGTH);
 	flag_data = 1;
 }
-
 
 //Interruption handler for when the button is pressed
 /*ISR(INT6_vect)
