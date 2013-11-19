@@ -28,7 +28,7 @@ void init_ports(void)
 	set(DDRB,0);
 	
 	//Set B1 as input
-	set(DDRB,1);
+	clear(DDRB,1);
 	
 	//Set as low
 	clear(PORTB,0);
