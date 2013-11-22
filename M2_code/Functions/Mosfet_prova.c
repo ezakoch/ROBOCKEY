@@ -40,20 +40,20 @@ void init_ports(void)
 //Timer Initialization
 void init_timer1(void)
 {
-	OCR1A = 500;
+	OCR1A = 1020;
 	
 	//Set B5 as output
 	set(DDRB,5);
-
+    
 	//Set to UP to UP to 0x03FF
 	clear(TCCR1B,WGM13);
 	set(TCCR1B,WGM12);
 	set(TCCR1A,WGM11);
 	set(TCCR1A,WGM10);
-
+    
 	//clear at OCR1A, set at rollover
-	set(TCCR1A,COM1B1);
-	clear(TCCR1A,COM1B0);
+	set(TCCR1A,COM1A1);
+	clear(TCCR1A,COM1A0);
 	
 	//Set prescaler to 1
 	clear(TCCR1B,CS12);
