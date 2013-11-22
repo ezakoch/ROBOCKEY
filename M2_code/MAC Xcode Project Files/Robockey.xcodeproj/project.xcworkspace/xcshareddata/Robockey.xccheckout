@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>07C57457-C2EB-421E-A918-CF2B07756855</string>
+	<key>IDESourceControlProjectName</key>
+	<string>Robockey</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>B3813B13-5E9C-4D8D-BA7C-20A82B42D19D</key>
+		<string>https://bitbucket.org/spyhak/robockey.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>M2_code/MAC Xcode Project Files/Robockey.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>B3813B13-5E9C-4D8D-BA7C-20A82B42D19D</key>
+		<string>../../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://bitbucket.org/spyhak/robockey.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>B3813B13-5E9C-4D8D-BA7C-20A82B42D19D</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>B3813B13-5E9C-4D8D-BA7C-20A82B42D19D</string>
+			<key>IDESourceControlWCCName</key>
+			<string>robockey</string>
+		</dict>
+	</array>
+</dict>
+</plist>
