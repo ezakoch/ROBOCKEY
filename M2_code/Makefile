@@ -13,8 +13,8 @@
 # tag to the parents line (e.g. "PARENTS = "m_bus.o")
 # --------------------------------------------------------
 MAIN       = main.o 
-CHILDREN   = 
-PARENTS    = m_usb.o m_bus.o m_imu.o m_rf.o
+CHILDREN   = Functions/Localize.o
+PARENTS    = m_usb.o m_bus.o m_imu.o m_rf.o m_wii.o
 
 # --------------------------------------------------------
 # if you want to use one of our pre-compiled libraries,

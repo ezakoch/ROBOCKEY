@@ -18,10 +18,10 @@ int u0 = 512 - x0_offset, v0 = 384 - y0_offset;     // Center of camera optical 
 
 // Fixed stars in global coordinates
 float P0[2] = {0, 0}, P1[2] = {0, 14.5}, P2[2] = {11.655, 8.741}, P3[2] = {0, -14.5}, P4[2] = {-10.563, 2.483};
-int QA[2] = {0, 0}, QB[2] = {0, 0}, QC[2] = {0, 0}, QD[2] = {0, 0}, S1[2] ,S2[2], S3[2], S4[2];
+int QA[2] = {0, 0}, QB[2] = {0, 0}, QC[2] = {0, 0}, QD[2] = {0, 0}, S0[2], S1[2] ,S2[2], S3[2], S4[2];
 int *Q1 ,*Q2 ,*Q3, *Q4;
 float AB = 0, AC = 0, AD = 0, BC = 0, BD = 0, CD = 0;
-float distances[6] = {0};
+float distances[6] = {0}, radius, theta, alpha;
 
 
 // --------------------------------------------------------------
@@ -209,10 +209,10 @@ unsigned char localize(int x1, int x2, int x3, int x4, int y1, int y2, int y3, i
     theta = atan2( (Q3[1] - Q1[1]), (Q3[0] - Q1[0])  );
     alpha = -atan2(S0[0],S0[1]);
     
-    orientation = theta;
+    *orientation = theta;
     
-    x_robot = -radius * cos(theta - alhpa);
-    y_robot = -radius * sin(theta - alhpa);
+    *x_robot = -radius * cos(theta - alpha);
+    *y_robot = -radius * sin(theta - alpha);
     
     
     return 1;

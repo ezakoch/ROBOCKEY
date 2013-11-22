@@ -1,50 +1,48 @@
-//Receiving values from Wireless
+//Sending values using Wireless
 
 //Includes & Constant defines
 #include "m_general.h"
 #include "m_bus.h"
 #include "m_rf.h"
-#include "m_usb.h"
-#include <avr/interrupt.h>
+#include "m_wii.h"
+#include "Functions/Localize.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <avr/interrupt.h>
 
-#define N_CLOCK 0
-#define PACKET_LENGTH 2
-#define REC_ADDRESS 0X47
+#define N_CLOCK 1
+#define SIZE_ARRAY_BLOBS 12
+#define PACKET_LENGTH 16
+#define SEN_ADDRESS 0x47
+#define REC_ADDRESS_AUX 0X49
 #define CHANNEL 1
 
-// --------------------------------------------------------------
-#define USB 1               // If using the USB set to 1
-// --------------------------------------------------------------
+//Function prototypes
+void set_timer3(void);
 
 
-// --------------------------------------------------------------
-// Global Variables
-// --------------------------------------------------------------
+//Variable used to check timer
+volatile int flag_timer = 0;
 
-// General variables
-int flag = 0;                                                           // Flag to check what is being received from MATLAB
-long powers[6] = {1,10,100,1000,10000,100000};                          // Precalculated powers of 10 for byte conversion
-volatile int flag_data = 0;                                             // Flag to check when we get data
-char buffer_rec[PACKET_LENGTH] = {0};                                   // Input buffer from other M2
-int temp[6] = {-30,0,30,0,0,50};                                   // Input buffer from other M2
-int position[2] = {0,0};
-
-
-
-void send_to_MATLAB(void);
-
-long value_received;
+//Function prototypes
+ISR(INT2_vect);
 
 //Main function
 int main(void)
 {
-	char* end_ptr;
-	
-	
-    m_red(ON);
+	//Variable declaration
+	int wii_OK = 0;
+	unsigned char state [PACKET_LENGTH] = {0}; //State: [0] current state
+	signed char position [PACKET_LENGTH] = {0}; // Position: [0] x int,[1] x decimal,[2] y int,[3] y decimal,
+    //[4] theta 1st int,[5] theta 2nd int,[6] theta decimal
+	unsigned char LED_analog [PACKET_LENGTH] = {0}; //Analog values for each phototransistor: [0+i] 1st digit analog,  [1+i] 1st digit analog (i=1...8)
+	unsigned char stars_wii [PACKET_LENGTH] = {0}; //Pixel position of stars: [0+i] 1st x,  [0+i] 2nd x, [0+i] 1st y, [0+i] 2nd y (i=1...4)
+	unsigned char counter_solenoid [PACKET_LENGTH] = {0};
+	unsigned char battery_ind [PACKET_LENGTH] =  {0};
+	unsigned char general_vars [PACKET_LENGTH] = {0};
+	unsigned int blobs_wii[SIZE_ARRAY_BLOBS]; //Variable for the wii cam blobs
+	float x_robot = 0.0f ,y_robot = 0.0f,theta_robot = 0.0f;
     
 	//Set the clock system prescaler
 	m_clockdivide(N_CLOCK);
@@ -52,18 +50,17 @@ int main(void)
 	//Initialize bus
 	m_bus_init();
 	
+	//Initialize wii camera
+	while(!m_wii_open());
 	
-	if (USB) {                          // If I am using a USB then
-        m_usb_init();                   // Initialize USB and
-        while(!m_usb_isconnected());    // wait for a connection
-    }
+	set_timer3();
 	
 	//Open the channel
-	m_rf_open(CHANNEL,REC_ADDRESS,PACKET_LENGTH);
+	m_rf_open(CHANNEL,REC_ADDRESS_AUX,PACKET_LENGTH);
 	
 	//Turn off the LEDs
-	m_red(OFF);
 	m_green(ON);
+	m_red(OFF);
 	
 	//Enable interruptions
 	sei();
@@ -71,97 +68,55 @@ int main(void)
 	//Main loop
 	while (1)
 	{
-		//Receiving commands
-		if (flag_data == 1)
+		wii_OK = m_wii_read(blobs_wii);
+		if (wii_OK)
 		{
-            int i;
-            for (i=0; i<PACKET_LENGTH; i++) {
-                position[i] = (int)buffer_rec[i];
-            }
-
-			//Reset the flag
-			flag_data = 0;
-			
+			localize(blobs_wii[0],blobs_wii[3],blobs_wii[6],blobs_wii[9],blobs_wii[1],blobs_wii[4],blobs_wii[7],blobs_wii[10],&x_robot,&y_robot,&theta_robot);
 		}
-        
-        
-        send_to_MATLAB();       // Communicate with MATLAB
-        
-	}
-}
-
-//Interruption handler for the data received from the module (D2)
-ISR(INT2_vect)
-{
-	//Read
-	m_rf_read(buffer_rec,PACKET_LENGTH);
-	flag_data = 1;
-	m_red(ON);
-}
-
-
-
-
-
-
-
-
-
-
-
-// --------------------------------------------------------------
-// Send Data through USB
-// --------------------------------------------------------------
-void send_to_MATLAB(){
-    if (USB){
-        // Send/Receive data through USB whenever MATLAB asks for it
-        // Check if there is something in the RX buffer and how many bytes it is
-        int data_to_read = m_usb_rx_available();
-        if(data_to_read)
-        {
-            if (flag == 0) {                    // If we haven't received anything before
-                while(!m_usb_rx_available());   // Wait to receive instructions
-                flag = m_usb_rx_char();         // Get the first byte as what to do next
-                if (flag == 3){                 // If MATLAB needs the Position and Orientation data send them ASAP
-                    m_usb_rx_flush();           // Flush the RX buffer
-                    
-                    m_usb_tx_long(value_received);
-                    m_usb_tx_string("\n");
-                    m_usb_tx_push();            // Send the TX buffer to MATLAB
-                    
-                    flag = 0;                   // Reset the flag that we haven't received anything
-                    
-                }
-                
-                
-                if (flag == 5){                 // If MATLAB needs the Position and Orientation data send them ASAP
-                    m_usb_rx_flush();           // Flush the RX buffer
-                    
-                    int i;
-                    for (i = 0; i < PACKET_LENGTH; i++) {
-                        //m_usb_tx_char(buffer_rec[i]);      // x1 , y1 , x2 , y2 , x3 , y3
-                        m_usb_tx_int(position[i]);      // x1 , y1 , x2 , y2 , x3 , y3
-                        m_usb_tx_string("\n");
-                    }
-                    
-                    m_usb_tx_push();            // Send the TX buffer to MATLAB
-                    
-                    flag = 0;                   // Reset the flag that we haven't received anything
-                    
-                }
-
-                
-            }
-            
-            /*
-             else {
-             // More coming up here
-             }
-             */
-        }
+		
+		/*//Send commands
+         if (flag_timer == 1)
+         {
+         buffer_send[0] = x;
+         buffer_send[1]= y;
+         m_rf_send(SEN_ADDRESS,buffer_send,PACKET_LENGTH);
+         
+         //Reset flag
+         flag_timer = 0;
+         m_red(OFF);*/
     }
+
 }
-// --------------------------------------------------------------
 
+//Timer 3 Initialization
+void set_timer3(void)
+{
+	OCR3A = 391;
+	
+	//Set C6 as output (debugging)
+	set(DDRC,6);
+    
+	//Set to UP to OCR1A
+	clear(TCCR3B,WGM33);
+	set(TCCR3B,WGM32);
+	clear(TCCR3A,WGM31);
+	clear(TCCR3A,WGM30);
+    
+	//Set to toggle (debugging)
+	clear(TCCR3A,COM3A1);
+	set(TCCR3A,COM3A0);
+	
+	//Demask OCR3A interrupt
+	set(TIMSK3,OCIE3A);
+    
+	//Set timer prescaler to /1024
+	set(TCCR3B,CS32);
+	clear(TCCR3B,CS31);
+	set(TCCR3B,CS30);
+}
 
-
+ISR(TIMER3_COMPA_vect)
+{
+	m_red(ON);
+	flag_timer = 1;
+}
