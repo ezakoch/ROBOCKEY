@@ -14,7 +14,7 @@
 # --------------------------------------------------------
 MAIN       = main.o 
 CHILDREN   = 
-PARENTS    = m_usb.o m_bus.o m_imu.o
+PARENTS    = m_usb.o m_bus.o m_imu.o m_rf.o
 
 # --------------------------------------------------------
 # if you want to use one of our pre-compiled libraries,
