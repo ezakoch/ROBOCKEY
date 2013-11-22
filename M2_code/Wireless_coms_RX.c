@@ -11,32 +11,52 @@
 #include <stdlib.h>
 
 #define N_CLOCK 0
-#define PACKET_LENGTH 5
+#define PACKET_LENGTH 2
 #define REC_ADDRESS 0X47
 #define CHANNEL 1
 
-//Variable used to check when we get data
-volatile int flag_data = 0;
+// --------------------------------------------------------------
+#define USB 1               // If using the USB set to 1
+// --------------------------------------------------------------
 
-//Variables for buffer
-char buffer_rec[PACKET_LENGTH] = {0};
+
+// --------------------------------------------------------------
+// Global Variables
+// --------------------------------------------------------------
+
+// General variables
+int flag = 0;                                                           // Flag to check what is being received from MATLAB
+long powers[6] = {1,10,100,1000,10000,100000};                          // Precalculated powers of 10 for byte conversion
+volatile int flag_data = 0;                                             // Flag to check when we get data
+char buffer_rec[PACKET_LENGTH] = {0};                                   // Input buffer from other M2
+int temp[6] = {-30,0,30,0,0,50};                                   // Input buffer from other M2
+int position[2] = {0,0};
+
+
+
+void send_to_MATLAB(void);
+
+long value_received;
 
 //Main function
 int main(void)
 {
 	char* end_ptr;
-	long value_received;
 	
+	
+    m_red(ON);
+    
 	//Set the clock system prescaler
 	m_clockdivide(N_CLOCK);
-
+    
 	//Initialize bus
 	m_bus_init();
 	
-	//Initialize
-	m_usb_init();
 	
-	while(!m_usb_isconnected()); // wait for a connection
+	if (USB) {                          // If I am using a USB then
+        m_usb_init();                   // Initialize USB and
+        while(!m_usb_isconnected());    // wait for a connection
+    }
 	
 	//Open the channel
 	m_rf_open(CHANNEL,REC_ADDRESS,PACKET_LENGTH);
@@ -54,25 +74,19 @@ int main(void)
 		//Receiving commands
 		if (flag_data == 1)
 		{
-			//Transform the array received to an integer
-			if (strcmp(buffer_rec,"0000") == 0)
-			{
-				value_received = 0;
-				m_usb_tx_long(value_received);
-			}else
-			{
-				value_received = strtol(buffer_rec,&end_ptr,10);
-				if (value_received != 0)
-				m_usb_tx_long(value_received);
-				else
-				m_usb_tx_char('W');
-			}
-			m_usb_tx_char('\r');
-			
+            int i;
+            for (i=0; i<PACKET_LENGTH; i++) {
+                position[i] = (int)buffer_rec[i];
+            }
+            
 			//Reset the flag
 			flag_data = 0;
-			m_red(OFF);
+			
 		}
+        
+        
+        send_to_MATLAB();       // Communicate with MATLAB
+        
 	}
 }
 
@@ -84,5 +98,70 @@ ISR(INT2_vect)
 	flag_data = 1;
 	m_red(ON);
 }
+
+
+
+
+
+
+
+
+
+
+
+// --------------------------------------------------------------
+// Send Data through USB
+// --------------------------------------------------------------
+void send_to_MATLAB(){
+    if (USB){
+        // Send/Receive data through USB whenever MATLAB asks for it
+        // Check if there is something in the RX buffer and how many bytes it is
+        int data_to_read = m_usb_rx_available();
+        if(data_to_read)
+        {
+            if (flag == 0) {                    // If we haven't received anything before
+                while(!m_usb_rx_available());   // Wait to receive instructions
+                flag = m_usb_rx_char();         // Get the first byte as what to do next
+                if (flag == 3){                 // If MATLAB needs the Position and Orientation data send them ASAP
+                    m_usb_rx_flush();           // Flush the RX buffer
+                    
+                    m_usb_tx_long(value_received);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_push();            // Send the TX buffer to MATLAB
+                    
+                    flag = 0;                   // Reset the flag that we haven't received anything
+                    
+                }
+                
+                
+                if (flag == 5){                 // If MATLAB needs the Position and Orientation data send them ASAP
+                    m_usb_rx_flush();           // Flush the RX buffer
+                    
+                    int i;
+                    for (i = 0; i < PACKET_LENGTH; i++) {
+                        //m_usb_tx_char(buffer_rec[i]);      // x1 , y1 , x2 , y2 , x3 , y3
+                        m_usb_tx_int(position[i]);      // x1 , y1 , x2 , y2 , x3 , y3
+                        m_usb_tx_string("\n");
+                    }
+                    
+                    m_usb_tx_push();            // Send the TX buffer to MATLAB
+                    
+                    flag = 0;                   // Reset the flag that we haven't received anything
+                    
+                }
+                
+                
+            }
+            
+            /*
+             else {
+             // More coming up here
+             }
+             */
+        }
+    }
+}
+// --------------------------------------------------------------
+
 
 
