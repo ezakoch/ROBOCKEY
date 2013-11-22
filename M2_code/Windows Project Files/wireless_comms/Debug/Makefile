@@ -36,9 +36,11 @@ SUBDIRS :=
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
-../../../Wireless_coms_TX2.c \
-../m_bus.c \
-../m_rf.c
+../../../Functions/Localize.c \
+../../../m_bus.c \
+../../../m_rf.c \
+../../../m_wii.c \
+../../../Wireless_coms_TX2.c
 
 
 PREPROCESSING_SRCS += 
@@ -48,24 +50,32 @@ ASM_SRCS +=
 
 
 OBJS +=  \
-Wireless_coms_TX2.o \
+Localize.o \
 m_bus.o \
-m_rf.o
+m_rf.o \
+m_wii.o \
+Wireless_coms_TX2.o
 
 OBJS_AS_ARGS +=  \
-Wireless_coms_TX2.o \
+Localize.o \
 m_bus.o \
-m_rf.o
+m_rf.o \
+m_wii.o \
+Wireless_coms_TX2.o
 
 C_DEPS +=  \
-Wireless_coms_TX2.d \
+Localize.d \
 m_bus.d \
-m_rf.d
+m_rf.d \
+m_wii.d \
+Wireless_coms_TX2.d
 
 C_DEPS_AS_ARGS +=  \
-Wireless_coms_TX2.d \
+Localize.d \
 m_bus.d \
-m_rf.d
+m_rf.d \
+m_wii.d \
+Wireless_coms_TX2.d
 
 OUTPUT_FILE_PATH +=wireless_comms.elf
 
@@ -85,17 +95,21 @@ LIB_DEP+=
 
 
 
-./%.o: ../../../%.c
+
+
+
+
+./%.o: ../../../Functions/%.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 3.4.2
-	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DDEBUG  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32u4 -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
+	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DDEBUG  -I"../../.."  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32u4 -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
 	@echo Finished building: $<
 	
 
-./%.o: .././%.c
+./%.o: ../../../%.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 3.4.2
-	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DDEBUG  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32u4 -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
+	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DDEBUG  -I"../../.."  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32u4 -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
 	@echo Finished building: $<
 	
 

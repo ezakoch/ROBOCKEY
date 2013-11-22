@@ -2,6 +2,7 @@
  * Author: Spyridon Karachalios
  */
 
+#include "Localize.h"
 
 #define USB 1               // If using the USB set to 1
 #define F_M2 16000000       // Frequency of the M2
@@ -26,9 +27,8 @@ float distances[6] = {0};
 // --------------------------------------------------------------
 // Localize the robot
 // --------------------------------------------------------------
-unsigned char localize(int x1, int x2, int x3, int x4,
-              int y1, int y2, int y3, int y4,
-              int &x_robot, int &y_robot, int &orientation){
+
+unsigned char localize(int x1, int x2, int x3, int x4, int y1, int y2, int y3, int y4, int& x_robot, int& y_robot, int& orientation){
     
     
     

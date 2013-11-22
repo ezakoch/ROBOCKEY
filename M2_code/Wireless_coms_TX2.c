@@ -4,13 +4,15 @@
 #include "m_general.h"
 #include "m_bus.h"
 #include "m_rf.h"
+#include "Functions/Localize.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <avr/interrupt.h>
 
 #define N_CLOCK 1
-#define PACKET_LENGTH 2
+#define SIZE_ARRAY_BLOBS 12
+#define PACKET_LENGTH 16
 #define SEN_ADDRESS 0x47
 #define REC_ADDRESS_AUX 0X49
 #define CHANNEL 1
@@ -18,12 +20,9 @@
 //Function prototypes
 void set_timer3(void);
 
+
 //Variable used to check timer
 volatile int flag_timer = 0;
-
-//Variables for buffer
-char buffer_send [PACKET_LENGTH] = {0};
-
 
 //Function prototypes
 ISR(INT2_vect);
@@ -32,14 +31,26 @@ ISR(INT2_vect);
 int main(void)
 {
 	//Variable declaration
-	char x = 0;
-	char y = 0;
-	
+	int wii_OK = 0;
+	unsigned char state [PACKET_LENGTH] = {0}; //State: [0] current state
+	signed char position [PACKET_LENGTH] = {0}; // Position: [0] x int,[1] x decimal,[2] y int,[3] y decimal, 
+												//[4] theta 1st int,[5] theta 2nd int,[6] theta decimal
+	unsigned char LED_analog [PACKET_LENGTH] = {0}; //Analog values for each phototransistor: [0+i] 1st digit analog,  [1+i] 1st digit analog (i=1...8)
+	unsigned char stars_wii [PACKET_LENGTH] = {0}; //Pixel position of stars: [0+i] 1st x,  [0+i] 2nd x, [0+i] 1st y, [0+i] 2nd y (i=1...4)
+	unsigned char counter_solenoid [PACKET_LENGTH] = {0};
+	unsigned char battery_ind [PACKET_LENGTH] =  {0};
+	unsigned char general_vars [PACKET_LENGTH] = {0};	
+	unsigned int blobs_wii[SIZE_ARRAY_BLOBS]; //Variable for the wii cam blobs
+	float x_robot = 0.0f ,y_robot = 0.0f,theta_robot = 0.0f;
+		
 	//Set the clock system prescaler
 	m_clockdivide(N_CLOCK);
 
 	//Initialize bus
 	m_bus_init();
+	
+	//Initialize wii camera
+	while(!m_wii_open(void));
 	
 	set_timer3();
 	
@@ -56,21 +67,22 @@ int main(void)
 	//Main loop
 	while (1)
 	{
-		//Receiving commands
+		wii_OK = m_wii_read(blobs_wii);
+		if (wii_OK)
+		{
+			localize(blobs_wii[0],blobs_wii[3],blobs_wii[6],blobs_wii[9],blobs_wii[1],blobs_wii[4],blobs_wii[7],blobs_wii[10],&x_robot,&y_robot,&theta_robot);
+		}
+		
+		/*//Send commands
 		if (flag_timer == 1)
 		{
 			buffer_send[0] = x;
 			buffer_send[1]= y;
 			m_rf_send(SEN_ADDRESS,buffer_send,PACKET_LENGTH);
 				
-			//Move to next number
-			x++;
-			y++;
-				
 			//Reset flag
 			flag_timer = 0;
-			m_wait(200);
-			m_red(OFF);
+			m_red(OFF);*/
 		}
 	}
 }
@@ -78,7 +90,7 @@ int main(void)
 //Timer 3 Initialization
 void set_timer3(void)
 {
-	OCR3A = 7812;
+	OCR3A = 391;
 	
 	//Set C6 as output (debugging)
 	set(DDRC,6);
