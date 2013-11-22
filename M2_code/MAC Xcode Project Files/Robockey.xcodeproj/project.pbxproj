@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		DF77FB1C184015F000DF4849 /* Localize.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Localize.c; path = ../Functions/Localize.c; sourceTree = "<group>"; };
 		DFC40C33183B2D1400348150 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = main.c; path = ../main.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -14,6 +15,7 @@
 		DF17E3F217F4A97400131969 = {
 			isa = PBXGroup;
 			children = (
+				DF77FB1C184015F000DF4849 /* Localize.c */,
 				DFC40C33183B2D1400348150 /* main.c */,
 			);
 			sourceTree = "<group>";
