@@ -141,8 +141,8 @@ int main(void)
 			position[1] = (signed char) x_robot;
 			position[2] = (signed char) y_robot;
 			aux_conversion = div(theta_robot,128);
-			position[3] = (signed char)aux.quot;
-			position[4] = (signed char)aux.rem;
+			position[3] = (signed char)aux_conversion.quot;
+			position[4] = (signed char)aux_conversion.rem;
 			
 			m_rf_send(SEN_ADDRESS,position,PACKET_LENGTH);
 			
@@ -150,7 +150,7 @@ int main(void)
 			LED_analog[0] = 3;
 			for (int i=0;i<NUM_LEDS;i++)
 			{
-				aux_conversion = div(LED_values_raw,256);
+				aux_conversion = div(LED_values_raw[i],256);
 				LED_analog[2*i+1] = aux_conversion.quot;
 				LED_analog[2*i+2] = aux_conversion.rem;
 			}
