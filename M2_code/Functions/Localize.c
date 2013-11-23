@@ -13,6 +13,7 @@
 #define P_vertical 29
 
 
+
 // Variables for Localization
 int u0 = 512 - x0_offset, v0 = 384 - y0_offset;     // Center of camera optical axis
 
@@ -30,7 +31,9 @@ float distances[6] = {0}, radius, theta, alpha;
 
 unsigned char localize(int x1, int x2, int x3, int x4, int y1, int y2, int y3, int y4, int* x_robot, int* y_robot, int* orientation){
     
-    
+    if ((x1==1023)||(x2==1023)||(x3==1023)||(x4==1023)||(y1==1023)||(y2==1023)||(y3==1023)||(y4==1023)) {
+        return 0;
+    }
     
     
     float max_distance = 0, min_distance = 10000;
@@ -209,7 +212,7 @@ unsigned char localize(int x1, int x2, int x3, int x4, int y1, int y2, int y3, i
     theta = atan2( (Q3[1] - Q1[1]), (Q3[0] - Q1[0])  );
     alpha = -atan2(S0[0],S0[1]);
     
-    *orientation = theta;
+    *orientation = theta * 180/M_PI;
     
     *x_robot = -radius * cos(theta - alpha);
     *y_robot = -radius * sin(theta - alpha);

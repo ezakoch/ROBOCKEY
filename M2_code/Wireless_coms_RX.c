@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 #define N_CLOCK 0
-#define PACKET_LENGTH 2
+#define PACKET_LENGTH 17
 #define REC_ADDRESS 0X47
 #define CHANNEL 1
 
@@ -32,6 +32,7 @@ char buffer_rec[PACKET_LENGTH] = {0};                                   // Input
 int temp[6] = {-30,0,30,0,0,50};                                   // Input buffer from other M2
 int position[2] = {0,0};
 
+int robot_x, robot_y, robot_yaw;
 
 
 void send_to_MATLAB(void);
@@ -74,9 +75,21 @@ int main(void)
 		//Receiving commands
 		if (flag_data == 1)
 		{
+            received_data = buffer_rec[0]
+            
+            if (received_data == 2) {
+                robot_x = (int)buffer_rec[1];
+                robot_y = (int)buffer_rec[2];
+                robot_yaw = (int)buffer_rec[3]*256 + (int)buffer_rec[4];
+                m_red(OFF);
+            }
+            else {
+            
+            
             int i;
             for (i=0; i<PACKET_LENGTH; i++) {
                 position[i] = (int)buffer_rec[i];
+            }
             }
             
 			//Reset the flag
@@ -144,6 +157,21 @@ void send_to_MATLAB(){
                         m_usb_tx_string("\n");
                     }
                     
+                    m_usb_tx_push();            // Send the TX buffer to MATLAB
+                    
+                    flag = 0;                   // Reset the flag that we haven't received anything
+                    
+                }
+                
+                if (flag == 6){                 // If MATLAB needs the Position and Orientation data send them ASAP
+                    m_usb_rx_flush();           // Flush the RX buffer
+                    
+                    m_usb_tx_int(robot_x);      // x1
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot_y);      // x1
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot_yaw);      // x1
+                    m_usb_tx_string("\n");
                     m_usb_tx_push();            // Send the TX buffer to MATLAB
                     
                     flag = 0;                   // Reset the flag that we haven't received anything
