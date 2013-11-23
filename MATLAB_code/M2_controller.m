@@ -244,30 +244,27 @@ h.button_test = uicontrol('Style', 'pushbutton', 'String', 'TEST',...
 %% PLOT the SENSORS data
     function plot_sensors(src,evnt)
         % Initialiaze figures
-        figure(2);
-        subplot(3,1,1)
-        userdata.figures.plot_f0 = plot(0,0,'b-');
-        title('F0')
+        figure(3);
+        clf
+        hold all
+        userdata.ADC.plot_F0 = plot(0,0);
+        userdata.ADC.plot_F1 = plot(0,0);
+        userdata.ADC.plot_F4 = plot(0,0);
+        userdata.ADC.plot_F5 = plot(0,0);
+        userdata.ADC.plot_F6 = plot(0,0);
+        userdata.ADC.plot_F7 = plot(0,0);
+        userdata.ADC.plot_D4 = plot(0,0);
+        userdata.ADC.plot_D6 = plot(0,0);
+        hold off
+        title('Sensors')
         xlabel('Time (sec)')
         ylabel('ADC (0-1023)')
+        legend([userdata.ADC.plot_F0 userdata.ADC.plot_F1 userdata.ADC.plot_F4 userdata.ADC.plot_F5 userdata.ADC.plot_F6 userdata.ADC.plot_F7 userdata.ADC.plot_D4 userdata.ADC.plot_D6],...
+            'F0','F1','F4','F5','F6','F7','D4','D6')
         ylim([0 1100])
         grid on
         
-        subplot(3,1,2)
-        userdata.figures.plot_f1 = plot(0,0,'r-');
-        title('F1')
-        xlabel('Time (sec)')
-        ylabel('ADC (0-1023)')
-        ylim([0 1100])
-        grid on
         
-        subplot(3,1,3)
-        userdata.figures.plot_f4 = plot(0,0);
-        title('F4')
-        xlabel('Time (sec)')
-        ylabel('ADC (0-1023)')
-        ylim([0 1100])
-        grid on
         
         % Infinite loop to plot the data
         i=1;
@@ -283,25 +280,58 @@ h.button_test = uicontrol('Style', 'pushbutton', 'String', 'TEST',...
                 % Plot the data
                 % Same for all below
                 data = fgetl(userdata.handle);
-                userdata.F0_data(i,1) = str2double(data);
-                set(userdata.figures.plot_f0, 'xdata',userdata.time(1,1:i),...
-                    'ydata',userdata.F0_data(1:i,1))
+                userdata.ADC.F0_data(i,1) = str2double(data);
+                set(userdata.ADC.plot_F0,... 
+                    'xdata',userdata.time(1,1:i),...
+                    'ydata',userdata.ADC.F0_data(1:i,1))
                 
                 data = fgetl(userdata.handle);
-                userdata.F1_data(i,1) = str2double(data);
-                set(userdata.figures.plot_f1, 'xdata',userdata.time(1,1:i),...
-                    'ydata',userdata.F1_data(1:i,1))
+                userdata.ADC.F1_data(i,1) = str2double(data);
+                set(userdata.ADC.plot_F1,... 
+                    'xdata',userdata.time(1,1:i),...
+                    'ydata',userdata.ADC.F1_data(1:i,1))
+                
+               data = fgetl(userdata.handle);
+                userdata.ADC.F4_data(i,1) = str2double(data);
+                set(userdata.ADC.plot_F4,... 
+                    'xdata',userdata.time(1,1:i),...
+                    'ydata',userdata.ADC.F4_data(1:i,1))
                 
                 data = fgetl(userdata.handle);
-                userdata.F4_data(i,1) = str2double(data);
-                set(userdata.figures.plot_f4, 'xdata',userdata.time(1,1:i),...
-                    'ydata',userdata.F4_data(1:i,1))
+                userdata.ADC.F5_data(i,1) = str2double(data);
+                set(userdata.ADC.plot_F5,... 
+                    'xdata',userdata.time(1,1:i),...
+                    'ydata',userdata.ADC.F5_data(1:i,1))
+                
+                data = fgetl(userdata.handle);
+                userdata.ADC.F6_data(i,1) = str2double(data);
+                set(userdata.ADC.plot_F6,... 
+                    'xdata',userdata.time(1,1:i),...
+                    'ydata',userdata.ADC.F6_data(1:i,1))
+                
+                data = fgetl(userdata.handle);
+                userdata.ADC.F7_data(i,1) = str2double(data);
+                set(userdata.ADC.plot_F7,... 
+                    'xdata',userdata.time(1,1:i),...
+                    'ydata',userdata.ADC.F7_data(1:i,1))
+                
+                data = fgetl(userdata.handle);
+                userdata.ADC.D4_data(i,1) = str2double(data);
+                set(userdata.ADC.plot_F0,... 
+                    'xdata',userdata.time(1,1:i),...
+                    'ydata',userdata.ADC.D4_data(1:i,1))
+                
+                data = fgetl(userdata.handle);
+                userdata.ADC.D6_data(i,1) = str2double(data);
+                set(userdata.ADC.plot_D6,... 
+                    'xdata',userdata.time(1,1:i),...
+                    'ydata',userdata.ADC.D6_data(1:i,1))
                 
                 drawnow
                 i=i+1;
             else
                 % Send M2 the instruction to send sensors data
-                fwrite(userdata.handle, 3);
+                fwrite(userdata.handle, 7);
             end
         end
     end

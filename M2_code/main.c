@@ -29,7 +29,8 @@ int flag = 0;                                                           // Flag 
 long powers[6] = {1,10,100,1000,10000,100000};                          // Precalculated powers of 10 for byte conversion
 volatile int flag_data = 0;                                             // Flag to check when we get data
 char buffer_rec[PACKET_LENGTH] = {0};                                   // Input buffer from other M2
-int temp[6] = {-30,0,30,0,0,50};                                   // Input buffer from other M2
+int temp[6] = {-30,0,30,0,0,50};                                        // Input buffer from other M2
+int sensors[8] = {0};
 int position[2] = {0,0};
 char received_data;
 
@@ -81,20 +82,29 @@ int main(void)
             if (received_data == 2) {
 
                 robot_x = (int)buffer_rec[1];
-                if (robot_x==127) {
-                    m_green(ON);
-                }
                 robot_y = (int)buffer_rec[2];
                 robot_yaw = (int)buffer_rec[3]*128 + (int)buffer_rec[4];
                 m_red(OFF);
             }
+            
+            
+            else if (received_data == 3) {
+                
+                sensors[0] = (int)buffer_rec[1]*256 + (int)buffer_rec[2];
+                sensors[1] = (int)buffer_rec[3]*256 + (int)buffer_rec[4];
+                sensors[2] = (int)buffer_rec[5]*256 + (int)buffer_rec[6];
+                sensors[3] = (int)buffer_rec[7]*256 + (int)buffer_rec[8];
+                sensors[4] = (int)buffer_rec[9]*256 + (int)buffer_rec[10];
+                sensors[5] = (int)buffer_rec[11]*256 + (int)buffer_rec[12];
+                sensors[6] = (int)buffer_rec[13]*256 + (int)buffer_rec[14];
+                sensors[7] = (int)buffer_rec[15]*256 + (int)buffer_rec[16];
+                m_red(OFF);
+            }
+            
+            
+            
             else {
-                
-                
-                int i;
-                for (i=0; i<PACKET_LENGTH; i++) {
-                    position[i] = (int)buffer_rec[i];
-                }
+
             }
             
 			//Reset the flag
@@ -177,6 +187,32 @@ void send_to_MATLAB(){
                     m_usb_tx_string("\n");
                     m_usb_tx_int(robot_yaw);      // x1
                     m_usb_tx_string("\n");
+                    m_usb_tx_push();            // Send the TX buffer to MATLAB
+                    
+                    flag = 0;                   // Reset the flag that we haven't received anything
+                    
+                }
+                
+                if (flag == 7){                 // If MATLAB needs the Position and Orientation data send them ASAP
+                    m_usb_rx_flush();           // Flush the RX buffer
+                    
+                    m_usb_tx_int(sensors[0]);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(sensors[1]);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(sensors[2]);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(sensors[3]);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(sensors[4]);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(sensors[5]);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(sensors[6]);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(sensors[7]);
+                    m_usb_tx_string("\n");
+     
                     m_usb_tx_push();            // Send the TX buffer to MATLAB
                     
                     flag = 0;                   // Reset the flag that we haven't received anything
