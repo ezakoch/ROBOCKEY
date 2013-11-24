@@ -8,7 +8,7 @@ global userdata
 scrsz = get(0,'ScreenSize');
 h.figures.main_fig = figure('Position',[scrsz(3)*0.08 scrsz(4)*0.5 scrsz(3)*0.5 scrsz(4)*0.5],...
     'Name','M2 Controller', 'NumberTitle','off');
-defaultBackground = get(h.figures.main_fig,'Color');
+userdata.defaultBackground = get(h.figures.main_fig,'Color');
 h.handle = [];
 
 % Create a uicontrol object to let user connect to the M2
@@ -77,138 +77,10 @@ h.button_test = uicontrol('Style', 'pushbutton', 'String', 'TEST',...
 %
 
 
-%% PLOT the TEST data
-    function plot_test(src,evnt)
-        % Initialiaze figures
-        figure(2);
-        hold on
-        userdata.figures.plot_test = plot(0,0,'b-');
-        userdata.figures.plot_test2 = plot(0,0,'r-');
-        hold off
-        title('TEST DATA')
-        xlabel('Time (sec)')
-        ylabel('Received value')
-        ylim([-200 200])
-        grid on
-        
-        
-        % Infinite loop to plot the data
-        i=1;
-        userdata.flag_plot_sensors = 1;
-        
-        tic
-        while (userdata.flag_plot_sensors)
-            nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
-            if(nBytes~=0)
-                userdata.time(i) = toc; % Grab the time passed
-                
-                % Grab data from M2 until line terminator
-                % Plot the data
-                % Same for all below
-                data = fgetl(userdata.handle);
-                userdata.test_data(i,1) = str2double(data);
-                set(userdata.figures.plot_test, 'xdata',userdata.time(1,1:i),...
-                    'ydata',userdata.test_data(1:i,1))
-                
-                data = fgetl(userdata.handle);
-                userdata.test_data2(i,1) = str2double(data);
-%                 set(userdata.figures.plot_test2, 'xdata',userdata.time(1,1:i),...
-%                     'ydata',userdata.test_data2(1:i,1))
-%                 
-               
-                drawnow
-                i=i+1;
-            else
-                % Send M2 the instruction to send sensors data
-                fwrite(userdata.handle, 5);
-            end
-        end
-    end
 
 
 
 
-
-
-
-%% Localize function
-    function localize(src,evnt)
-        clc
-        x0 = 1024/2;
-        y0 = 768/2;
-        
-        figure;
-        hold on
-        userdata.h_plot = plot(x0,y0,'ro');
-        hold off
-        xlim([-x0 x0])
-        ylim([-y0 y0])
-        set(gca,'YDir','reverse');
-        
-
-        figure;
-        hold on
-        userdata.h_yaw = plot(0,0,'b-');
-        hold off
-        xlabel('time  (sec)');
-        ylabel('yaw  (radians)');
-        legend('Yaw');
-        
-        [userdata.hc, userdata.h_dir] = plot_ring;
-        
-        % Infinite loop to plot the data
-        i=1;
-        userdata.flag_plot_sensors = 1;
-        userdata.x_robot = [];
-        userdata.y_robot = [];
-        userdata.u0 = [];
-        userdata.v0 = [];
-        
-        tic
-        while (userdata.flag_plot_sensors)
-            nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
-            if(nBytes~=0)
-                userdata.time(i) = toc; % Grab the time passed
-                
-                % Grab data from M2 until line terminator
-                % Plot the data
-                % Same for all below
-                data = fgetl(userdata.handle);
-                userdata.x1(i) = str2double(data);
-              
-                data = fgetl(userdata.handle);
-                userdata.x2(i) = str2double(data);
-                
-                data = fgetl(userdata.handle);
-                userdata.x3(i) = str2double(data);
-                
-                data = fgetl(userdata.handle);
-                userdata.x4(i) = str2double(data);
-                
-                data = fgetl(userdata.handle);
-                userdata.y1(i) = str2double(data);
-                
-                data = fgetl(userdata.handle);
-                userdata.y2(i) = str2double(data);
-                
-                data = fgetl(userdata.handle);
-                userdata.y3(i) = str2double(data);
-                
-                data = fgetl(userdata.handle);
-                userdata.y4(i) = str2double(data);
-                
-%                 userdata.x1(i)
-                
-                Localization(userdata.x1(i), userdata.x2(i), userdata.x3(i), userdata.x4(i),...
-                             userdata.y1(i), userdata.y2(i), userdata.y3(i), userdata.y4(i));
-                
-                i=i+1;
-            else
-                % Send M2 the instruction to send sensors data
-                fwrite(userdata.handle, 4);
-            end
-        end
-    end
 
 
 
@@ -241,100 +113,6 @@ h.button_test = uicontrol('Style', 'pushbutton', 'String', 'TEST',...
         clear all
     end
 
-%% PLOT the SENSORS data
-    function plot_sensors(src,evnt)
-        % Initialiaze figures
-        figure(3);
-        clf
-        hold all
-        userdata.ADC.plot_F0 = plot(0,0);
-        userdata.ADC.plot_F1 = plot(0,0);
-        userdata.ADC.plot_F4 = plot(0,0);
-        userdata.ADC.plot_F5 = plot(0,0);
-        userdata.ADC.plot_F6 = plot(0,0);
-        userdata.ADC.plot_F7 = plot(0,0);
-        userdata.ADC.plot_D4 = plot(0,0);
-        userdata.ADC.plot_D6 = plot(0,0);
-        hold off
-        title('Sensors')
-        xlabel('Time (sec)')
-        ylabel('ADC (0-1023)')
-        legend([userdata.ADC.plot_F0 userdata.ADC.plot_F1 userdata.ADC.plot_F4 userdata.ADC.plot_F5 userdata.ADC.plot_F6 userdata.ADC.plot_F7 userdata.ADC.plot_D4 userdata.ADC.plot_D6],...
-            'F0','F1','F4','F5','F6','F7','D4','D6')
-        ylim([0 1100])
-        grid on
-        
-        
-        
-        % Infinite loop to plot the data
-        i=1;
-        userdata.flag_plot_sensors = 1;
-        
-        tic
-        while (userdata.flag_plot_sensors)
-            nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
-            if(nBytes~=0)
-                userdata.time(i) = toc; % Grab the time passed
-                
-                % Grab data from M2 until line terminator
-                % Plot the data
-                % Same for all below
-                data = fgetl(userdata.handle);
-                userdata.ADC.F0_data(i,1) = str2double(data);
-                set(userdata.ADC.plot_F0,... 
-                    'xdata',userdata.time(1,1:i),...
-                    'ydata',userdata.ADC.F0_data(1:i,1))
-                
-                data = fgetl(userdata.handle);
-                userdata.ADC.F1_data(i,1) = str2double(data);
-                set(userdata.ADC.plot_F1,... 
-                    'xdata',userdata.time(1,1:i),...
-                    'ydata',userdata.ADC.F1_data(1:i,1))
-                
-               data = fgetl(userdata.handle);
-                userdata.ADC.F4_data(i,1) = str2double(data);
-                set(userdata.ADC.plot_F4,... 
-                    'xdata',userdata.time(1,1:i),...
-                    'ydata',userdata.ADC.F4_data(1:i,1))
-                
-                data = fgetl(userdata.handle);
-                userdata.ADC.F5_data(i,1) = str2double(data);
-                set(userdata.ADC.plot_F5,... 
-                    'xdata',userdata.time(1,1:i),...
-                    'ydata',userdata.ADC.F5_data(1:i,1))
-                
-                data = fgetl(userdata.handle);
-                userdata.ADC.F6_data(i,1) = str2double(data);
-                set(userdata.ADC.plot_F6,... 
-                    'xdata',userdata.time(1,1:i),...
-                    'ydata',userdata.ADC.F6_data(1:i,1))
-                
-                data = fgetl(userdata.handle);
-                userdata.ADC.F7_data(i,1) = str2double(data);
-                set(userdata.ADC.plot_F7,... 
-                    'xdata',userdata.time(1,1:i),...
-                    'ydata',userdata.ADC.F7_data(1:i,1))
-                
-                data = fgetl(userdata.handle);
-                userdata.ADC.D4_data(i,1) = str2double(data);
-                set(userdata.ADC.plot_F0,... 
-                    'xdata',userdata.time(1,1:i),...
-                    'ydata',userdata.ADC.D4_data(1:i,1))
-                
-                data = fgetl(userdata.handle);
-                userdata.ADC.D6_data(i,1) = str2double(data);
-                set(userdata.ADC.plot_D6,... 
-                    'xdata',userdata.time(1,1:i),...
-                    'ydata',userdata.ADC.D6_data(1:i,1))
-                
-                drawnow
-                i=i+1;
-            else
-                % Send M2 the instruction to send sensors data
-                fwrite(userdata.handle, 7);
-            end
-        end
-    end
 
 
 
