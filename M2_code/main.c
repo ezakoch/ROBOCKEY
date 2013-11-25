@@ -65,7 +65,7 @@ int main(void)
 	
 	//Turn off the LEDs
 	m_red(OFF);
-	m_green(ON);
+	//m_green(ON);
 	
 	//Enable interruptions
 	sei();
@@ -136,11 +136,13 @@ ISR(INT2_vect)
 // --------------------------------------------------------------
 void send_to_MATLAB(){
     if (USB){
+        cli();
         // Send/Receive data through USB whenever MATLAB asks for it
         // Check if there is something in the RX buffer and how many bytes it is
         int data_to_read = m_usb_rx_available();
         if(data_to_read)
         {
+            m_green(ON);
             if (flag == 0) {                    // If we haven't received anything before
                 while(!m_usb_rx_available());   // Wait to receive instructions
                 flag = m_usb_rx_char();         // Get the first byte as what to do next
@@ -159,6 +161,7 @@ void send_to_MATLAB(){
                 if (flag == 5){                 // If MATLAB needs the Position and Orientation data send them ASAP
                     m_usb_rx_flush();           // Flush the RX buffer
                     
+                    
                     int i;
                     for (i = 0; i < PACKET_LENGTH; i++) {
                         //m_usb_tx_char(buffer_rec[i]);      // x1 , y1 , x2 , y2 , x3 , y3
@@ -175,6 +178,7 @@ void send_to_MATLAB(){
                 if (flag == 6){                 // If MATLAB needs the Position and Orientation data send them ASAP
                     m_usb_rx_flush();           // Flush the RX buffer
                     
+                    m_green(TOGGLE);
                     m_usb_tx_int(robot_x);      // x1
                     m_usb_tx_string("\n");
                     m_usb_tx_int(robot_y);      // x1

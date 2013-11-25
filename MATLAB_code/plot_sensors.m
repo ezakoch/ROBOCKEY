@@ -176,7 +176,7 @@
                 i=i+1;
             else
                 % Send M2 the instruction to send sensors data
-                fwrite(userdata.handle, 7);
+                fwrite(userdata.handle, 8);
             end
         end
     end

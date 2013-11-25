@@ -88,13 +88,13 @@ h.button_test = uicontrol('Style', 'pushbutton', 'String', 'TEST',...
     function connect(src,evnt)
         % Find serial ports and connect to M2
         delete(instrfind);
-        port = '/dev/tty.usbmodem411';
+        port = '/dev/tty.usbmodem1421';
         userdata.handle = serial(port,'Baudrate', 9600);
         fopen(userdata.handle);
         
         % Enable text to know that we are Connected!
         h.text6 = uicontrol('Style', 'text', 'String', 'Connected!','Fontsize',18,...
-            'Position', [20 130 130 20], 'BackgroundColor',defaultBackground);
+            'Position', [20 130 130 20], 'BackgroundColor',userdata.defaultBackground);
     end
 
 %% DISCONNECT from M2 function
