@@ -32,28 +32,29 @@
         hold on
         plot_arc(60*pi/180,-240*pi/180,0,0,1)
         plot_arc(-25*pi/180,-155*pi/180,0,1.1,0.55)
-        plot(-1,0,'bs','MarkerSize',10,'MarkerFaceColor','b')
+        sensor1 = plot(-1,0,'bs','MarkerSize',10,'MarkerFaceColor','b');
         text(-1,0,'   F0','FontSize',12)
-        plot(0,-1,'bs','MarkerSize',10,'MarkerFaceColor','b')
+        sensor2 = plot(0,-1,'bs','MarkerSize',10,'MarkerFaceColor','b');
         text(0,-1,'   F1','FontSize',12)
-        plot(1,0,'bs','MarkerSize',10,'MarkerFaceColor','b')
+        sensor3 = plot(1,0,'bs','MarkerSize',10,'MarkerFaceColor','b');
         text(1,0,'   F4','FontSize',12)
-        plot(sqrt(2)/2,sqrt(2)/2,'bs','MarkerSize',10,'MarkerFaceColor','b')
+        sensor4 = plot(sqrt(2)/2,sqrt(2)/2,'bs','MarkerSize',10,'MarkerFaceColor','b');
         text(sqrt(2)/2,sqrt(2)/2,'   F5','FontSize',12)
-        plot(sqrt(2)/2,-sqrt(2)/2,'bs','MarkerSize',10,'MarkerFaceColor','b')
+        sensor5 = plot(sqrt(2)/2,-sqrt(2)/2,'bs','MarkerSize',10,'MarkerFaceColor','b');
         text(sqrt(2)/2,-sqrt(2)/2,'   F6','FontSize',12)
-        plot(-sqrt(2)/2,sqrt(2)/2,'bs','MarkerSize',10,'MarkerFaceColor','b')
+        sensor6 = plot(-sqrt(2)/2,sqrt(2)/2,'bs','MarkerSize',10,'MarkerFaceColor','b');
         text(-sqrt(2)/2,sqrt(2)/2,'   F7','FontSize',12)
-        plot(-sqrt(2)/2,-sqrt(2)/2,'bs','MarkerSize',10,'MarkerFaceColor','b')
+        sensor7 = plot(-sqrt(2)/2,-sqrt(2)/2,'bs','MarkerSize',10,'MarkerFaceColor','b');
         text(-sqrt(2)/2,-sqrt(2)/2,'   D4','FontSize',12)
-        plot(0,0.55,'bs','MarkerSize',10,'MarkerFaceColor','b')
+        sensor8 = plot(0,0.55,'bs','MarkerSize',10,'MarkerFaceColor','b');
         text(0,0.55,'   D6','FontSize',12)
+        
+        sensors = [sensor1 sensor2 sensor3 sensor4 sensor5 sensor6 sensor7 sensor8];
         hold off
         ylim([-1.5 1.5])
         ylim([-1.5 1.5])
         axis equal
         grid off
-        
         
         
         text_x = 100;
@@ -97,6 +98,7 @@
         % Infinite loop to plot the data
         i=1;
         userdata.flag_plot_sensors = 1;
+        ids = 1:8;
         
         tic
         while (userdata.flag_plot_sensors)
@@ -163,6 +165,12 @@
                 set(h.F7_value, 'String',userdata.ADC.F7_data(i,1))
                 set(h.D4_value, 'String',userdata.ADC.D4_data(i,1))
                 set(h.D6_value, 'String',userdata.ADC.D6_data(i,1))
+                
+                [~, id_max] = max([userdata.ADC.F0_data(i,1) userdata.ADC.F1_data(i,1) userdata.ADC.F4_data(i,1) userdata.ADC.F5_data(i,1) ...
+                                            userdata.ADC.F6_data(i,1) userdata.ADC.F7_data(i,1) userdata.ADC.D4_data(i,1) userdata.ADC.D6_data(i,1)]);
+
+%                 set(sensors(ids==id_max), 'MarkerFaceColor','r' );
+%                 set(sensors(ids~=id_max), 'MarkerFaceColor','b' );
                 
                 drawnow
                 i=i+1;
