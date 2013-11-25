@@ -62,37 +62,37 @@ int main(void)
 	int dir_y = 0;
 	int dir_angle = 0;
 	int dist_goal = 0;
-		
+    
 	unsigned char state_debug [PACKET_LENGTH] = {0}; //State(1): [0] identification, [1] current state
-		
-	signed char position [PACKET_LENGTH] = {0}; // Position(2): [0] identification,[1] x int,[2] x decimal,[3] y int,[4] y decimal, 
-												//[5] theta 1st int,[6] theta 2nd int,[7] theta decimal
-																								
-	unsigned char LED_analog [PACKET_LENGTH] = {0}; //Analog values for each phototransistor(3): [0] identification,[0+i+1] 1st digit analog,  
-													//[1+i+1] 1st digit analog (i=1...8)
-													
-	unsigned char stars_wii [PACKET_LENGTH] = {0}; //Pixel position of stars(4): [0] identification, [0+i+1] 1st x,  [0+i+2] 2nd x, [0+i+3] 1st y, 
-												   //[0+i+4] 2nd y (i=1...4)
-												   
+    
+	signed char position [PACKET_LENGTH] = {0}; // Position(2): [0] identification,[1] x int,[2] x decimal,[3] y int,[4] y decimal,
+    //[5] theta 1st int,[6] theta 2nd int,[7] theta decimal
+    
+	unsigned char LED_analog [PACKET_LENGTH] = {0}; //Analog values for each phototransistor(3): [0] identification,[0+i+1] 1st digit analog,
+    //[1+i+1] 1st digit analog (i=1...8)
+    
+	unsigned char stars_wii [PACKET_LENGTH] = {0}; //Pixel position of stars(4): [0] identification, [0+i+1] 1st x,  [0+i+2] 2nd x, [0+i+3] 1st y,
+    //[0+i+4] 2nd y (i=1...4)
+    
 	unsigned char counter_solenoid [PACKET_LENGTH] = {0}; //Counts how many times the solenoid has been shooted(5): [0] identification, [1] current count
-		
+    
 	unsigned char battery_ind [PACKET_LENGTH] =  {0}; //Battery indicator in % (6): [0] identification, [1] current value
-		
-	signed char general_vars [PACKET_LENGTH] = {0}; //General vars(7): [0] identification,[1] current value (i=1,2...) 
-		
+    
+	signed char general_vars [PACKET_LENGTH] = {0}; //General vars(7): [0] identification,[1] current value (i=1,2...)
+    
 	unsigned int blobs_wii[SIZE_ARRAY_BLOBS]; //Variable for the wii cam blobs
 	
 	int x_robot = 0, y_robot = 0, theta_robot = 0;
 	int LED_values_raw [NUM_LEDS] = {0};
 	div_t aux_conversion;
-		
+    
 	//Set the clock system prescaler
 	m_clockdivide(N_CLOCK);
 	
 	//Turn off the LEDs
 	m_green(OFF);
 	m_red(OFF);
-
+    
 	//Initialize bus
 	m_bus_init();
 	
@@ -121,14 +121,14 @@ int main(void)
 	m_green(ON);
 	m_wait(1000);
 	m_green(OFF);
-		
+    
 	//Open the channel
 	m_rf_open(CHANNEL,REC_ADDRESS_AUX,PACKET_LENGTH);
 	
 	//Enable interruptions
 	sei();
 	
-	//Main loop 
+	//Main loop
 	while (1)
 	{
 		//LOCALIZATION CODE
@@ -145,26 +145,26 @@ int main(void)
 			if (!localize_OK)
 			{
 				m_red(TOGGLE);
-				x_robot = -110;
-				y_robot = 70;
-				theta_robot = 765;
+				//x_robot = -110;
+				//y_robot = 70;
+				//theta_robot = 765;
 				
 			}else
 				m_green(TOGGLE);
 		}
 		
 		/*//ANALOG CODE
-		for (int i=0;i<NUM_LEDS;i++)
-		{
-			get_analog_val(i);
-			
-			//Wait until flag is on
-			while(!check(ADCSRA,ADIF));
-			LED_values_raw[i] = ADC;
-			
-			//After doing the conversion reset flag
-			set(ADCSRA,ADIF);
-		}*/
+         for (int i=0;i<NUM_LEDS;i++)
+         {
+         get_analog_val(i);
+         
+         //Wait until flag is on
+         while(!check(ADCSRA,ADIF));
+         LED_values_raw[i] = ADC;
+         
+         //After doing the conversion reset flag
+         set(ADCSRA,ADIF);
+         }*/
 		
 		
 		//SEND COMMANDS
@@ -186,14 +186,14 @@ int main(void)
 			m_rf_send(SEN_ADDRESS,position,PACKET_LENGTH);
 			
 			/*//Analog values
-			LED_analog[0] = 3;
-			for (int i=0;i<NUM_LEDS;i++)
-			{
-				aux_conversion = div(LED_values_raw[i],256);
-				LED_analog[2*i+1] = aux_conversion.quot;
-				LED_analog[2*i+2] = aux_conversion.rem;
-			}
-			m_rf_send(SEN_ADDRESS,LED_analog,PACKET_LENGTH);*/
+             LED_analog[0] = 3;
+             for (int i=0;i<NUM_LEDS;i++)
+             {
+             aux_conversion = div(LED_values_raw[i],256);
+             LED_analog[2*i+1] = aux_conversion.quot;
+             LED_analog[2*i+2] = aux_conversion.rem;
+             }
+             m_rf_send(SEN_ADDRESS,LED_analog,PACKET_LENGTH);*/
 			
 			//General variables
 			general_vars [0] = 7;
@@ -213,7 +213,7 @@ int main(void)
 			
 			m_rf_send(SEN_ADDRESS,general_vars,PACKET_LENGTH);
 			
-				
+            
 			//Reset flag
 			flag_timer = 0;
 			m_red(OFF);
@@ -233,27 +233,27 @@ int main(void)
 					goal_pos_y = GOAL_B_POS_Y;
 				}
 				state = GO_TO_GOAL;
-				break;				
-						
+				break;
+                
 			case GO_TO_GOAL:
 				;
 				/*int dir_x = 0;
-				int dir_y = 0;
-				int dir_angle = 0;
-				int dist_goal = 0;*/
+                 int dir_y = 0;
+                 int dir_angle = 0;
+                 int dist_goal = 0;*/
 				if (status_go_to_goal == 0)
 				{
 					dir_x = goal_pos_x-x_robot;
 					dir_y = goal_pos_y-y_robot;
 					dir_angle = atan2(-dir_x,dir_y)*180/M_PI;
-			
-					status_go_to_goal = 1;				
+                    
+					status_go_to_goal = 1;
 				}else if (status_go_to_goal == 1)
 				{
 					if (theta_robot >= dir_angle-THRESHOLD_ANGLE_GOAL && theta_robot <= dir_angle+THRESHOLD_ANGLE_GOAL)
 						status_go_to_goal = 2;
-					else 
-					{					
+					else
+					{
 						int angle_dir_aux = dir_angle-180;
 						int add_360 = 0;
 						if (angle_dir_aux < -180)
@@ -261,15 +261,15 @@ int main(void)
 							angle_dir_aux += 360;
 							add_360 = 1;
 						}
-					
+                        
 						if (add_360 == 0 && (angle_dir_aux <= theta_robot && theta_robot <= dir_angle))
-						turn_left();
+                            turn_left();
 						else if (add_360 == 0 && (angle_dir_aux > theta_robot && theta_robot > dir_angle))
-						turn_right();
+                            turn_right();
 						else if (add_360 == 1 && (angle_dir_aux <= theta_robot && theta_robot <= dir_angle))
-						turn_right();
+                            turn_right();
 						else if (add_360 == 1 && (angle_dir_aux > theta_robot && theta_robot > dir_angle))
-						turn_left();
+                            turn_left();
 					}
 				}else if (status_go_to_goal == 2)
 				{
@@ -293,12 +293,12 @@ int main(void)
 				break;
 			default:
 				stop_motor();
-				while(1) 
+				while(1)
 				{
 					m_red(TOGGLE);
 					m_green(TOGGLE);
 					m_wait(250);
-				}				
+				}
 		}
 	}
 }
@@ -318,15 +318,15 @@ void set_timer1(void)
 	set(TCCR1B,WGM12);
 	set(TCCR1A,WGM11);
 	set(TCCR1A,WGM10);
-
-	//Set to clear at OCR1B, set at rollover 
+    
+	//Set to clear at OCR1B, set at rollover
 	set(TCCR1A,COM1B1);
 	clear(TCCR1A,COM1B0);
-
+    
 	//Set to clear at OCR1C, set at rollover
 	set(TCCR1A,COM1C1);
 	clear(TCCR1A,COM1C0);
-
+    
 	//Set timer prescaler to /1
 	clear(TCCR3B,CS32);
 	clear(TCCR3B,CS31);
@@ -335,31 +335,31 @@ void set_timer1(void)
 
 
 /*//Timer 3 Initialization (SOLENOID)
-void set_timer3(void)
-{
-	OCR3A = 391;
-	
-	//Set C6 as output (debugging)
-	set(DDRC,6);
-
-	//Set to UP to OCR3A
-	clear(TCCR3B,WGM33);
-	set(TCCR3B,WGM32);
-	clear(TCCR3A,WGM31);
-	clear(TCCR3A,WGM30);
-
-	//Set to toggle (debugging)
-	clear(TCCR3A,COM3A1);
-	set(TCCR3A,COM3A0);
-	
-	//Demask OCR3A interrupt
-	set(TIMSK3,OCIE3A);
-
-	//Set timer prescaler to /1024
-	set(TCCR3B,CS32);
-	clear(TCCR3B,CS31);
-	set(TCCR3B,CS30);
-}*/
+ void set_timer3(void)
+ {
+ OCR3A = 391;
+ 
+ //Set C6 as output (debugging)
+ set(DDRC,6);
+ 
+ //Set to UP to OCR3A
+ clear(TCCR3B,WGM33);
+ set(TCCR3B,WGM32);
+ clear(TCCR3A,WGM31);
+ clear(TCCR3A,WGM30);
+ 
+ //Set to toggle (debugging)
+ clear(TCCR3A,COM3A1);
+ set(TCCR3A,COM3A0);
+ 
+ //Demask OCR3A interrupt
+ set(TIMSK3,OCIE3A);
+ 
+ //Set timer prescaler to /1024
+ set(TCCR3B,CS32);
+ clear(TCCR3B,CS31);
+ set(TCCR3B,CS30);
+ }*/
 
 //Timer 4 specifications (SENDING PROCEDURE)
 void set_timer4(void)
@@ -395,13 +395,13 @@ void init_analog(void)
 	
 	//Disable set(DIDR2,ADC9D);
 	set(DIDR0,ADC0D);
-	set(DIDR0,ADC1D);	
-	set(DIDR0,ADC4D);	
-	set(DIDR0,ADC5D);	
-	set(DIDR0,ADC6D);	
-	set(DIDR0,ADC7D);	
-	set(DIDR2,ADC8D);	
-	set(DIDR2,ADC9D);		
+	set(DIDR0,ADC1D);
+	set(DIDR0,ADC4D);
+	set(DIDR0,ADC5D);
+	set(DIDR0,ADC6D);
+	set(DIDR0,ADC7D);
+	set(DIDR2,ADC8D);
+	set(DIDR2,ADC9D);
 	
 	//Set the triggering to free-running
 	set(ADCSRA,ADATE);
@@ -480,8 +480,8 @@ void get_analog_val(int id)
 			set(ADMUX,MUX0);
 			break;
 			
-	}	
-
+	}
+    
 	//Enable ADC Subsystem & Begin Conversion
 	set(ADCSRA,ADEN);
 	set(ADCSRA,ADSC);
@@ -497,7 +497,7 @@ void init_ports(void)
 	clear(DDRB,1);
 	
 	//Set B2 as input
-	clear(DDRB,2);	
+	clear(DDRB,2);
 	set(PORTB,2);
 }
 
@@ -533,10 +533,10 @@ void go_fwd(void)
 }
 
 /*ISR(TIMER3_COMPA_vect)
-{
-	m_red(ON);
-	flag_timer = 1;
-}*/
+ {
+ m_red(ON);
+ flag_timer = 1;
+ }*/
 
 ISR(TIMER4_OVF_vect)
 {

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXFileReference section */
+		DF3BDF3E18439BF900CF2B60 /* Wireless_coms_RX.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Wireless_coms_RX.c; path = ../Wireless_coms_RX.c; sourceTree = "<group>"; };
+		DF3BDF3F18439BF900CF2B60 /* Wireless_coms_TX2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Wireless_coms_TX2.c; path = ../Wireless_coms_TX2.c; sourceTree = "<group>"; };
 		DF77FB1C184015F000DF4849 /* Localize.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Localize.c; path = ../Functions/Localize.c; sourceTree = "<group>"; };
 		DFC40C33183B2D1400348150 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = main.c; path = ../main.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -16,6 +18,8 @@
 			isa = PBXGroup;
 			children = (
 				DF77FB1C184015F000DF4849 /* Localize.c */,
+				DF3BDF3E18439BF900CF2B60 /* Wireless_coms_RX.c */,
+				DF3BDF3F18439BF900CF2B60 /* Wireless_coms_TX2.c */,
 				DFC40C33183B2D1400348150 /* main.c */,
 			);
 			sourceTree = "<group>";
