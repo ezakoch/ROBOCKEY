@@ -33,6 +33,7 @@ int temp[6] = {-30,0,30,0,0,50};                                   // Input buff
 int position[2] = {0,0};
 
 int robot_x, robot_y, robot_yaw;
+int status_go_to_goal, dir_x, dir_y, dir_angle, dist_goal;
 
 
 void send_to_MATLAB(void);
@@ -82,6 +83,14 @@ int main(void)
                 robot_y = (int)buffer_rec[2];
                 robot_yaw = (int)buffer_rec[3]*256 + (int)buffer_rec[4];
                 m_red(OFF);
+            }
+            else if (received_data == 7) {
+                status_go_to_goal = (int)buffer_rec[1];
+                dir_x = (int)buffer_rec[2]*256 + (int)buffer_rec[3];
+                dir_y = (int)buffer_rec[4]*256 + (int)buffer_rec[5];
+                dir_angle = (int)buffer_rec[6]*256 + (int)buffer_rec[7];
+                dist_goal = (int)buffer_rec[8]*256 + (int)buffer_rec[9];
+                
             }
             else {
             
@@ -177,7 +186,24 @@ void send_to_MATLAB(){
                     flag = 0;                   // Reset the flag that we haven't received anything
                     
                 }
-                
+                if (flag == 7){                 // If MATLAB needs the General Variables
+                    m_usb_rx_flush();           // Flush the RX buffer
+                    
+                    m_usb_tx_int(status_go_to_goal);      // Status of the state GO_TO_GOAL
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(dir_x);      // Direction x towards goal
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(dir_y);      // Direciton y towards goal
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(dir_angle);      // Direction to goal
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(dist_goal);      // Distance to goal
+                    m_usb_tx_string("\n");
+                    m_usb_tx_push();            // Send the TX buffer to MATLAB
+                    
+                    flag = 0;                   // Reset the flag that we haven't received anything
+                    
+                }
                 
             }
             

@@ -25,7 +25,8 @@ global userdata
 %         legend('Yaw');
         
    
-figure(2);
+fig2 = figure(2);
+set(fig2,'Position',[0 400 750 600])
 hold on
         plot_ring;
          %% Plot the robot at the center of the ring
@@ -44,6 +45,51 @@ hold on
             'Enemy 1','Enemy 2', 'Enemy 3', 'Team 1', 'Direction 1')
     xlabel('x  (mm)')
     ylabel('y  (mm)')
+    
+    fig3 = figure(3);
+    set(fig3,'Position',[770 400 500 600])
+    text_x = 50;
+        text_y = 500;
+        y_space = 40;
+        h.var1 = uicontrol('Style', 'text', 'String', 'Status GO_TO_GOAL','Fontsize',18,...
+            'Position', [text_x text_y 180 20],'BackgroundColor',userdata.defaultBackground);
+        h.var2 = uicontrol('Style', 'text', 'String', 'Dir x to GOAL','Fontsize',18,...
+            'Position', [text_x text_y-y_space 180 20],'BackgroundColor',userdata.defaultBackground);
+        h.var3 = uicontrol('Style', 'text', 'String', 'Dir y to GOAL','Fontsize',18,...
+            'Position', [text_x text_y-2*y_space 180 20],'BackgroundColor',userdata.defaultBackground);
+        h.var4 = uicontrol('Style', 'text', 'String', 'Angle to GOAL','Fontsize',18,...
+            'Position', [text_x text_y-3*y_space 180 20],'BackgroundColor',userdata.defaultBackground);
+        h.var5 = uicontrol('Style', 'text', 'String', 'Distance to GOAL','Fontsize',18,...
+            'Position', [text_x text_y-4*y_space 180 20],'BackgroundColor',userdata.defaultBackground);
+        h.var6 = uicontrol('Style', 'text', 'String', '-','Fontsize',18,...
+            'Position', [text_x text_y-5*y_space 180 20],'BackgroundColor',userdata.defaultBackground);
+        h.var7 = uicontrol('Style', 'text', 'String', '-','Fontsize',18,...
+            'Position', [text_x text_y-6*y_space 180 20],'BackgroundColor',userdata.defaultBackground);
+        h.var8 = uicontrol('Style', 'text', 'String', '-','Fontsize',18,...
+            'Position', [text_x text_y-7*y_space 180 20],'BackgroundColor',userdata.defaultBackground);
+        
+        text_x_value = 200;
+        userdata.h.var1_value = uicontrol('Style', 'text', 'String', 'NaN', 'Fontsize',18,...
+           'Position', [text_x+text_x_value text_y 80 20], 'BackgroundColor',userdata.defaultBackground);
+        userdata.h.var2_value = uicontrol('Style', 'text', 'String', 'NaN', 'Fontsize',18,...
+           'Position', [text_x+text_x_value text_y-y_space 80 20], 'BackgroundColor',userdata.defaultBackground);
+        userdata.h.var3_value = uicontrol('Style', 'text', 'String', 'NaN', 'Fontsize',18,...
+           'Position', [text_x+text_x_value text_y-2*y_space 80 20], 'BackgroundColor',userdata.defaultBackground);
+        userdata.h.var4_value = uicontrol('Style', 'text', 'String', 'NaN', 'Fontsize',18,...
+           'Position', [text_x+text_x_value text_y-3*y_space 80 20], 'BackgroundColor',userdata.defaultBackground);
+        userdata.h.var5_value = uicontrol('Style', 'text', 'String', 'NaN', 'Fontsize',18,...
+           'Position', [text_x+text_x_value text_y-4*y_space 80 20], 'BackgroundColor',userdata.defaultBackground);
+        userdata.h.var6_value = uicontrol('Style', 'text', 'String', 'NaN', 'Fontsize',18,...
+           'Position', [text_x+text_x_value text_y-5*y_space 80 20], 'BackgroundColor',userdata.defaultBackground);
+        userdata.h.var7_value = uicontrol('Style', 'text', 'String', 'NaN', 'Fontsize',18,...
+           'Position', [text_x+text_x_value text_y-6*y_space 80 20], 'BackgroundColor',userdata.defaultBackground);
+        userdata.h.var8_value = uicontrol('Style', 'text', 'String', 'NaN', 'Fontsize',18,...
+           'Position', [text_x+text_x_value text_y-7*y_space 80 20], 'BackgroundColor',userdata.defaultBackground);
+       
+    
+    
+    
+    
         % Infinite loop to plot the data
         i=1;
         userdata.flag_plot_sensors = 1;
@@ -115,6 +161,8 @@ hold on
                 
                 drawnow;
                 i=i+1;
+                
+                debugging();
             else
                 % Send M2 the instruction to send enemies data
                 fwrite(userdata.handle, 6);
