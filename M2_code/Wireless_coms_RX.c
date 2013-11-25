@@ -76,7 +76,7 @@ int main(void)
 		//Receiving commands
 		if (flag_data == 1)
 		{
-            received_data = buffer_rec[0]
+            int received_data = buffer_rec[0];
             
             if (received_data == 2) {
                 robot_x = (int)buffer_rec[1];
@@ -93,12 +93,12 @@ int main(void)
                 
             }
             else {
-            
-            
-            int i;
-            for (i=0; i<PACKET_LENGTH; i++) {
-                position[i] = (int)buffer_rec[i];
-            }
+                
+                
+                int i;
+                for (i=0; i<PACKET_LENGTH; i++) {
+                    position[i] = (int)buffer_rec[i];
+                }
             }
             
 			//Reset the flag
