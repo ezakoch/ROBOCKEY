@@ -88,7 +88,7 @@ h.button_test = uicontrol('Style', 'pushbutton', 'String', 'TEST',...
     function connect(src,evnt)
         % Find serial ports and connect to M2
         delete(instrfind);
-        port = '/dev/tty.usbmodem1421';
+        port = '/dev/tty.usbmodem411';
         userdata.handle = serial(port,'Baudrate', 9600);
         fopen(userdata.handle);
         
@@ -109,6 +109,7 @@ h.button_test = uicontrol('Style', 'pushbutton', 'String', 'TEST',...
         % Disable plotting, close all figures and clear the workspace
         userdata.flag_plot_imu = 0;
         userdata.flag_plot_angle = 0;
+        fclose(userdata.handle);
         close all
         clear all
     end

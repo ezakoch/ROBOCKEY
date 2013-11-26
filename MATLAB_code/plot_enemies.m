@@ -162,7 +162,7 @@ hold on
                 drawnow;
                 i=i+1;
                 
-                debugging();
+                %debugging();
             else
                 % Send M2 the instruction to send enemies data
                 fwrite(userdata.handle, 6);
