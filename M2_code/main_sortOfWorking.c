@@ -63,24 +63,29 @@ int main(void)
     int dir_angle = 0;
     int dist_goal = 0;
     
-    unsigned char state_debug [PACKET_LENGTH] = {0}; //State(1): [0] identification, [1] current state
+    //State(1): [0] identification, [1] current state
+    unsigned char state_debug [PACKET_LENGTH] = {0};
     
-    signed char position [PACKET_LENGTH] = {0}; // Position(2): [0] identification,[1] x int,[2] x decimal,[3] y int,[4] y decimal,
-    //[5] theta 1st int,[6] theta 2nd int,[7] theta decimal
+    // Position(2): [0] identification,[1] x int,[2] x decimal,[3] y int,[4] y decimal, [5] theta 1st int,[6] theta 2nd int,[7] theta decimal
+    signed char position [PACKET_LENGTH] = {0};
+
+    //Analog values for each phototransistor(3): [0] identification,[0+i+1] 1st digit analog, [1+i+1] 1st digit analog (i=1...8)
+    unsigned char LED_analog [PACKET_LENGTH] = {0};
     
-    unsigned char LED_analog [PACKET_LENGTH] = {0}; //Analog values for each phototransistor(3): [0] identification,[0+i+1] 1st digit analog,
-    //[1+i+1] 1st digit analog (i=1...8)
+    //Pixel position of stars(4): [0] identification, [0+i+1] 1st x,  [0+i+2] 2nd x, [0+i+3] 1st y, [0+i+4] 2nd y (i=1...4)
+    unsigned char stars_wii [PACKET_LENGTH] = {0};
+
+    //Counts how many times the solenoid has been shooted(5): [0] identification, [1] current count
+    unsigned char counter_solenoid [PACKET_LENGTH] = {0};
     
-    unsigned char stars_wii [PACKET_LENGTH] = {0}; //Pixel position of stars(4): [0] identification, [0+i+1] 1st x,  [0+i+2] 2nd x, [0+i+3] 1st y,
-    //[0+i+4] 2nd y (i=1...4)
+    //Battery indicator in % (6): [0] identification, [1] current value
+    unsigned char battery_ind [PACKET_LENGTH] =  {0};
     
-    unsigned char counter_solenoid [PACKET_LENGTH] = {0}; //Counts how many times the solenoid has been shooted(5): [0] identification, [1] current count
+    //General vars(7): [0] identification,[1] current value (i=1,2...)
+    signed char general_vars [PACKET_LENGTH] = {0};
     
-    unsigned char battery_ind [PACKET_LENGTH] =  {0}; //Battery indicator in % (6): [0] identification, [1] current value
-    
-    signed char general_vars [PACKET_LENGTH] = {0}; //General vars(7): [0] identification,[1] current value (i=1,2...)
-    
-    unsigned int blobs_wii[SIZE_ARRAY_BLOBS]; //Variable for the wii cam blobs
+    //Variable for the wii cam blobs
+    unsigned int blobs_wii[SIZE_ARRAY_BLOBS];
     
     int x_robot = 0, y_robot = 0, theta_robot = 0;
     int LED_values_raw [NUM_LEDS] = {0};
@@ -134,12 +139,11 @@ int main(void)
     //Main loop
     while (1)
     {
+        // Motor testing
         if (check(PINB,2)) {
             turn_left();
-            //m_red(ON);
         }
         else{
-            //m_red(OFF);
             turn_right();
         }
         
@@ -188,16 +192,9 @@ int main(void)
         if (flag_timer == 1)
         {
             //State
-            
             state_debug[0] = 1;
             state_debug[1] = state;
             m_rf_send(SEN_ADDRESS,state_debug,PACKET_LENGTH);
-
-            
-            
-            //x_robot = 50;
-            //y_robot = 40;
-            //theta_robot=45;
 
 
             //Position
@@ -245,13 +242,12 @@ int main(void)
             
             //Reset flag
             flag_timer = 0;
-            //m_red(OFF);
         }
         
 
         
         //STATE COMMANDS
-        /*switch (state)
+        switch (state)
         {
             case INITIALIZATION:
                 if (check(PINB,2))
@@ -335,7 +331,7 @@ int main(void)
                     //m_green(TOGGLE);
                     m_wait(250);
                 }
-        }*/
+        }
         
         
     }
