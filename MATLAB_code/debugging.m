@@ -15,7 +15,7 @@ end
 % Grab data from M2 until line terminator
 data = fgetl(userdata.handle);
 userdata.debugging.status_gtg = str2double(data);
-temp = str2double(data)
+temp = str2double(data);
 set(userdata.h.var1_value, 'String',userdata.debugging.status_gtg)
 
 data = fgetl(userdata.handle);

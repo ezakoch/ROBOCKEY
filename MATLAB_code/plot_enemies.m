@@ -162,7 +162,10 @@ hold on
                 drawnow;
                 i=i+1;
                 
-                %debugging();
+                if (userdata.handle.BytesAvailable)
+                fread(userdata.handle, userdata.handle.BytesAvailable);
+                end
+                debugging();
             else
                 % Send M2 the instruction to send enemies data
                 fwrite(userdata.handle, 6);

@@ -40,6 +40,7 @@ void init_M2(void);
 long value_received;
 
 
+
 // --------------------------------------------------------------
 //  MAIN
 // --------------------------------------------------------------
@@ -61,15 +62,15 @@ int main(void)
             if (received_data == 2) {
                 robot_x = (int)buffer_rec[1];
                 robot_y = (int)buffer_rec[2];
-                robot_yaw = (int)buffer_rec[3]*256 + (int)buffer_rec[4];
+                robot_yaw = (int)buffer_rec[3]*128 + (int)buffer_rec[4];
                 
             }
             else if (received_data == 7) {
-                status_go_to_goal = 1;//(int)buffer_rec[1];
-                dir_x = (int)buffer_rec[2]*256 + (int)buffer_rec[3];
-                dir_y = (int)buffer_rec[4]*256 + (int)buffer_rec[5];
-                dir_angle = (int)buffer_rec[6]*256 + (int)buffer_rec[7];
-                dist_goal = (int)buffer_rec[8]*256 + (int)buffer_rec[9];
+                status_go_to_goal = (int)buffer_rec[1];
+                dir_x = (int)buffer_rec[2]*128 + (int)buffer_rec[3];
+                dir_y = (int)buffer_rec[4]*128 + (int)buffer_rec[5];
+                dir_angle = (int)buffer_rec[6]*128 + (int)buffer_rec[7];
+                dist_goal = (int)buffer_rec[8]*128 + (int)buffer_rec[9];
                 
             }
             else {
@@ -185,6 +186,7 @@ void send_to_MATLAB(){
                 else if (flag == 7){                 // If MATLAB needs the General Variables
                     m_usb_rx_flush();           // Flush the RX buffer
                     
+                    
                     m_usb_tx_int(status_go_to_goal);      // Status of the state GO_TO_GOAL
                     m_usb_tx_string("\n");
                     m_usb_tx_int(dir_x);      // Direction x towards goal
@@ -195,6 +197,8 @@ void send_to_MATLAB(){
                     m_usb_tx_string("\n");
                     m_usb_tx_int(dist_goal);      // Distance to goal
                     m_usb_tx_string("\n");
+                     
+
                     m_usb_tx_push();            // Send the TX buffer to MATLAB
                     
                     flag = 0;                   // Reset the flag that we haven't received anything
