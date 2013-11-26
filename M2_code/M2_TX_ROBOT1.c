@@ -14,7 +14,7 @@
 #define N_CLOCK 0
 #define NUM_LEDS 8
 #define SIZE_ARRAY_BLOBS 12
-#define PACKET_LENGTH 17
+#define PACKET_LENGTH 14
 #define SEN_ADDRESS 0x60
 #define REC_ADDRESS_AUX 0X49
 #define CHANNEL 1
@@ -39,6 +39,7 @@ void turn_right(void);
 void turn_left(void);
 void go_fwd(void);
 
+
 //Variable used to check timer
 volatile int flag_timer = 0;
 
@@ -58,11 +59,14 @@ int main(void)
     int goal_pos_x = 0, goal_pos_y = 0;
     
     //Variables debugging
-    int dir_x = 0;
-    int dir_y = 0;
-    int dir_angle = 0;
-    int dist_goal = 0;
+    float dir_x = 0;
+    float dir_y = 0;
+    float dir_angle = 0;
+    float dist_goal = 0;
     
+    //
+    unsigned char output_buffer [PACKET_LENGTH] = {0};
+
     //State(1): [0] identification, [1] current state
     unsigned char state_debug [PACKET_LENGTH] = {0};
     
@@ -197,9 +201,33 @@ int main(void)
             //State
             state_debug[0] = 1;
             state_debug[1] = state;
-            m_rf_send(SEN_ADDRESS,state_debug,PACKET_LENGTH);
+            output_buffer[0]=state;
+            output_buffer[1]=x_robot;
+            output_buffer[2]=y_robot;
+            aux_conversion = div(theta_robot,128);
+
+            //Put packets together for sending
+            output_buffer[3] = (signed char)aux_conversion.quot;
+            output_buffer[4] = (signed char)aux_conversion.rem;
+
+            //Debugging
+            output_buffer[5] = (signed char)status_go_to_goal;
+            aux_conversion = div((int)dir_x,128);
+            output_buffer[6] = (signed char)aux_conversion.quot;
+            output_buffer[7] = (signed char)aux_conversion.rem;
+            aux_conversion = div((int)dir_y,128);
+            output_buffer[8] = (signed char)aux_conversion.quot;
+            output_buffer[9] = (signed char)aux_conversion.rem;
+            aux_conversion = div((int)dir_angle,128);
+            output_buffer[10] = (signed char)aux_conversion.quot;
+            output_buffer[11] = (signed char)aux_conversion.rem;
+            aux_conversion = div((int)dist_goal,128);
+            output_buffer[12] = (signed char)aux_conversion.quot;
+            output_buffer[13] = (signed char)aux_conversion.rem;
+
+            m_rf_send(SEN_ADDRESS,output_buffer,PACKET_LENGTH);
             
-            
+            /*
             //Position
             position[0] = 2;
             position[1] = (signed char) x_robot;
@@ -207,8 +235,8 @@ int main(void)
             aux_conversion = div(theta_robot,128);
             position[3] = (signed char)aux_conversion.quot;
             position[4] = (signed char)aux_conversion.rem;
-            
-            m_rf_send(SEN_ADDRESS,position,PACKET_LENGTH);
+            */
+            //m_rf_send(SEN_ADDRESS,position,PACKET_LENGTH);
             
             
             /*//Analog values
@@ -223,7 +251,7 @@ int main(void)
              m_rf_send(SEN_ADDRESS,LED_analog,PACKET_LENGTH);*/
             
             
-            
+            /*
             //General variables
             general_vars [0] = 7;
             general_vars [1] = (signed char)status_go_to_goal;
@@ -241,7 +269,7 @@ int main(void)
             general_vars[9] = (signed char)aux_conversion.rem;
             
             m_rf_send(SEN_ADDRESS,general_vars,PACKET_LENGTH);
-            
+            */
             
             //Reset flag
             flag_timer = 0;
@@ -263,15 +291,18 @@ int main(void)
                     goal_pos_x = GOAL_B_POS_X;
                     goal_pos_y = GOAL_B_POS_Y;
                 }
+                status_go_to_goal = 0;
                 state = GO_TO_GOAL;
                 break;
                 
             case GO_TO_GOAL:
                 ;
+                /*
                 int dir_x = 0;
                 int dir_y = 0;
                 int dir_angle = 0;
                 int dist_goal = 0;
+                */
                 if (status_go_to_goal == 0)
                 {
                     dir_x = goal_pos_x-x_robot;
@@ -281,12 +312,12 @@ int main(void)
                     status_go_to_goal = 1;
                 }else if (status_go_to_goal == 1)
                 {
-                    if (theta_robot >= dir_angle-THRESHOLD_ANGLE_GOAL && theta_robot <= dir_angle+THRESHOLD_ANGLE_GOAL)
+                    if ((theta_robot >= dir_angle-THRESHOLD_ANGLE_GOAL) && (theta_robot <= dir_angle+THRESHOLD_ANGLE_GOAL)
                         status_go_to_goal = 2;
                     else
                     {
-                        int angle_dir_aux = dir_angle-180;
-                        int add_360 = 0;
+                        float angle_dir_aux = dir_angle-180;
+                        float add_360 = 0;
                         if (angle_dir_aux < -180)
                         {
                             angle_dir_aux += 360;
