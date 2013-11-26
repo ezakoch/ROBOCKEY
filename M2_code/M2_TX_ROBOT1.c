@@ -68,13 +68,13 @@ int main(void)
     
     // Position(2): [0] identification,[1] x int,[2] x decimal,[3] y int,[4] y decimal, [5] theta 1st int,[6] theta 2nd int,[7] theta decimal
     signed char position [PACKET_LENGTH] = {0};
-
+    
     //Analog values for each phototransistor(3): [0] identification,[0+i+1] 1st digit analog, [1+i+1] 1st digit analog (i=1...8)
     unsigned char LED_analog [PACKET_LENGTH] = {0};
     
     //Pixel position of stars(4): [0] identification, [0+i+1] 1st x,  [0+i+2] 2nd x, [0+i+3] 1st y, [0+i+4] 2nd y (i=1...4)
     unsigned char stars_wii [PACKET_LENGTH] = {0};
-
+    
     //Counts how many times the solenoid has been shooted(5): [0] identification, [1] current count
     unsigned char counter_solenoid [PACKET_LENGTH] = {0};
     
@@ -98,6 +98,7 @@ int main(void)
     m_green(OFF);
     m_red(OFF);
     
+    m_red(ON);
     //Initialize bus
     m_bus_init();
     
@@ -123,9 +124,8 @@ int main(void)
         aux = m_wii_open();
     }
     
-    m_green(ON);
     m_wait(1000);
-    m_green(OFF);
+    m_red(OFF);
     
     //Open the channel
     m_rf_open(CHANNEL,REC_ADDRESS_AUX,PACKET_LENGTH);
@@ -149,7 +149,9 @@ int main(void)
         
         //LOCALIZATION CODE
         //Get the blobs
+        cli();
         wii_OK = m_wii_read(blobs_wii);
+        sei();
         
         //If data received correctly
         if (wii_OK)
@@ -161,31 +163,32 @@ int main(void)
             
             if (!localize_OK)
             {
-                m_red(TOGGLE);
-                x_robot = -110;
-                y_robot = 70;
-                theta_robot = 765;
+                m_red(ON);
+                //x_robot = -110;
+                //y_robot = 70;
+                //theta_robot = 765;
                 
             }else
-                m_green(TOGGLE);
-             
+                m_red(OFF);
+            
+            
         }
         
         /*
-        //ANALOG CODE
-        int i;
-        for (i=0;i<NUM_LEDS;i++)
-        {
-            get_analog_val(i);
-            
-            //Wait until flag is on
-            while(!check(ADCSRA,ADIF));
-            LED_values_raw[i] = ADC;
-            
-            //After doing the conversion reset flag
-            set(ADCSRA,ADIF);
-        }
-        */
+         //ANALOG CODE
+         int i;
+         for (i=0;i<NUM_LEDS;i++)
+         {
+         get_analog_val(i);
+         
+         //Wait until flag is on
+         while(!check(ADCSRA,ADIF));
+         LED_values_raw[i] = ADC;
+         
+         //After doing the conversion reset flag
+         set(ADCSRA,ADIF);
+         }
+         */
         
         
         //SEND COMMANDS
@@ -195,8 +198,8 @@ int main(void)
             state_debug[0] = 1;
             state_debug[1] = state;
             m_rf_send(SEN_ADDRESS,state_debug,PACKET_LENGTH);
-
-
+            
+            
             //Position
             position[0] = 2;
             position[1] = (signed char) x_robot;
@@ -209,15 +212,15 @@ int main(void)
             
             
             /*//Analog values
-            LED_analog[0] = 3;
-            int i;
-            for (i=0;i<NUM_LEDS;i++)
-            {
-                aux_conversion = div(LED_values_raw[i],256);
-                LED_analog[2*i+1] = aux_conversion.quot;
-                LED_analog[2*i+2] = aux_conversion.rem;
-            }
-            m_rf_send(SEN_ADDRESS,LED_analog,PACKET_LENGTH);*/
+             LED_analog[0] = 3;
+             int i;
+             for (i=0;i<NUM_LEDS;i++)
+             {
+             aux_conversion = div(LED_values_raw[i],256);
+             LED_analog[2*i+1] = aux_conversion.quot;
+             LED_analog[2*i+2] = aux_conversion.rem;
+             }
+             m_rf_send(SEN_ADDRESS,LED_analog,PACKET_LENGTH);*/
             
             
             
@@ -242,14 +245,15 @@ int main(void)
             
             //Reset flag
             flag_timer = 0;
+            m_green(OFF);
         }
         
-
+        
         
         //STATE COMMANDS
         switch (state)
         {
-            case INITIALIZATION:
+            case INITIAL_STATE:
                 if (check(PINB,2))
                 {
                     goal_pos_x = GOAL_A_POS_X;
@@ -277,7 +281,6 @@ int main(void)
                     status_go_to_goal = 1;
                 }else if (status_go_to_goal == 1)
                 {
-                    m_red(ON);
                     if (theta_robot >= dir_angle-THRESHOLD_ANGLE_GOAL && theta_robot <= dir_angle+THRESHOLD_ANGLE_GOAL)
                         status_go_to_goal = 2;
                     else
@@ -290,16 +293,16 @@ int main(void)
                             add_360 = 1;
                         }
                         
-                         
-                         if (add_360 == 0 && (angle_dir_aux <= theta_robot && theta_robot <= dir_angle))
-                         turn_left();
-                         else if (add_360 == 0 && (angle_dir_aux > theta_robot && theta_robot > dir_angle))
-                         turn_right();
-                         else if (add_360 == 1 && (angle_dir_aux <= theta_robot && theta_robot <= dir_angle))
-                         turn_right();
-                         else if (add_360 == 1 && (angle_dir_aux > theta_robot && theta_robot > dir_angle))
-                         turn_left();
-                         
+                        
+                        if (add_360 == 0 && (angle_dir_aux <= theta_robot && theta_robot <= dir_angle))
+                            turn_left();
+                        else if (add_360 == 0 && (angle_dir_aux > theta_robot && theta_robot > dir_angle))
+                            turn_right();
+                        else if (add_360 == 1 && (angle_dir_aux <= theta_robot && theta_robot <= dir_angle))
+                            turn_right();
+                        else if (add_360 == 1 && (angle_dir_aux > theta_robot && theta_robot > dir_angle))
+                            turn_left();
+                        
                     }
                 }else if (status_go_to_goal == 2)
                 {
@@ -313,7 +316,7 @@ int main(void)
                             status_go_to_goal = 0;
                         else
                             go_fwd();
-                         
+                        
                     }
                 }
                 else if (status_go_to_goal == 3)
@@ -576,6 +579,6 @@ void go_fwd(void)
 
 ISR(TIMER4_OVF_vect)
 {
-    //m_red(ON);
+    m_green(ON);
     flag_timer = 1;
 }

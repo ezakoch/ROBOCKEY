@@ -7,10 +7,8 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		DF2DDAE31844582F00F4D207 /* main_sortOfWorking.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = main_sortOfWorking.c; path = ../main_sortOfWorking.c; sourceTree = "<group>"; };
-		DF3BDF3E18439BF900CF2B60 /* Wireless_coms_RX.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Wireless_coms_RX.c; path = ../Wireless_coms_RX.c; sourceTree = "<group>"; };
-		DF3BDF3F18439BF900CF2B60 /* Wireless_coms_TX2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Wireless_coms_TX2.c; path = ../Wireless_coms_TX2.c; sourceTree = "<group>"; };
-		DF3BDF401844022900CF2B60 /* TX3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = TX3.c; sourceTree = "<group>"; };
+		DF2DDAE41844FD1800F4D207 /* M2_RX.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = M2_RX.c; path = ../M2_RX.c; sourceTree = "<group>"; };
+		DF2DDAE51844FD3B00F4D207 /* M2_TX_ROBOT1.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = M2_TX_ROBOT1.c; path = ../M2_TX_ROBOT1.c; sourceTree = "<group>"; };
 		DF77FB1C184015F000DF4849 /* Localize.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Localize.c; path = ../Functions/Localize.c; sourceTree = "<group>"; };
 		DFC40C33183B2D1400348150 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = main.c; path = ../main.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -19,11 +17,9 @@
 		DF17E3F217F4A97400131969 = {
 			isa = PBXGroup;
 			children = (
-				DF2DDAE31844582F00F4D207 /* main_sortOfWorking.c */,
+				DF2DDAE51844FD3B00F4D207 /* M2_TX_ROBOT1.c */,
+				DF2DDAE41844FD1800F4D207 /* M2_RX.c */,
 				DF77FB1C184015F000DF4849 /* Localize.c */,
-				DF3BDF3E18439BF900CF2B60 /* Wireless_coms_RX.c */,
-				DF3BDF3F18439BF900CF2B60 /* Wireless_coms_TX2.c */,
-				DF3BDF401844022900CF2B60 /* TX3.c */,
 				DFC40C33183B2D1400348150 /* main.c */,
 			);
 			sourceTree = "<group>";
