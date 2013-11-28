@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 #define N_CLOCK 0
-#define PACKET_LENGTH 17
+#define PACKET_LENGTH 19
 #define REC_ADDRESS 0X60
 #define CHANNEL 1
 
@@ -32,10 +32,13 @@ int position[2] = {0,0};
 
 int robot_x, robot_y, robot_yaw;
 int status_go_to_goal, dir_x, dir_y, dir_angle, dist_goal;
+int state;
 
 
 void send_to_MATLAB(void);
 void init_M2(void);
+
+int camera_x, camera_y, commands_var;
 
 long value_received;
 
@@ -57,29 +60,44 @@ int main(void)
 		//Receiving commands
 		if (flag_data == 1)
 		{
-            int received_data = buffer_rec[0];
             
-            if (received_data == 2) {
-                robot_x = (int)buffer_rec[1];
-                robot_y = (int)buffer_rec[2];
-                robot_yaw = (int)buffer_rec[3]*128 + (int)buffer_rec[4];
-                
-            }
-            else if (received_data == 7) {
-                status_go_to_goal = (int)buffer_rec[1];
-                dir_x = (int)buffer_rec[2]*128 + (int)buffer_rec[3];
-                dir_y = (int)buffer_rec[4]*128 + (int)buffer_rec[5];
-                dir_angle = (int)buffer_rec[6]*128 + (int)buffer_rec[7];
-                dist_goal = (int)buffer_rec[8]*128 + (int)buffer_rec[9];
-                
-            }
-            else {
-                
-            }
+            // int received_data = buffer_rec[0];
+            
+            /*
+             if (received_data == 1) {
+             state = (int)buffer_rec[1];
+             }
+             */
+            
+            //if (received_data == 2) {
+            
+            int our_state = (int)buffer_rec[0];
+            robot_x = (int)buffer_rec[1];
+            robot_y = (int)buffer_rec[2];
+            robot_yaw = (int)buffer_rec[3]*128 + (int)buffer_rec[4];
+            
+            //}
+            //else if (received_data == 7) {
+            // m_green(ON);
+            status_go_to_goal = (int)buffer_rec[5];
+            dir_x = (int)buffer_rec[6]*128 + (int)buffer_rec[7];
+            dir_y = (int)buffer_rec[8]*128 + (int)buffer_rec[9];
+            dir_angle = (int)buffer_rec[10]*128 + (int)buffer_rec[11];
+            dist_goal = (int)buffer_rec[12]*128 + (int)buffer_rec[13];
+            
+            camera_x = (int)buffer_rec[14]*128 + (int)buffer_rec[15];
+            camera_y = (int)buffer_rec[16]*128 + (int)buffer_rec[17];
+            
+            commands_var = (int)buffer_rec[18];
+            
+            //}
+            //else {
+            
+            //}
             
 			//Reset the flag
 			flag_data = 0;
-            m_green(OFF);
+            //m_green(OFF);
 			
 		}
         
@@ -97,7 +115,7 @@ ISR(INT2_vect)
 	//Read
 	m_rf_read(buffer_rec,PACKET_LENGTH);
 	flag_data = 1;
-	m_green(ON); // Indicator receiving from RF
+	//m_green(ON); // Indicator receiving from RF
 }
 // --------------------------------------------------------------
 
@@ -148,27 +166,31 @@ void send_to_MATLAB(){
         int data_to_read = m_usb_rx_available();
         if(data_to_read)
         {
+            
             if (flag == 0) {                    // If we haven't received anything before
                 while(!m_usb_rx_available());   // Wait to receive instructions
+                
+                
                 flag = m_usb_rx_char();         // Get the first byte as what to do next
                 
-				
-                if (flag == 5){                 // If MATLAB needs the Position and Orientation data send them ASAP
-                    m_usb_rx_flush();           // Flush the RX buffer
-                    
-                    int i;
-                    for (i = 0; i < PACKET_LENGTH; i++) {
-                        //m_usb_tx_char(buffer_rec[i]);      // x1 , y1 , x2 , y2 , x3 , y3
-                        m_usb_tx_int(position[i]);      // x1 , y1 , x2 , y2 , x3 , y3
-                        m_usb_tx_string("\n");
-                    }
-                    m_usb_tx_push();            // Send the TX buffer to MATLAB
-                    
-                    flag = 0;                   // Reset the flag that we haven't received anything
-                }
-				
                 
-                else if (flag == 6){                 // If MATLAB needs the Position and Orientation data send them ASAP
+				/*
+                 if (flag == 5){                 // If MATLAB needs the Position and Orientation data send them ASAP
+                 m_usb_rx_flush();           // Flush the RX buffer
+                 
+                 int i;
+                 for (i = 0; i < PACKET_LENGTH; i++) {
+                 //m_usb_tx_char(buffer_rec[i]);      // x1 , y1 , x2 , y2 , x3 , y3
+                 m_usb_tx_int(position[i]);      // x1 , y1 , x2 , y2 , x3 , y3
+                 m_usb_tx_string("\n");
+                 }
+                 m_usb_tx_push();            // Send the TX buffer to MATLAB
+                 
+                 flag = 0;                   // Reset the flag that we haven't received anything
+                 }
+                 */
+                
+                if (flag == 6){                 // If MATLAB needs the Position and Orientation data send them ASAP
                     m_usb_rx_flush();           // Flush the RX buffer
                     
                     m_usb_tx_int(robot_x);      // x1
@@ -177,14 +199,6 @@ void send_to_MATLAB(){
                     m_usb_tx_string("\n");
                     m_usb_tx_int(robot_yaw);      // x1
                     m_usb_tx_string("\n");
-                    m_usb_tx_push();            // Send the TX buffer to MATLAB
-                    
-                    flag = 0;                   // Reset the flag that we haven't received anything
-                    
-                }
-				
-                else if (flag == 7){                 // If MATLAB needs the General Variables
-                    m_usb_rx_flush();           // Flush the RX buffer
                     
                     
                     m_usb_tx_int(status_go_to_goal);      // Status of the state GO_TO_GOAL
@@ -198,12 +212,44 @@ void send_to_MATLAB(){
                     m_usb_tx_int(dist_goal);      // Distance to goal
                     m_usb_tx_string("\n");
                     
+                    m_usb_tx_int(camera_x);      // x1
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(camera_y);      // x1
+                    m_usb_tx_string("\n");
+                    
+                    m_usb_tx_int(commands_var);      // x1
+                    m_usb_tx_string("\n");
                     
                     m_usb_tx_push();            // Send the TX buffer to MATLAB
                     
                     flag = 0;                   // Reset the flag that we haven't received anything
                     
                 }
+				/*
+                 else if (flag == 7){                 // If MATLAB needs the General Variables
+                 m_usb_rx_flush();           // Flush the RX buffer
+                 
+                 
+                 
+                 
+                 m_usb_tx_int(status_go_to_goal);      // Status of the state GO_TO_GOAL
+                 m_usb_tx_string("\n");
+                 m_usb_tx_int(temp);      // Direction x towards goal
+                 m_usb_tx_string("\n");
+                 m_usb_tx_int(dir_y);      // Direciton y towards goal
+                 m_usb_tx_string("\n");
+                 m_usb_tx_int(dir_angle);      // Direction to goal
+                 m_usb_tx_string("\n");
+                 m_usb_tx_int(dist_goal);      // Distance to goal
+                 m_usb_tx_string("\n");
+                 
+                 
+                 m_usb_tx_push();            // Send the TX buffer to MATLAB
+                 
+                 flag = 0;                   // Reset the flag that we haven't received anything
+                 
+                 }
+                 */
                 
             }
             
