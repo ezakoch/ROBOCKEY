@@ -63,10 +63,14 @@ hold on
             'Position', [text_x text_y-4*y_space 180 20],'BackgroundColor',userdata.defaultBackground);
         h.var6 = uicontrol('Style', 'text', 'String', '-','Fontsize',18,...
             'Position', [text_x text_y-5*y_space 180 20],'BackgroundColor',userdata.defaultBackground);
-        h.var7 = uicontrol('Style', 'text', 'String', '-','Fontsize',18,...
+        h.var7 = uicontrol('Style', 'text', 'String', 'Orientation','Fontsize',18,...
             'Position', [text_x text_y-6*y_space 180 20],'BackgroundColor',userdata.defaultBackground);
-        h.var8 = uicontrol('Style', 'text', 'String', '-','Fontsize',18,...
+        h.var8 = uicontrol('Style', 'text', 'String', 'Commands Var','Fontsize',18,...
             'Position', [text_x text_y-7*y_space 180 20],'BackgroundColor',userdata.defaultBackground);
+        h.var9 = uicontrol('Style', 'text', 'String', '-','Fontsize',18,...
+            'Position', [text_x text_y-8*y_space 180 20],'BackgroundColor',userdata.defaultBackground);
+        
+        
         
         text_x_value = 200;
         userdata.h.var1_value = uicontrol('Style', 'text', 'String', 'NaN', 'Fontsize',18,...
@@ -84,6 +88,8 @@ hold on
         userdata.h.var7_value = uicontrol('Style', 'text', 'String', 'NaN', 'Fontsize',18,...
            'Position', [text_x+text_x_value text_y-6*y_space 80 20], 'BackgroundColor',userdata.defaultBackground);
         userdata.h.var8_value = uicontrol('Style', 'text', 'String', 'NaN', 'Fontsize',18,...
+           'Position', [text_x+text_x_value text_y-7*y_space 80 20], 'BackgroundColor',userdata.defaultBackground);
+        userdata.h.var9_value = uicontrol('Style', 'text', 'String', 'NaN', 'Fontsize',18,...
            'Position', [text_x+text_x_value text_y-7*y_space 80 20], 'BackgroundColor',userdata.defaultBackground);
        
     
@@ -148,24 +154,68 @@ hold on
                     
                     data = fgetl(userdata.handle);
                     userdata.team.robot1.yaw(i) = str2double(data);
+                    set(userdata.h.var7_value, 'String',userdata.team.robot1.yaw(i))
                     
-                    set(userdata.team.robot1.plot,...
+                    data = fgetl(userdata.handle);
+userdata.debugging.status_gtg = str2double(data);
+set(userdata.h.var1_value, 'String',userdata.debugging.status_gtg)
+
+data = fgetl(userdata.handle);
+userdata.debugging.dirx = str2double(data);
+% temp = str2double(data)
+set(userdata.h.var2_value, 'String',userdata.debugging.dirx)
+
+data = fgetl(userdata.handle);
+userdata.debugging.diry = str2double(data);
+set(userdata.h.var3_value, 'String',userdata.debugging.diry)
+
+data = fgetl(userdata.handle);
+userdata.debugging.angle_to_goal = str2double(data);
+set(userdata.h.var4_value, 'String',userdata.debugging.angle_to_goal)
+
+data = fgetl(userdata.handle);
+userdata.debugging.dist_to_goal = str2double(data);
+set(userdata.h.var5_value, 'String',userdata.debugging.dist_to_goal)
+                    
+     
+
+data = fgetl(userdata.handle);
+userdata.debugging.camera_x(i) = str2double(data);
+% set(userdata.h.var5_value, 'String',userdata.debugging.camera_x)
+
+
+data = fgetl(userdata.handle);
+userdata.debugging.camera_y(i) = str2double(data);
+% set(userdata.h.var5_value, 'String',userdata.debugging.camera_y)
+%                 mean_camera_x = mean(userdata.debugging.camera_x)
+%                 mean_camera_y = mean(userdata.debugging.camera_y)
+%                 
+%                     
+
+data = fgetl(userdata.handle);
+userdata.debugging.commands_var(i) = str2double(data);
+set(userdata.h.var9_value, 'String',userdata.debugging.commands_var(i))
+
+
+
+set(userdata.team.robot1.plot,...
                     'xdata',userdata.team.robot1.x(i),...
                     'ydata',userdata.team.robot1.y(i))
                 
                     scale = 20;
-                    set(userdata.team.robot1.plot_dir,'xdata',[userdata.team.robot1.x(i) sind(userdata.team.robot1.yaw(i))*scale+userdata.team.robot1.x(i)],...
+                    set(userdata.team.robot1.plot_dir,'xdata',[userdata.team.robot1.x(i) -sind(userdata.team.robot1.yaw(i))*scale+userdata.team.robot1.x(i)],...
                         'ydata', [userdata.team.robot1.y(i) cosd(userdata.team.robot1.yaw(i))*scale+userdata.team.robot1.y(i)]);
 
+                    
                 end
                 
                 drawnow;
                 i=i+1;
                 
-                if (userdata.handle.BytesAvailable)
-                fread(userdata.handle, userdata.handle.BytesAvailable);
-                end
-                debugging();
+%                 if (userdata.handle.BytesAvailable)
+%                 fread(userdata.handle, userdata.handle.BytesAvailable);
+%                 end
+%                 debugging();
             else
                 % Send M2 the instruction to send enemies data
                 fwrite(userdata.handle, 6);
