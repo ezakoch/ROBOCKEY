@@ -4,11 +4,11 @@
 
 ..\..\Functions\Localize.c
 
+..\..\M2_TX_ROBOT1.c
+
 ..\..\m_bus.c
 
 ..\..\m_rf.c
 
 ..\..\m_wii.c
-
-..\..\Wireless_coms_TX2.c
 

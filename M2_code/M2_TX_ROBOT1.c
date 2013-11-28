@@ -14,7 +14,7 @@
 #define N_CLOCK 0
 #define NUM_LEDS 8
 #define SIZE_ARRAY_BLOBS 12
-#define PACKET_LENGTH 14
+#define PACKET_LENGTH 19
 #define SEN_ADDRESS 0x60
 #define REC_ADDRESS_AUX 0X49
 #define CHANNEL 1
@@ -25,7 +25,12 @@
 #define GOAL_B_POS_X 115
 #define GOAL_B_POS_Y 0
 #define THRESHOLD_ANGLE_GOAL 7
-#define THRESHOLD_DIST_GOAL 10
+#define THRESHOLD_DIST_GOAL 15
+#define PWM_SPEED_TURN_LFT 380 //RIGHT NOT TURNING WITH LESS THAN 380
+#define PWM_SPEED_TURN_RGHT 360 
+#define PWM_SPEED_FWD_LFT 387
+#define PWM_SPEED_FWD_RGHT 368
+#define PWM_MAXIMUM 500
 
 //Function prototypes
 void set_timer1(void);
@@ -57,12 +62,14 @@ int main(void)
     unsigned char localize_OK = 0;
     int status_go_to_goal = 0;
     int goal_pos_x = 0, goal_pos_y = 0;
-    
+	    
     //Variables debugging
     float dir_x = 0;
     float dir_y = 0;
     float dir_angle = 0;
     float dist_goal = 0;
+	int cam_X = 0, cam_Y = 0, commands_var = 0;
+	
     
     //
     unsigned char output_buffer [PACKET_LENGTH] = {0};
@@ -135,21 +142,21 @@ int main(void)
     m_rf_open(CHANNEL,REC_ADDRESS_AUX,PACKET_LENGTH);
     
     //Enable interruptions
-    sei();
-    
-    
+    sei();  
     
     
     //Main loop
     while (1)
     {
         // Motor testing
-        if (check(PINB,2)) {
+        /*if (check(PINB,2)) {
             turn_left();
         }
         else{
             turn_right();
-        }
+        }*/
+		
+		//go_fwd();
         
         //LOCALIZATION CODE
         //Get the blobs
@@ -161,7 +168,7 @@ int main(void)
         if (wii_OK)
         {
             //Get the position and orientation of the robot from the constellation
-            localize_OK = localize(blobs_wii[0],blobs_wii[3],blobs_wii[6],blobs_wii[9],blobs_wii[1],blobs_wii[4],blobs_wii[7],blobs_wii[10],&x_robot,&y_robot,&theta_robot);
+            localize_OK = localize(blobs_wii[0],blobs_wii[3],blobs_wii[6],blobs_wii[9],blobs_wii[1],blobs_wii[4],blobs_wii[7],blobs_wii[10],&x_robot,&y_robot,&theta_robot,&cam_X,&cam_Y);
             
             //If we computed data correctly send it if not filter (NEEEEED TO CHANGEEEEEEE!!!!!!!!!!!!!!!)
             
@@ -224,6 +231,13 @@ int main(void)
             aux_conversion = div((int)dist_goal,128);
             output_buffer[12] = (signed char)aux_conversion.quot;
             output_buffer[13] = (signed char)aux_conversion.rem;
+			aux_conversion = div(cam_X,128);
+			output_buffer[14] = (signed char)aux_conversion.quot;
+			output_buffer[15] = (signed char)aux_conversion.rem;
+			aux_conversion = div(cam_Y,128);
+			output_buffer[16] = (signed char)aux_conversion.quot;
+			output_buffer[17] = (signed char)aux_conversion.rem;
+			output_buffer[18] = (signed char)commands_var;
 
             m_rf_send(SEN_ADDRESS,output_buffer,PACKET_LENGTH);
             
@@ -273,7 +287,7 @@ int main(void)
             
             //Reset flag
             flag_timer = 0;
-            m_green(OFF);
+            //m_green(OFF);
         }
         
         
@@ -297,12 +311,7 @@ int main(void)
                 
             case GO_TO_GOAL:
                 ;
-                /*
-                int dir_x = 0;
-                int dir_y = 0;
-                int dir_angle = 0;
-                int dist_goal = 0;
-                */
+
                 if (status_go_to_goal == 0)
                 {
                     dir_x = goal_pos_x-x_robot;
@@ -312,7 +321,11 @@ int main(void)
                     status_go_to_goal = 1;
                 }else if (status_go_to_goal == 1)
                 {
-                    if ((theta_robot >= dir_angle-THRESHOLD_ANGLE_GOAL) && (theta_robot <= dir_angle+THRESHOLD_ANGLE_GOAL)
+					dir_x = goal_pos_x-x_robot;
+					dir_y = goal_pos_y-y_robot;
+					dir_angle = atan2(-dir_x,dir_y)*180/M_PI;
+					
+                    if ((theta_robot >= dir_angle-THRESHOLD_ANGLE_GOAL) && (theta_robot <= dir_angle+THRESHOLD_ANGLE_GOAL))
                         status_go_to_goal = 2;
                     else
                     {
@@ -326,13 +339,26 @@ int main(void)
                         
                         
                         if (add_360 == 0 && (angle_dir_aux <= theta_robot && theta_robot <= dir_angle))
+						{
                             turn_left();
-                        else if (add_360 == 0 && (angle_dir_aux > theta_robot && theta_robot > dir_angle))
+							commands_var = 1;
+                        }
+						else if (add_360 == 0 && (angle_dir_aux > theta_robot || theta_robot > dir_angle))
+						{
                             turn_right();
-                        else if (add_360 == 1 && (angle_dir_aux <= theta_robot && theta_robot <= dir_angle))
-                            turn_right();
-                        else if (add_360 == 1 && (angle_dir_aux > theta_robot && theta_robot > dir_angle))
+							commands_var = 2;
+						}
+                        else if (add_360 == 1 && ((theta_robot <=dir_angle && theta_robot >=-180) || ((theta_robot >= angle_dir_aux) && (theta_robot <= 180))))
+						{
                             turn_left();
+							commands_var = 3;
+						}
+                        else if (add_360 == 1 && (theta_robot > dir_angle && theta_robot < angle_dir_aux))
+						{
+                            turn_right();
+							commands_var = 4;
+						}else
+							commands_var = 0;						
                         
                     }
                 }else if (status_go_to_goal == 2)
@@ -346,13 +372,17 @@ int main(void)
                         if (theta_robot < dir_angle-THRESHOLD_ANGLE_GOAL || theta_robot > dir_angle+THRESHOLD_ANGLE_GOAL)
                             status_go_to_goal = 0;
                         else
+						{
+							commands_var = 5;
                             go_fwd();
+						}
+						
                         
                     }
                 }
                 else if (status_go_to_goal == 3)
                 {
-                    stop_motor();
+                    //stop_motor();
                     status_go_to_goal = 4;
                     state = 2;
                 }
@@ -379,7 +409,7 @@ void set_timer1(void)
     set(DDRB,6);
     set(DDRB,7);
     
-    OCR1A = 500;
+    OCR1A = PWM_MAXIMUM;
     OCR1B = 0;
     OCR1C = 0;
     
@@ -581,25 +611,31 @@ void stop_motor(void)
 void turn_right(void)
 {
     set(PORTB,0);
-    clear(PORTB,1);
-    OCR1B = OCR1A;
-    OCR1C = OCR1A;
+    set(PORTB,1);
+	OCR1B = PWM_SPEED_TURN_RGHT;
+    OCR1C = PWM_SPEED_TURN_LFT;
+	m_green(OFF);
 }
+
+
+
+
 
 void turn_left(void)
 {
     clear(PORTB,0);
-    set(PORTB,1);
-    OCR1B = OCR1A;
-    OCR1C = OCR1A;
+    clear(PORTB,1);
+    OCR1B = PWM_SPEED_TURN_RGHT;
+    OCR1C = PWM_SPEED_TURN_LFT;
+	m_green(ON);
 }
 
 void go_fwd(void)
 {
-    set(PORTB,0);
+    clear(PORTB,0);
     set(PORTB,1);
-    OCR1B = OCR1A;
-    OCR1C = OCR1A;
+    OCR1B = PWM_SPEED_FWD_RGHT;
+    OCR1C = PWM_SPEED_FWD_LFT;
 }
 
 /*ISR(TIMER3_COMPA_vect)
@@ -610,6 +646,6 @@ void go_fwd(void)
 
 ISR(TIMER4_OVF_vect)
 {
-    m_green(ON);
+    //m_green(ON);
     flag_timer = 1;
 }

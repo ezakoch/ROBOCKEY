@@ -37,10 +37,10 @@ SUBDIRS :=
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
 ../../../Functions/Localize.c \
+../../../M2_TX_ROBOT1.c \
 ../../../m_bus.c \
 ../../../m_rf.c \
-../../../m_wii.c \
-../../../Wireless_coms_TX2.c
+../../../m_wii.c
 
 
 PREPROCESSING_SRCS += 
@@ -51,31 +51,31 @@ ASM_SRCS +=
 
 OBJS +=  \
 Localize.o \
+M2_TX_ROBOT1.o \
 m_bus.o \
 m_rf.o \
-m_wii.o \
-Wireless_coms_TX2.o
+m_wii.o
 
 OBJS_AS_ARGS +=  \
 Localize.o \
+M2_TX_ROBOT1.o \
 m_bus.o \
 m_rf.o \
-m_wii.o \
-Wireless_coms_TX2.o
+m_wii.o
 
 C_DEPS +=  \
 Localize.d \
+M2_TX_ROBOT1.d \
 m_bus.d \
 m_rf.d \
-m_wii.d \
-Wireless_coms_TX2.d
+m_wii.d
 
 C_DEPS_AS_ARGS +=  \
 Localize.d \
+M2_TX_ROBOT1.d \
 m_bus.d \
 m_rf.d \
-m_wii.d \
-Wireless_coms_TX2.d
+m_wii.d
 
 OUTPUT_FILE_PATH +=wireless_comms.elf
 

@@ -5,8 +5,8 @@
 #include "Localize.h"
 
 
-#define x0_offset 0
-#define y0_offset 0
+#define x0_offset 95
+#define y0_offset -102
 #define P_vertical 29
 
 
@@ -18,7 +18,7 @@ float P0[2] = {0, 0}, P1[2] = {0, 14.5}, P2[2] = {11.655, 8.741}, P3[2] = {0, -1
 int QA[2] = {0, 0}, QB[2] = {0, 0}, QC[2] = {0, 0}, QD[2] = {0, 0}, S0[2], S1[2] ,S2[2], S3[2], S4[2];
 int *Q1 ,*Q2 ,*Q3, *Q4;
 float AB = 0, AC = 0, AD = 0, BC = 0, BD = 0, CD = 0;
-float distances[6] = {0}, radius, theta, alpha;
+float distances[6] = {0}, radius, theta, theta2, alpha;
 int orientation_prev = 0, x_robot_prev = 0, y_robot_prev = 0, orientation_current = 0, x_robot_current = 0, y_robot_current = 0;
 float beta = 0.8;
 int flag_no_good_stars = 0;
@@ -28,7 +28,7 @@ int flag_no_good_stars = 0;
 // Localize the robot
 // --------------------------------------------------------------
 
-unsigned char localize(int x1, int x2, int x3, int x4, int y1, int y2, int y3, int y4, int* x_robot, int* y_robot, int* orientation){
+unsigned char localize(int x1, int x2, int x3, int x4, int y1, int y2, int y3, int y4, int* x_robot, int* y_robot, int* orientation, int* CAMERA_CENTER_X, int* CAMERA_CENTER_Y){
     
     float max_distance = 0, min_distance = 10000;
     int max_id = 0, min_id = 0;
@@ -207,16 +207,21 @@ unsigned char localize(int x1, int x2, int x3, int x4, int y1, int y2, int y3, i
     S1[0] = Q1[0] * scale; S1[1] = Q1[1] * scale;
     S3[0] = Q3[0] * scale; S3[1] = Q3[1] * scale;
     
+	*CAMERA_CENTER_X = (int)(0.5*(Q1[0]+Q3[0]));
+	*CAMERA_CENTER_Y = (int)(0.5*(Q1[1]+Q3[1]));
     S0[0] = 0.5*(S1[0]+S3[0]);
     S0[1] = 0.5*(S1[1]+S3[1]);
     radius = sqrt(S0[0]*S0[0] + S0[1]*S0[1]);
     
     theta = atan2( (Q3[1] - Q1[1]), (Q3[0] - Q1[0])  );
+	theta2 = atan2( -(Q3[1] - Q1[1]), -(Q3[0] - Q1[0])  );
     alpha = -atan2(S0[0],S0[1]);
     
     x_robot_current     = -radius * cos(theta - alpha);
     y_robot_current     = -radius * sin(theta - alpha);
-    orientation_current = theta * 180/M_PI;
+    orientation_current = (theta2) * 180/M_PI;
+	//if (orientation_current > 180)
+		//orientation_current -= 360;
     
     *x_robot     = beta * x_robot_prev      +  (1-beta) * x_robot_current;
     *y_robot     = beta * y_robot_prev      +  (1-beta) * y_robot_current;
