@@ -14,13 +14,16 @@
 #define N_CLOCK 0
 #define NUM_LEDS 8
 #define SIZE_ARRAY_BLOBS 12
-#define PACKET_LENGTH 26
-#define SEN_ADDRESS 0x60
-#define REC_ADDRESS_AUX 0X49
+#define PACKET_LENGTH_SYSTEM 10
+#define SEN_ADDRESS 0xDA
+#define ALEX_ADDRESS 0x42
 #define CHANNEL 1
 #define GO_TO_GOAL 1
 #define GO_TO_GOAL_CURVED 2
 #define INITIAL_STATE 0
+#define SYSTEM_STATE 99
+#define STOP_STATE 21
+#define BLUE_LED_STATE 22
 #define GOAL_A_POS_X -115
 #define GOAL_A_POS_Y 0
 #define GOAL_B_POS_X 115
@@ -46,13 +49,18 @@ void turn_right(void);
 void turn_left(void);
 void go_fwd(void);
 void move_robot(float theta, int dir);
-
+void turnOnBlueLED(void);
+void celebrate(void);
 
 //Variable used to check timer
 volatile int flag_timer = 0;
 
 //Variable for states
-int state = INITIAL_STATE;
+int state = INITIAL_STATE; //CHANGE TO SYSTEM STATE?????????????????????????????
+int past_state = INITIAL_STATE;
+
+//Variable for receiving data
+char buffer_rec[PACKET_LENGTH_SYSTEM] = {0};   
 
 //Function prototypes
 ISR(INT2_vect);
@@ -65,6 +73,9 @@ int main(void)
     unsigned char localize_OK = 0;
     int status_go_to_goal = 0;
     int goal_pos_x = 0, goal_pos_y = 0;
+	int pause_bool = 0;
+	int enemy_rob1_x = 0,enemy_rob1_y = 0,enemy_rob2_x = 0,enemy_rob2_y = 0,enemy_rob3_x = 0,enemy_rob3_y = 0;
+	int scoreA = 0,scoreB = 0;
     
     //Variables debugging
     float dir_x = 0;
@@ -75,36 +86,13 @@ int main(void)
     int bank = 0;
 	int cam_X = 0, cam_Y = 0, commands_var = 0;
 	
-   
-    //
-    unsigned char output_buffer [PACKET_LENGTH] = {0};
-    
-    //State(1): [0] identification, [1] current state
-    unsigned char state_debug [PACKET_LENGTH] = {0};
-    
-    // Position(2): [0] identification,[1] x int,[2] x decimal,[3] y int,[4] y decimal, [5] theta 1st int,[6] theta 2nd int,[7] theta decimal
-    signed char position [PACKET_LENGTH] = {0};
-    
-    //Analog values for each phototransistor(3): [0] identification,[0+i+1] 1st digit analog, [1+i+1] 1st digit analog (i=1...8)
-    unsigned char LED_analog [PACKET_LENGTH] = {0};
-    
-    //Pixel position of stars(4): [0] identification, [0+i+1] 1st x,  [0+i+2] 2nd x, [0+i+3] 1st y, [0+i+4] 2nd y (i=1...4)
-    unsigned char stars_wii [PACKET_LENGTH] = {0};
-    
-    //Counts how many times the solenoid has been shooted(5): [0] identification, [1] current count
-    unsigned char counter_solenoid [PACKET_LENGTH] = {0};
-    
-    //Battery indicator in % (6): [0] identification, [1] current value
-    unsigned char battery_ind [PACKET_LENGTH] =  {0};
-    
-    //General vars(7): [0] identification,[1] current value (i=1,2...)
-    signed char general_vars [PACKET_LENGTH] = {0};
-    
+	//System packet
+	signed char send_buffer[PACKET_LENGTH_SYSTEM] = {0};
+	
     //Variable for the wii cam blobs
     unsigned int blobs_wii[SIZE_ARRAY_BLOBS];
     
     int x_robot = 0, y_robot = 0, theta_robot = 0;
-    int LED_values_raw [NUM_LEDS] = {0};
     div_t aux_conversion;
     
     //Set the clock system prescaler
@@ -127,7 +115,7 @@ int main(void)
     //Set timer 3 for solenoid
     //set_timer3();
     
-    //Set timer to every 0.05 s (20 Hz)
+    //Set timer to every 0.1 s (10 Hz)
     set_timer4();
     
     //Set the ADC
@@ -144,7 +132,7 @@ int main(void)
     m_red(OFF);
     
     //Open the channel
-    m_rf_open(CHANNEL,REC_ADDRESS_AUX,PACKET_LENGTH);
+    m_rf_open(CHANNEL,ALEX_ADDRESS,PACKET_LENGTH_SYSTEM);
 	
     //Enable interruptions
     sei();
@@ -153,16 +141,6 @@ int main(void)
     //Main loop
     while (1)
     {
-        // Motor testing
-        /*if (check(PINB,2)) {
-         turn_left();
-         }
-         else{
-         turn_right();
-         }*/
-		
-		//go_fwd();
-        
         //LOCALIZATION CODE
         //Get the blobs
         cli();
@@ -174,21 +152,8 @@ int main(void)
         {
             //Get the position and orientation of the robot from the constellation
             localize_OK = localize(blobs_wii[0],blobs_wii[3],blobs_wii[6],blobs_wii[9],blobs_wii[1],blobs_wii[4],blobs_wii[7],blobs_wii[10],&x_robot,&y_robot,&theta_robot,&cam_X,&cam_Y);
-            
-            //If we computed data correctly send it if not filter (NEEEEED TO CHANGEEEEEEE!!!!!!!!!!!!!!!)
-            /*
-             if (!localize_OK)
-             {
-             m_red(ON);
-             //x_robot = -110;
-             //y_robot = 70;
-             //theta_robot = 765;
-             
-             }else
-             m_red(OFF);
-             */
-            
-        }
+ 
+		}
         
         /*
          //ANALOG CODE
@@ -210,114 +175,18 @@ int main(void)
         //SEND COMMANDS
         if (flag_timer == 1)
         {
-            //State
-            state_debug[0] = 1;
-            state_debug[1] = state;
-            output_buffer[0]=state;
-            output_buffer[1]=x_robot;
-            output_buffer[2]=y_robot;
-            aux_conversion = div(theta_robot,128);
-            
-            //Put packets together for sending
-            output_buffer[3] = (signed char)aux_conversion.quot;
-            output_buffer[4] = (signed char)aux_conversion.rem;
-            
-            //Debugging
-            output_buffer[5] = (signed char)status_go_to_goal;
-            
-            aux_conversion = div((int)dir_x,128);
-            output_buffer[6] = (signed char)aux_conversion.quot;
-            output_buffer[7] = (signed char)aux_conversion.rem;
-            
-            aux_conversion = div((int)dir_y,128);
-            output_buffer[8] = (signed char)aux_conversion.quot;
-            output_buffer[9] = (signed char)aux_conversion.rem;
-            
-            aux_conversion = div((int)dir_angle,128);
-            output_buffer[10] = (signed char)aux_conversion.quot;
-            output_buffer[11] = (signed char)aux_conversion.rem;
-            
-            aux_conversion = div((int)dist_goal,128);
-            output_buffer[12] = (signed char)aux_conversion.quot;
-            output_buffer[13] = (signed char)aux_conversion.rem;
-            
-			aux_conversion = div(cam_X,128);
-			output_buffer[14] = (signed char)aux_conversion.quot;
-			output_buffer[15] = (signed char)aux_conversion.rem;
-            
-			aux_conversion = div(cam_Y,128);
-			output_buffer[16] = (signed char)aux_conversion.quot;
-			output_buffer[17] = (signed char)aux_conversion.rem;
-            
-			output_buffer[18] = (signed char)commands_var;
-            
-            aux_conversion = div((int)diff_theta,128);
-            output_buffer[19] = (signed char)aux_conversion.quot;
-            output_buffer[20] = (signed char)aux_conversion.rem;
-            
-            aux_conversion = div((int)OCR1B,128);
-            output_buffer[21] = (signed char)aux_conversion.quot;
-            output_buffer[22] = (signed char)aux_conversion.rem;
-            
-            aux_conversion = div((int)OCR1C,128);
-            output_buffer[23] = (signed char)aux_conversion.quot;
-            output_buffer[24] = (signed char)aux_conversion.rem;
-            
-            output_buffer[25] = (signed char)bank;
-            
-            m_rf_send(SEN_ADDRESS,output_buffer,PACKET_LENGTH);
-            
-            /*
-             //Position
-             position[0] = 2;
-             position[1] = (signed char) x_robot;
-             position[2] = (signed char) y_robot;
-             aux_conversion = div(theta_robot,128);
-             position[3] = (signed char)aux_conversion.quot;
-             position[4] = (signed char)aux_conversion.rem;
-             */
-            //m_rf_send(SEN_ADDRESS,position,PACKET_LENGTH);
-            
-            
-            /*//Analog values
-             LED_analog[0] = 3;
-             int i;
-             for (i=0;i<NUM_LEDS;i++)
-             {
-             aux_conversion = div(LED_values_raw[i],256);
-             LED_analog[2*i+1] = aux_conversion.quot;
-             LED_analog[2*i+2] = aux_conversion.rem;
-             }
-             m_rf_send(SEN_ADDRESS,LED_analog,PACKET_LENGTH);*/
-            
-            
-            /*
-             //General variables
-             general_vars [0] = 7;
-             general_vars [1] = (signed char)status_go_to_goal;
-             aux_conversion = div(dir_x,128);
-             general_vars[2] = (signed char)aux_conversion.quot;
-             general_vars[3] = (signed char)aux_conversion.rem;
-             aux_conversion = div(dir_y,128);
-             general_vars[4] = (signed char)aux_conversion.quot;
-             general_vars[5] = (signed char)aux_conversion.rem;
-             aux_conversion = div(dir_angle,128);
-             general_vars[6] = (signed char)aux_conversion.quot;
-             general_vars[7] = (signed char)aux_conversion.rem;
-             aux_conversion = div(dist_goal,128);
-             general_vars[8] = (signed char)aux_conversion.quot;
-             general_vars[9] = (signed char)aux_conversion.rem;
-             
-             m_rf_send(SEN_ADDRESS,general_vars,PACKET_LENGTH);
-             */
+			//Create the packet to send to system
+			send_buffer[0] = ALEX_ADDRESS;
+			send_buffer[1] = x_robot;
+			send_buffer[2] = y_robot;
+           
+            m_rf_send(SEN_ADDRESS,send_buffer,PACKET_LENGTH_SYSTEM);
             
             //Reset flag
             flag_timer = 0;
             //m_green(OFF);
         }
-        
-        
-        
+		
         //STATE COMMANDS
         switch (state)
         {
@@ -481,7 +350,95 @@ int main(void)
                     state = 3;
                 }
                 break;
-                
+             
+			case SYSTEM_STATE:
+				switch (buffer_rec[0])
+				{
+					//Comm test
+					case 0xA0:
+						state = BLUE_LED_STATE;
+						break;
+						
+					//Play
+					case 0xA1:
+						if (pause_bool)
+						{
+							state = past_state;
+							pause_bool = 0;
+						}else
+							state = INITIAL_STATE;
+						break;
+					
+					//Goal A
+					case 0xA2:
+						if (check(PINB,2))
+							celebrate();
+						stop_motor();					
+						scoreA = buffer_rec[1];
+						scoreB = buffer_rec[2];
+						state = STOP_STATE;
+						break;
+						
+					//Goal B
+					case 0xA3:
+						if (!check(PINB,2))
+							celebrate();
+						stop_motor();
+						scoreA = buffer_rec[1];
+						scoreB = buffer_rec[2];
+						state = STOP_STATE;
+						break;
+						
+					//Pause
+					case 0xA4:
+						pause_bool = 1;
+						state = STOP_STATE;
+						break;
+						
+					//Halftime
+					case 0xA6:
+						state = STOP_STATE;
+						break;
+						
+					//Game over
+					case 0xA7:
+						if (check(PINB,2))
+						{
+							if (scoreA > scoreB)
+								celebrate();						
+						}else
+						{
+							if (scoreA < scoreB)
+							celebrate();
+						}
+						stop_motor();
+						state = STOP_STATE;													
+						break;
+						
+					//Enemy positions
+					case 0xA8:
+						enemy_rob1_x = buffer_rec[2];
+						enemy_rob1_y = buffer_rec[3];
+						enemy_rob2_x = buffer_rec[5];
+						enemy_rob2_y = buffer_rec[6];
+						enemy_rob3_x = buffer_rec[8];
+						enemy_rob3_y = buffer_rec[9];
+						break;					
+					
+					default:
+						break;						
+				}
+				break;
+				
+			case BLUE_LED_STATE:
+				stop_motor();
+				turnOnBlueLED();
+				state = STOP_STATE;
+				break;
+				
+			case STOP_STATE:
+				stop_motor();
+				break;			  
                 
             default:
                 stop_motor();
@@ -572,8 +529,8 @@ void set_timer4(void)
     //Set prescaler to /4096
     set(TCCR4B,CS43);
     set(TCCR4B,CS42);
-    clear(TCCR4B,CS41);
-    set(TCCR4B,CS40);
+    set(TCCR4B,CS41);
+    clear(TCCR4B,CS40);
 }
 
 //A/D Initialization
@@ -712,10 +669,6 @@ void turn_right(void)
 	//m_green(OFF);
 }
 
-
-
-
-
 void turn_left(void)
 {
     clear(PORTB,0);
@@ -748,6 +701,16 @@ void move_robot(float theta, int dir){
     set(PORTB,1);
 }
 
+void turnOnBlueLED(void)
+{
+	
+}
+
+void celebrate(void)
+{
+	
+}
+
 /*ISR(TIMER3_COMPA_vect)
  {
  m_red(ON);
@@ -758,4 +721,13 @@ ISR(TIMER4_OVF_vect)
 {
     //m_green(ON);
     flag_timer = 1;
+}
+
+ISR(INT2_vect)
+{
+	//Read
+	m_rf_read(buffer_rec,PACKET_LENGTH_SYSTEM);
+	past_state = state;
+	state = SYSTEM_STATE;
+	//m_green(ON); // Indicator receiving from RF
 }

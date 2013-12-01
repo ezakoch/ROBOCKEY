@@ -102,9 +102,9 @@
       <SubType>compile</SubType>
       <Link>Localize.c</Link>
     </Compile>
-    <Compile Include="..\..\M2_TX_ROBOT1.c">
+    <Compile Include="..\..\M2_TX_ROBOT1v3.c">
       <SubType>compile</SubType>
-      <Link>M2_TX_ROBOT1.c</Link>
+      <Link>M2_TX_ROBOT1v3.c</Link>
     </Compile>
     <Compile Include="..\..\m_bus.c">
       <SubType>compile</SubType>

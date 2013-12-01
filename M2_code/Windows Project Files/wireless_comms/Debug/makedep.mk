@@ -4,7 +4,7 @@
 
 ..\..\Functions\Localize.c
 
-..\..\M2_TX_ROBOT1.c
+..\..\M2_TX_ROBOT1v3.c
 
 ..\..\m_bus.c
 

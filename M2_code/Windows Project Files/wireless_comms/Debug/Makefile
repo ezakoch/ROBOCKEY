@@ -37,7 +37,7 @@ SUBDIRS :=
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
 ../../../Functions/Localize.c \
-../../../M2_TX_ROBOT1.c \
+../../../M2_TX_ROBOT1v3.c \
 ../../../m_bus.c \
 ../../../m_rf.c \
 ../../../m_wii.c
@@ -51,28 +51,28 @@ ASM_SRCS +=
 
 OBJS +=  \
 Localize.o \
-M2_TX_ROBOT1.o \
+M2_TX_ROBOT1v3.o \
 m_bus.o \
 m_rf.o \
 m_wii.o
 
 OBJS_AS_ARGS +=  \
 Localize.o \
-M2_TX_ROBOT1.o \
+M2_TX_ROBOT1v3.o \
 m_bus.o \
 m_rf.o \
 m_wii.o
 
 C_DEPS +=  \
 Localize.d \
-M2_TX_ROBOT1.d \
+M2_TX_ROBOT1v3.d \
 m_bus.d \
 m_rf.d \
 m_wii.d
 
 C_DEPS_AS_ARGS +=  \
 Localize.d \
-M2_TX_ROBOT1.d \
+M2_TX_ROBOT1v3.d \
 m_bus.d \
 m_rf.d \
 m_wii.d
