@@ -5,9 +5,11 @@
 #include "Localize.h"
 
 
-#define x0_offset 95
-#define y0_offset -102
+#define x0_offset 90
+#define y0_offset -44
 #define P_vertical 29
+#define x0_offset_cm -8
+#define y0_offset_cm 7
 
 
 // Variables for Localization
@@ -20,7 +22,7 @@ int *Q1 ,*Q2 ,*Q3, *Q4;
 float AB = 0, AC = 0, AD = 0, BC = 0, BD = 0, CD = 0;
 float distances[6] = {0}, radius, theta, theta2, alpha;
 int orientation_prev = 0, x_robot_prev = 0, y_robot_prev = 0, orientation_current = 0, x_robot_current = 0, y_robot_current = 0;
-float beta = 0.8;
+float beta = 0;
 int flag_no_good_stars = 0;
 
 
@@ -217,8 +219,8 @@ unsigned char localize(int x1, int x2, int x3, int x4, int y1, int y2, int y3, i
 	theta2 = atan2( -(Q3[1] - Q1[1]), -(Q3[0] - Q1[0])  );
     alpha = -atan2(S0[0],S0[1]);
     
-    x_robot_current     = -radius * cos(theta - alpha);
-    y_robot_current     = -radius * sin(theta - alpha);
+    x_robot_current     = -radius * cos(theta - alpha)+x0_offset_cm;
+    y_robot_current     = -radius * sin(theta - alpha)+y0_offset_cm;
     orientation_current = (theta2) * 180/M_PI;
 	//if (orientation_current > 180)
 		//orientation_current -= 360;

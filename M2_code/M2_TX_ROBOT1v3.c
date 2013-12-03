@@ -21,7 +21,7 @@
 #define SEN_ADDRESS_DEBUG 0x60
 #define REC_ADDRESS_DEBUG 0X49
 #define CHANNEL_SYSTEM 1
-#define CHANNEL_DEBUG 2
+#define CHANNEL_DEBUG 1
 #define GO_TO_GOAL 1
 #define GO_TO_GOAL_CURVED 2
 #define INITIAL_STATE 0
@@ -32,19 +32,26 @@
 #define GOAL_A_POS_Y 0
 #define GOAL_B_POS_X 115
 #define GOAL_B_POS_Y 0
+//#define GOAL_A_POS_X 0
+//#define GOAL_A_POS_Y 0
+//#define GOAL_B_POS_X 0
+//#define GOAL_B_POS_Y 0
 #define THRESHOLD_ANGLE_GOAL 7
 //#define THRESHOLD_DIST_GOAL 13
-#define THRESHOLD_DIST_GOAL 17
+#define THRESHOLD_DIST_GOAL 12
 //#define PWM_SPEED_TURN_LFT 380 //RIGHT NOT TURNING WITH LESS THAN 380
 //#define PWM_SPEED_TURN_RGHT 360
 #define PWM_SPEED_TURN_LFT 380 //RIGHT NOT TURNING WITH LESS THAN 380
 #define PWM_SPEED_TURN_RGHT 380
 //#define PWM_SPEED_FWD_LFT 387
 //#define PWM_SPEED_FWD_RGHT 368
-#define PWM_SPEED_FWD_LFT 380
-#define PWM_SPEED_FWD_RGHT 380
+#define PWM_SPEED_FWD_LFT 383
+#define PWM_SPEED_FWD_RGHT 370
 #define PWM_MAXIMUM 500
-#define MAX_SPEED 450
+#define MAX_SPEED 400
+#define MIN_SPEED 355
+#define WEIGHT_TURN 5
+#define WEIGTH_FWD 1
 
 //Function prototypes
 void set_timer1(void);
@@ -58,6 +65,7 @@ void turn_right(void);
 void turn_left(void);
 void go_fwd(void);
 void go_bwd(void);
+//void move_robot(float theta, float dist, int dir);
 void move_robot(float theta, int dir);
 void turnOnBlueLED(void);
 void celebrate(void);
@@ -66,8 +74,8 @@ void celebrate(void);
 volatile int flag_timer = 0;
 
 //Variable for states
-int state = INITIAL_STATE; //CHANGE TO SYSTEM STATE?????????????????????????????
-int past_state = INITIAL_STATE;
+int state = STOP_STATE; //CHANGE TO SYSTEM STATE?????????????????????????????
+int past_state = STOP_STATE;
 
 //Variable for receiving data
 char buffer_rec[PACKET_LENGTH_SYSTEM] = {0};   
@@ -147,6 +155,7 @@ int main(void)
     
     //Open the channel
     m_rf_open(CHANNEL_SYSTEM,ALEX_ADDRESS_SYSTEM,PACKET_LENGTH_SYSTEM);
+	//m_rf_open(CHANNEL_DEBUG,REC_ADDRESS_DEBUG,PACKET_LENGTH_DEBUG);
 		
     //Enable interruptions
     sei();
@@ -221,11 +230,11 @@ int main(void)
 				send_buffer[0] = ALEX_ADDRESS_SYSTEM;
 				send_buffer[1] = x_robot;
 				send_buffer[2] = y_robot;
-				
 				m_rf_send(SEN_ADDRESS_SYSTEM,send_buffer,PACKET_LENGTH_SYSTEM);
 				timer_switch = 1;
-			}else
-			{			
+			}
+			else
+			{		
             		
 				//DEBUG COMMANDS SENDING
 				//Open the channel
@@ -290,6 +299,7 @@ int main(void)
 				timer_switch = 0;
 			}
 			
+			
 			//Reset flag
 			flag_timer = 0;
 			//m_green(OFF);
@@ -312,7 +322,7 @@ int main(void)
                     goal_pos_y = GOAL_B_POS_Y;
                 }
                 status_go_to_goal = 0;
-                state = GO_TO_GOAL;
+                state = GO_TO_GOAL_CURVED;
                 break;
                 
             case GO_TO_GOAL:
@@ -451,14 +461,23 @@ int main(void)
                             bank = 0;
                             commands_var = 0;
                         }
-                        
+						
+						move_robot(diff_theta,bank);
+						//move_robot(diff_theta,dist_goal,bank);                        
                     }
+					
                 }
                 else if (status_go_to_goal == 1)
                 {
                     //stop_motor();
-                    status_go_to_goal = 2;
-                    state = 3;
+                    status_go_to_goal = 0;
+					go_bwd();
+					long stop_counter = 0;
+					while(stop_counter<2500)
+					{
+						stop_counter++;
+					}
+                    state = STOP_STATE;
                 }
                 break;
              
@@ -472,14 +491,15 @@ int main(void)
 						
 					//Play
 					case 0xA1:
-						if (pause_bool)
+						/*if (pause_bool)
 						{
 							state = past_state;
 							pause_bool = 0;
 						}else
 						{
 							state = INITIAL_STATE;
-						}
+						}*/
+						state = INITIAL_STATE;
 						m_red(ON);
 						break;
 					
@@ -551,6 +571,7 @@ int main(void)
 				break;
 				
 			case STOP_STATE:
+				m_green(ON);
 				stop_motor();
 				break;			  
                 
@@ -809,18 +830,35 @@ void go_fwd(void)
 }
 
 
-void move_robot(float theta, int dir){
-    if (dir == 1) {             // Move with a right curve
-        OCR1B = ((180.0 - theta)/180.0)*MAX_SPEED;
-        OCR1C = MAX_SPEED;
+/*void move_robot(float theta, float dist, int dir){
+	dist = 0
+    if (dir == 0) {             // Move with a right curve
+        OCR1B = MIN_SPEED+(MAX_SPEED-MIN_SPEED)*(dist/240.0);
+        OCR1C = MIN_SPEED+((theta/180.0)*WEIGHT_TURN+(dist/240.0)*WEIGTH_FWD)*(MAX_SPEED-MIN_SPEED)/(WEIGTH_FWD+WEIGHT_TURN);
     }
-    else {                      // Move with a left curve
-        OCR1B = MAX_SPEED;
-        OCR1C = ((180.0 - theta)/180.0)*MAX_SPEED;
+    else 
+	{                      // Move with a left curve
+        OCR1B = MIN_SPEED+((theta/180.0)*WEIGHT_TURN+(dist/240.0)*WEIGTH_FWD)*(MAX_SPEED-MIN_SPEED)/(WEIGTH_FWD+WEIGHT_TURN);
+        OCR1C = MIN_SPEED+(MAX_SPEED-MIN_SPEED)*(dist/240.0);
     }
-    
-    set(PORTB,0);
+    //m_green(ON);
+    clear(PORTB,0);
     set(PORTB,1);
+}*/
+
+void move_robot(float theta, int dir){
+	if (dir == 1) {             // Move with a right curve
+		OCR1B = PWM_SPEED_FWD_LFT;
+		OCR1C = ((180.0 - theta)/180.0)*PWM_SPEED_FWD_RGHT;
+	}
+	else
+	{                      // Move with a left curve
+		OCR1B = ((180.0 - theta)/180.0)*PWM_SPEED_FWD_LFT;
+		OCR1C = PWM_SPEED_FWD_RGHT;
+	}
+	
+	clear(PORTB,0);
+	set(PORTB,1);
 }
 
 void turnOnBlueLED(void)
@@ -851,5 +889,5 @@ ISR(INT2_vect)
 	m_rf_read(buffer_rec,PACKET_LENGTH_SYSTEM);
 	past_state = state;
 	state = SYSTEM_STATE;
-	m_green(ON); // Indicator receiving from RF
+	//m_green(ON); // Indicator receiving from RF
 }
