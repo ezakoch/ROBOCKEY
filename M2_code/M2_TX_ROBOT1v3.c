@@ -12,7 +12,7 @@
 #include <avr/interrupt.h>
 
 #define N_CLOCK 0
-#define NUM_LEDS 8
+#define NUM_LEDS 6
 #define SIZE_ARRAY_BLOBS 12
 #define PACKET_LENGTH_DEBUG 26
 #define PACKET_LENGTH_SYSTEM 10
@@ -37,21 +37,20 @@
 //#define GOAL_B_POS_X 0
 //#define GOAL_B_POS_Y 0
 #define THRESHOLD_ANGLE_GOAL 7
-//#define THRESHOLD_DIST_GOAL 13
-#define THRESHOLD_DIST_GOAL 12
-//#define PWM_SPEED_TURN_LFT 380 //RIGHT NOT TURNING WITH LESS THAN 380
-//#define PWM_SPEED_TURN_RGHT 360
+#define THRESHOLD_DIST_GOAL 20
 #define PWM_SPEED_TURN_LFT 380 //RIGHT NOT TURNING WITH LESS THAN 380
 #define PWM_SPEED_TURN_RGHT 380
-//#define PWM_SPEED_FWD_LFT 387
-//#define PWM_SPEED_FWD_RGHT 368
-#define PWM_SPEED_FWD_LFT 383
-#define PWM_SPEED_FWD_RGHT 370
-#define PWM_MAXIMUM 500
-#define MAX_SPEED 400
-#define MIN_SPEED 355
+//#define PWM_SPEED_FWD_LFT 393
+//#define PWM_SPEED_FWD_RGHT 380
+#define PWM_SPEED_FWD_LFT 3800
+#define PWM_SPEED_FWD_RGHT 3700
+#define PWM_MAXIMUM 5000
+#define PWM_MIN_LEFT 363
+#define PWM_MIN_RGHT 350
 #define WEIGHT_TURN 5
 #define WEIGTH_FWD 1
+#define TIME_STOP 30000
+#define TURNING_ANGLE 110.0
 
 //Function prototypes
 void set_timer1(void);
@@ -74,8 +73,8 @@ void celebrate(void);
 volatile int flag_timer = 0;
 
 //Variable for states
-int state = STOP_STATE; //CHANGE TO SYSTEM STATE?????????????????????????????
-int past_state = STOP_STATE;
+int state = INITIAL_STATE; //CHANGE TO SYSTEM STATE?????????????????????????????
+int past_state = INITIAL_STATE;
 
 //Variable for receiving data
 char buffer_rec[PACKET_LENGTH_SYSTEM] = {0};   
@@ -123,8 +122,8 @@ int main(void)
     //Turn off the LEDs
     m_green(OFF);
     m_red(OFF);
-    
-    m_red(ON);
+	
+	m_red(ON);    
     //Initialize bus
     m_bus_init();
     
@@ -145,21 +144,22 @@ int main(void)
     
     //Initialize wii camera
     char aux = 0;
-    while(!aux)
+    /*while(!aux)
     {
         aux = m_wii_open();
     }
     
     m_wait(1000);
-    m_red(OFF);
+    m_red(OFF);*/
+	
     
     //Open the channel
-    m_rf_open(CHANNEL_SYSTEM,ALEX_ADDRESS_SYSTEM,PACKET_LENGTH_SYSTEM);
-	//m_rf_open(CHANNEL_DEBUG,REC_ADDRESS_DEBUG,PACKET_LENGTH_DEBUG);
+    //m_rf_open(CHANNEL_SYSTEM,ALEX_ADDRESS_SYSTEM,PACKET_LENGTH_SYSTEM);
+	m_rf_open(CHANNEL_DEBUG,REC_ADDRESS_DEBUG,PACKET_LENGTH_DEBUG);
+	m_green(ON);
 		
     //Enable interruptions
     sei();
-    
     
     //Main loop
     while (1)
@@ -177,7 +177,7 @@ int main(void)
 		 m_red(OFF);
         }*/
 		
-		/*// Motor testing
+		// Motor testing
         if (check(PINB,2)) 
 		{
          go_fwd();
@@ -187,7 +187,7 @@ int main(void)
 		{
          go_bwd();
 		 m_red(OFF);
-        }*/
+        }
 		
 		
         //LOCALIZATION CODE
@@ -224,7 +224,7 @@ int main(void)
         //SEND COMMANDS
         if (flag_timer == 1)
         {
-			if (timer_switch == 0)
+			/*if (timer_switch == 0)
 			{
 				//Create the packet to send to system
 				send_buffer[0] = ALEX_ADDRESS_SYSTEM;
@@ -234,11 +234,11 @@ int main(void)
 				timer_switch = 1;
 			}
 			else
-			{		
+			{
             		
 				//DEBUG COMMANDS SENDING
 				//Open the channel
-				m_rf_open(CHANNEL_DEBUG,REC_ADDRESS_DEBUG,PACKET_LENGTH_DEBUG);
+				m_rf_open(CHANNEL_DEBUG,REC_ADDRESS_DEBUG,PACKET_LENGTH_DEBUG);*/	
 		
 				output_buffer[0]= state;
 				output_buffer[1]= x_robot;
@@ -294,10 +294,10 @@ int main(void)
 			
 				m_rf_send(SEN_ADDRESS_DEBUG,output_buffer,PACKET_LENGTH_DEBUG);
 			
-				//Open again the system channel			
+				/*//Open again the system channel			
 				m_rf_open(CHANNEL_SYSTEM,ALEX_ADDRESS_SYSTEM,PACKET_LENGTH_SYSTEM);
 				timer_switch = 0;
-			}
+			}*/
 			
 			
 			//Reset flag
@@ -310,6 +310,7 @@ int main(void)
         //STATE COMMANDS
         switch (state)
         {
+			long stop_counter = 0;
             case INITIAL_STATE:
 				//m_green(ON);
                 if (check(PINB,2))
@@ -471,9 +472,9 @@ int main(void)
                 {
                     //stop_motor();
                     status_go_to_goal = 0;
+					stop_counter = 0;
 					go_bwd();
-					long stop_counter = 0;
-					while(stop_counter<2500)
+					while(stop_counter<TIME_STOP)
 					{
 						stop_counter++;
 					}
@@ -491,14 +492,14 @@ int main(void)
 						
 					//Play
 					case 0xA1:
-						/*if (pause_bool)
-						{
-							state = past_state;
-							pause_bool = 0;
-						}else
-						{
-							state = INITIAL_STATE;
-						}*/
+						//if (pause_bool)
+						//{
+							//state = past_state;
+							//pause_bool = 0;
+						//}else
+						//{
+							//state = INITIAL_STATE;
+						//}
 						state = INITIAL_STATE;
 						m_red(ON);
 						break;
@@ -526,11 +527,23 @@ int main(void)
 					//Pause
 					case 0xA4:
 						pause_bool = 1;
+						stop_counter = 0;
+						go_bwd();
+						while(stop_counter<TIME_STOP)
+						{
+							stop_counter++;
+						}
 						state = STOP_STATE;
 						break;
 						
 					//Halftime
 					case 0xA6:
+						stop_counter = 0;
+						go_bwd();
+						while(stop_counter<TIME_STOP)
+						{
+							stop_counter++;
+						}
 						state = STOP_STATE;
 						break;
 						
@@ -546,6 +559,12 @@ int main(void)
 							celebrate();
 						}
 						stop_motor();
+						stop_counter = 0;
+						go_bwd();
+						while(stop_counter<TIME_STOP)
+						{
+							stop_counter++;
+						}
 						state = STOP_STATE;													
 						break;
 						
@@ -586,7 +605,7 @@ int main(void)
         }
         
     }
-    
+  
     
 }
 
@@ -780,8 +799,11 @@ void init_ports(void)
     //B0 and B1 as outputs
     set(DDRB,0);
     set(DDRB,1);
+	//set(DDRB,3);
+	//set(DDRD,3);
     set(PORTB,0);
-    clear(PORTB,1);
+	//set(PORTB,3);
+	//set(PORTD,3);
     
     //Set B2 as input
     clear(DDRB,2);
@@ -815,18 +837,18 @@ void turn_right(void)
 
 void go_bwd(void)
 {
-    set(PORTB,0);
-    clear(PORTB,1);
-    OCR1B = PWM_SPEED_FWD_RGHT;
-    OCR1C = PWM_SPEED_FWD_LFT;
+    clear(PORTB,0);
+    set(PORTB,1);
+    OCR1B = PWM_SPEED_FWD_LFT;
+    OCR1C = PWM_SPEED_FWD_RGHT;
 }
 
 void go_fwd(void)
 {
-	clear(PORTB,0);
-	set(PORTB,1);
-	OCR1B = PWM_SPEED_FWD_RGHT;
-	OCR1C = PWM_SPEED_FWD_LFT;
+	set(PORTB,0);
+	clear(PORTB,1);
+	OCR1B = PWM_SPEED_FWD_LFT;
+	OCR1C = PWM_SPEED_FWD_RGHT;
 }
 
 
@@ -849,16 +871,23 @@ void go_fwd(void)
 void move_robot(float theta, int dir){
 	if (dir == 1) {             // Move with a right curve
 		OCR1B = PWM_SPEED_FWD_LFT;
-		OCR1C = ((180.0 - theta)/180.0)*PWM_SPEED_FWD_RGHT;
+		if (theta> TURNING_ANGLE)
+			OCR1C = PWM_MIN_RGHT;
+		else
+			OCR1C = PWM_MIN_RGHT+((TURNING_ANGLE - theta)/TURNING_ANGLE)*(PWM_SPEED_FWD_RGHT-PWM_MIN_RGHT);
 	}
 	else
 	{                      // Move with a left curve
-		OCR1B = ((180.0 - theta)/180.0)*PWM_SPEED_FWD_LFT;
-		OCR1C = PWM_SPEED_FWD_RGHT;
+		OCR1C = PWM_SPEED_FWD_RGHT;		
+		if (theta> TURNING_ANGLE)
+			OCR1B = PWM_MIN_LEFT;
+		else
+			OCR1B = PWM_MIN_LEFT+((TURNING_ANGLE - theta)/TURNING_ANGLE)*(PWM_SPEED_FWD_LFT-PWM_MIN_LEFT);
+		
 	}
 	
-	clear(PORTB,0);
-	set(PORTB,1);
+	set(PORTB,0);
+	clear(PORTB,1);
 }
 
 void turnOnBlueLED(void)
@@ -883,11 +912,11 @@ ISR(TIMER4_OVF_vect)
     flag_timer = 1;
 }
 
-ISR(INT2_vect)
+/*ISR(INT2_vect)
 {
 	//Read
 	m_rf_read(buffer_rec,PACKET_LENGTH_SYSTEM);
 	past_state = state;
 	state = SYSTEM_STATE;
 	//m_green(ON); // Indicator receiving from RF
-}
+}*/

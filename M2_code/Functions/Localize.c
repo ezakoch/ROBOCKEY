@@ -4,12 +4,13 @@
 
 #include "Localize.h"
 
-
-#define x0_offset 90
-#define y0_offset -44
+//For 0 and 180 compute the mean of the camera pixels given and make the mean between them and added to the x0/y0 offset
+//Then for the offset in cm, after applying the offset explained before, we check the mean in cm of the position given in Matlab and subtract those values
+#define x0_offset 67// 
+#define y0_offset -72//-46 +(-51)
 #define P_vertical 29
-#define x0_offset_cm -8
-#define y0_offset_cm 7
+#define x0_offset_cm -10
+#define y0_offset_cm 5
 
 
 // Variables for Localization
