@@ -14,7 +14,7 @@
 #define N_CLOCK 0
 #define NUM_LEDS 6
 #define SIZE_ARRAY_BLOBS 12
-#define PACKET_LENGTH_DEBUG 26
+#define PACKET_LENGTH_DEBUG 27
 #define PACKET_LENGTH_SYSTEM 10
 #define SEN_ADDRESS_SYSTEM 0xDA
 #define ALEX_ADDRESS_SYSTEM 0x42
@@ -239,58 +239,59 @@ int main(void)
 				//DEBUG COMMANDS SENDING
 				//Open the channel
 				m_rf_open(CHANNEL_DEBUG,REC_ADDRESS_DEBUG,PACKET_LENGTH_DEBUG);*/	
-		
-				output_buffer[0]= state;
-				output_buffer[1]= x_robot;
-				output_buffer[2]= y_robot;
+            
+                output_buffer[0] = 1;
+				output_buffer[1] = state;
+				output_buffer[2] = x_robot;
+				output_buffer[3] = y_robot;
 				aux_conversion = div(theta_robot,128);
 			
 				//Put packets together for sending
-				output_buffer[3] = (signed char)aux_conversion.quot;
-				output_buffer[4] = (signed char)aux_conversion.rem;
+				output_buffer[4] = (signed char)aux_conversion.quot;
+				output_buffer[5] = (signed char)aux_conversion.rem;
 			
 				//Debugging
-				output_buffer[5] = (signed char)status_go_to_goal;
+				output_buffer[6] = (signed char)status_go_to_goal;
 			
 				aux_conversion = div((int)dir_x,128);
-				output_buffer[6] = (signed char)aux_conversion.quot;
-				output_buffer[7] = (signed char)aux_conversion.rem;
+				output_buffer[7] = (signed char)aux_conversion.quot;
+				output_buffer[8] = (signed char)aux_conversion.rem;
 			
 				aux_conversion = div((int)dir_y,128);
-				output_buffer[8] = (signed char)aux_conversion.quot;
-				output_buffer[9] = (signed char)aux_conversion.rem;
+				output_buffer[9] = (signed char)aux_conversion.quot;
+				output_buffer[10] = (signed char)aux_conversion.rem;
 			
 				aux_conversion = div((int)dir_angle,128);
-				output_buffer[10] = (signed char)aux_conversion.quot;
-				output_buffer[11] = (signed char)aux_conversion.rem;
+				output_buffer[11] = (signed char)aux_conversion.quot;
+				output_buffer[12] = (signed char)aux_conversion.rem;
 			
 				aux_conversion = div((int)dist_goal,128);
-				output_buffer[12] = (signed char)aux_conversion.quot;
-				output_buffer[13] = (signed char)aux_conversion.rem;
+				output_buffer[13] = (signed char)aux_conversion.quot;
+				output_buffer[14] = (signed char)aux_conversion.rem;
 			
 				aux_conversion = div(cam_X,128);
-				output_buffer[14] = (signed char)aux_conversion.quot;
-				output_buffer[15] = (signed char)aux_conversion.rem;
+				output_buffer[15] = (signed char)aux_conversion.quot;
+				output_buffer[16] = (signed char)aux_conversion.rem;
 			
 				aux_conversion = div(cam_Y,128);
-				output_buffer[16] = (signed char)aux_conversion.quot;
-				output_buffer[17] = (signed char)aux_conversion.rem;
+				output_buffer[17] = (signed char)aux_conversion.quot;
+				output_buffer[18] = (signed char)aux_conversion.rem;
 			
-				output_buffer[18] = (signed char)commands_var;
+				output_buffer[19] = (signed char)commands_var;
 			
 				aux_conversion = div((int)diff_theta,128);
-				output_buffer[19] = (signed char)aux_conversion.quot;
-				output_buffer[20] = (signed char)aux_conversion.rem;
+				output_buffer[20] = (signed char)aux_conversion.quot;
+				output_buffer[21] = (signed char)aux_conversion.rem;
 			
 				aux_conversion = div((int)OCR1B,128);
-				output_buffer[21] = (signed char)aux_conversion.quot;
-				output_buffer[22] = (signed char)aux_conversion.rem;
+				output_buffer[22] = (signed char)aux_conversion.quot;
+				output_buffer[23] = (signed char)aux_conversion.rem;
 			
 				aux_conversion = div((int)OCR1C,128);
-				output_buffer[23] = (signed char)aux_conversion.quot;
-				output_buffer[24] = (signed char)aux_conversion.rem;
+				output_buffer[24] = (signed char)aux_conversion.quot;
+				output_buffer[25] = (signed char)aux_conversion.rem;
 			
-				output_buffer[25] = (signed char)bank;
+				output_buffer[26] = (signed char)bank;
 			
 				m_rf_send(SEN_ADDRESS_DEBUG,output_buffer,PACKET_LENGTH_DEBUG);
 			
