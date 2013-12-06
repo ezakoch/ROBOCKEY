@@ -20,7 +20,7 @@
 #include <stdlib.h>
 
 #define N_CLOCK 0
-#define PACKET_LENGTH 27
+#define PACKET_LENGTH 40
 #define REC_ADDRESS 0X60
 #define CHANNEL 1
 #define USB 1               // If using the USB set to 1
@@ -50,6 +50,13 @@ struct robots {             // Structure for variables of each robot
     int OCR1B_PWM;              // PWM for Left Motor
     int OCR1C_PWM;              // PWM for Right Motor
     int bank;                   // Direction of turning of robot towards goal
+    int PT_LO;                  // ADC value for Phototransistor at Left Outside
+    int PT_LI;                  // ADC value for Phototransistor at Left Inside
+    int PT_RI;                  // ADC value for Phototransistor at Right Inside
+    int PT_RO;                  // ADC value for Phototransistor at Right Outside
+    int PT_BR;                  // ADC value for Phototransistor at Back Right
+    int PT_BL;                  // ADC value for Phototransistor at Back Left
+    int PT_PUCK;                // ADC value for Phototransistor for Have Puck
 } robot1, robot2, robot3;   // Robot 1,2,3 variables
 
 
@@ -97,6 +104,14 @@ int main(void)
                 robot1.OCR1B_PWM = (int)buffer_rec[22]*128 + (int)buffer_rec[23];
                 robot1.OCR1C_PWM = (int)buffer_rec[24]*128 + (int)buffer_rec[25];
                 robot1.bank = (int)buffer_rec[26];
+                
+                robot1.PT_LO = (int)buffer_rec[27]*128 + (int)buffer_rec[28];
+                robot1.PT_LI = (int)buffer_rec[29]*128 + (int)buffer_rec[30];
+                robot1.PT_RI = (int)buffer_rec[31]*128 + (int)buffer_rec[32];
+                robot1.PT_RO = (int)buffer_rec[33]*128 + (int)buffer_rec[34];
+                robot1.PT_BR = (int)buffer_rec[35]*128 + (int)buffer_rec[36];
+                robot1.PT_BL = (int)buffer_rec[37]*128 + (int)buffer_rec[38];
+                robot1.PT_PUCK = (int)buffer_rec[39]*128 + (int)buffer_rec[40];
             }
             
             else if (robot_num == 2) {          // If we received from robot 2
@@ -116,9 +131,17 @@ int main(void)
                 robot2.OCR1B_PWM = (int)buffer_rec[22]*128 + (int)buffer_rec[23];
                 robot2.OCR1C_PWM = (int)buffer_rec[24]*128 + (int)buffer_rec[25];
                 robot2.bank = (int)buffer_rec[26];
+                
+                robot2.PT_LO = (int)buffer_rec[27]*128 + (int)buffer_rec[28];
+                robot2.PT_LI = (int)buffer_rec[29]*128 + (int)buffer_rec[30];
+                robot2.PT_RI = (int)buffer_rec[31]*128 + (int)buffer_rec[32];
+                robot2.PT_RO = (int)buffer_rec[33]*128 + (int)buffer_rec[34];
+                robot2.PT_BR = (int)buffer_rec[35]*128 + (int)buffer_rec[36];
+                robot2.PT_BL = (int)buffer_rec[37]*128 + (int)buffer_rec[38];
+                robot2.PT_PUCK = (int)buffer_rec[39]*128 + (int)buffer_rec[40];
             }
             
-            else if (robot_num == 3) {          // If we received from robot 2
+            else if (robot_num == 3) {          // If we received from robot 3
                 robot3.state = (int)buffer_rec[1];
                 robot3.x = (int)buffer_rec[2];
                 robot3.y = (int)buffer_rec[3];
@@ -135,6 +158,14 @@ int main(void)
                 robot3.OCR1B_PWM = (int)buffer_rec[22]*128 + (int)buffer_rec[23];
                 robot3.OCR1C_PWM = (int)buffer_rec[24]*128 + (int)buffer_rec[25];
                 robot3.bank = (int)buffer_rec[26];
+                
+                robot3.PT_LO = (int)buffer_rec[27]*128 + (int)buffer_rec[28];
+                robot3.PT_LI = (int)buffer_rec[29]*128 + (int)buffer_rec[30];
+                robot3.PT_RI = (int)buffer_rec[31]*128 + (int)buffer_rec[32];
+                robot3.PT_RO = (int)buffer_rec[33]*128 + (int)buffer_rec[34];
+                robot3.PT_BR = (int)buffer_rec[35]*128 + (int)buffer_rec[36];
+                robot3.PT_BL = (int)buffer_rec[37]*128 + (int)buffer_rec[38];
+                robot3.PT_PUCK = (int)buffer_rec[39]*128 + (int)buffer_rec[40];
             }
             
 			flag_data = 0;      // Reset the flag that done receiving form RF
