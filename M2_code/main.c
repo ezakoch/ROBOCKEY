@@ -1,979 +1,443 @@
-//Sending values using Wireless
+// --------------------------------------------------------------
+//
+// Receiving values wirelessly from all robots and send data
+// to MATLAB for debugging through USB
+//
+// --------------------------------------------------------------
 
-//Includes & Constant defines
+
+
+// --------------------------------------------------------------
+// Includes & Constant defines
+// --------------------------------------------------------------
 #include "m_general.h"
 #include "m_bus.h"
 #include "m_rf.h"
-#include "m_wii.h"
-#include "Functions/Localize.h"
+#include "m_usb.h"
+#include <avr/interrupt.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <avr/interrupt.h>
 
 #define N_CLOCK 0
-#define NUM_LEDS 7
-#define SIZE_ARRAY_BLOBS 12
-#define PACKET_LENGTH_DEBUG 41
-#define PACKET_LENGTH_SYSTEM 10
-#define SEN_ADDRESS_SYSTEM 0xDA
-#define ALEX_ADDRESS_SYSTEM 0x42
-#define SEN_ADDRESS_DEBUG 0x60
-#define REC_ADDRESS_DEBUG 0X49
-#define CHANNEL_SYSTEM 1
-#define CHANNEL_DEBUG 1
-#define GO_TO_GOAL 1
-#define GO_TO_GOAL_CURVED 2
-#define INITIAL_STATE 0
-#define SYSTEM_STATE 99
-#define STOP_STATE 21
-#define BLUE_LED_STATE 22
-#define GOAL_A_POS_X -115
-#define GOAL_A_POS_Y 0
-#define GOAL_B_POS_X 115
-#define GOAL_B_POS_Y 0
-//#define GOAL_A_POS_X 0
-//#define GOAL_A_POS_Y 0
-//#define GOAL_B_POS_X 0
-//#define GOAL_B_POS_Y 0
-#define THRESHOLD_ANGLE_GOAL 7
-#define THRESHOLD_DIST_GOAL 20
-#define PWM_SPEED_TURN_LFT 380 //RIGHT NOT TURNING WITH LESS THAN 380
-#define PWM_SPEED_TURN_RGHT 380
-//#define PWM_SPEED_FWD_LFT 393
-//#define PWM_SPEED_FWD_RGHT 380
-#define PWM_SPEED_FWD_LFT 4000
-#define PWM_SPEED_FWD_RGHT 4000
-#define PWM_MAXIMUM 5000
-#define PWM_MIN_LEFT 363
-#define PWM_MIN_RGHT 350
-#define WEIGHT_TURN 5
-#define WEIGTH_FWD 1
-#define TIME_STOP 30000
-#define TURNING_ANGLE 110.0
+#define PACKET_LENGTH 41
+#define REC_ADDRESS 0X60
+#define CHANNEL 1
+#define USB 1               // If using the USB set to 1
 
-//Function prototypes
-void set_timer1(void);
-//void set_timer3(void);
-void set_timer4(void);
-void init_ports(void);
-void init_analog (void);
-void get_analog_val (int id);
-void stop_motor(void);
-void turn_right(void);
-void turn_left(void);
-void go_fwd(void);
-void go_bwd(void);
-//void move_robot(float theta, float dist, int dir);
-void move_robot(float theta, int dir);
-void turnOnBlueLED(void);
-void celebrate(void);
 
-//Variable used to check timer
-volatile int flag_timer = 0;
+#define ANALOG 1               // If receiving the ADC values from RF set to 1
 
-//Variable for states
-int state = INITIAL_STATE; //CHANGE TO SYSTEM STATE?????????????????????????????
-int past_state = INITIAL_STATE;
+// --------------------------------------------------------------
+// Global Variables
+// --------------------------------------------------------------
+int flag = 0;                                                           // Flag to check what is being received from MATLAB
+volatile int flag_data = 0;                                             // Flag to check when we get data
+char buffer_rec[PACKET_LENGTH] = {0};                                   // Input buffer from other M2
 
-//Variable for receiving data
-char buffer_rec[PACKET_LENGTH_SYSTEM] = {0};
+struct robots {             // Structure for variables of each robot
+    int state;                  // Robot's current state
+    int x;                      // x position on the ring
+    int y;                      // y position on the ring
+    int yaw;                    // Robot's orientation
+    int status_go_to_goal;      // Status of state GO_TO_GOAL
+    int dir_x;                  // Direction x towards goal
+    int dir_y;                  // Direction y towards goal
+    int dir_angle;              // Angle towards goal
+    int dist_goal;              // Distance to goal
+    int camera_x;               // Camera offset x in pixels
+    int camera_y;               // Camera offset y in pixels
+    int commands_var;           // Various commands for robots
+    int diff_theta;             // Difference of current orientation and angle towards goal
+    int OCR1B_PWM;              // PWM for Left Motor
+    int OCR1C_PWM;              // PWM for Right Motor
+    int bank;                   // Direction of turning of robot towards goal
+    int PT_LO;                  // ADC value for Phototransistor at Left Outside
+    int PT_LI;                  // ADC value for Phototransistor at Left Inside
+    int PT_RI;                  // ADC value for Phototransistor at Right Inside
+    int PT_RO;                  // ADC value for Phototransistor at Right Outside
+    int PT_BR;                  // ADC value for Phototransistor at Back Right
+    int PT_BL;                  // ADC value for Phototransistor at Back Left
+    int PT_PUCK;                // ADC value for Phototransistor for Have Puck
+} robot1, robot2, robot3;   // Robot 1,2,3 variables
 
-//Function prototypes
-ISR(INT2_vect);
 
-//Main function
+// --------------------------------------------------------------
+// Function Prototypes
+// --------------------------------------------------------------
+void send_to_MATLAB(void);
+void init_M2(void);
+
+int temp = 0;
+
+
+
+// --------------------------------------------------------------
+//  MAIN
+// --------------------------------------------------------------
 int main(void)
 {
-    //Variable declaration
-    unsigned char wii_OK = 0;
-    unsigned char localize_OK = 0;
-    int status_go_to_goal = 0;
-    int goal_pos_x = 0, goal_pos_y = 0;
-	int pause_bool = 0;
-	int enemy_rob1_x = 0,enemy_rob1_y = 0,enemy_rob2_x = 0,enemy_rob2_y = 0,enemy_rob3_x = 0,enemy_rob3_y = 0;
-	int scoreA = 0,scoreB = 0;
-	int PT1_left_outside = 0, PT2_left_inside = 0, PT3_right_inside = 0, PT4_right_outside = 0, PT5_back_right = 0, PT6_back_left = 0, PT7_have_puck = 0;
-    
-    //Variables debugging
-    float dir_x = 0;
-    float dir_y = 0;
-    float dir_angle = 0;
-    float dist_goal = 0;
-    float diff_theta = 0;
-    int bank = 0;
-	int cam_X = 0, cam_Y = 0, commands_var = 0;
-	int timer_switch = 0;
+    init_M2();      // Initialize M2
+	sei();          // Enable interruptions
 	
-	//System packet
-	signed char send_buffer[PACKET_LENGTH_SYSTEM] = {0};
-    
-	//Debug packet
-	signed char output_buffer [PACKET_LENGTH_DEBUG] = {0};
-	
-    //Variable for the wii cam blobs
-    unsigned int blobs_wii[SIZE_ARRAY_BLOBS];
-    
-    int x_robot = 0, y_robot = 0, theta_robot = 0;
-    div_t aux_conversion;
-    
-    //Set the clock system prescaler
-    m_clockdivide(N_CLOCK);
-    
-    //Turn off the LEDs
-    //m_green(OFF);
-    //m_red(OFF);
-	
-	//m_red(ON);
-    //Initialize bus
-    m_bus_init();
-    
-    //Initialize ports
-    init_ports();
-    
-    //Set timer 1 for motor
-    set_timer1();
-    
-    //Set timer 3 for solenoid
-    //set_timer3();
-    
-    //Set timer to every 0.1 s (10 Hz)
-    set_timer4();
-    
-    //Set the ADC
-    init_analog();
-    
-    //Initialize wii camera
-    char aux = 0;
-    /*while(!aux)
-     {
-     aux = m_wii_open();
-     }
-     
-     m_wait(1000);*/
-    //m_red(OFF);
-	
-    
-    //Open the channel
-    //m_rf_open(CHANNEL_SYSTEM,ALEX_ADDRESS_SYSTEM,PACKET_LENGTH_SYSTEM);
-	//m_rf_open(CHANNEL_DEBUG,REC_ADDRESS_DEBUG,PACKET_LENGTH_DEBUG);
-    
-    //Enable interruptions
-    sei();
-    
-    //Main loop
-    while (1)
-    {
-		
-		/*// Motor testing
-         if (check(PINB,2))
-         {
-         turn_left();
-		 m_red(ON);
-         }
-         else
-         {
-         turn_right();
-		 m_red(OFF);
-         }*/
-		
-		// Motor testing
-        if (check(PINB,2))
+	//Main loop
+	while (1)
+	{
+		if (flag_data == 1)     // If we received from RF from robots
 		{
-            go_fwd();
-            m_red(ON);
-            m_green(OFF);
-        }
-        else
-		{
-            go_bwd();
-            m_red(OFF);
-            m_green(ON);
-        }
-		
-		
-        //LOCALIZATION CODE
-        //Get the blobs
-        /*
-        cli();
-        wii_OK = m_wii_read(blobs_wii);
-        sei();
-        
-        //If data received correctly
-        if (wii_OK)
-        {
-            //Get the position and orientation of the robot from the constellation
-            localize_OK = localize(blobs_wii[0],blobs_wii[3],blobs_wii[6],blobs_wii[9],blobs_wii[1],blobs_wii[4],blobs_wii[7],blobs_wii[10],&x_robot,&y_robot,&theta_robot,&cam_X,&cam_Y);
+            cli();              // Disable interupts to read the values without interrupting
             
+            int robot_num = buffer_rec[0];      // Check from which robot we received
+            
+            if (robot_num == 1) {               // If we received from robot 1
+                robot1.state = (int)buffer_rec[1];
+                robot1.x = (int)buffer_rec[2];
+                robot1.y = (int)buffer_rec[3];
+                robot1.yaw = (int)buffer_rec[4]*128 + (int)buffer_rec[5];
+                robot1.status_go_to_goal = (int)buffer_rec[6];
+                robot1.dir_x = (int)buffer_rec[7]*128 + (int)buffer_rec[8];
+                robot1.dir_y = (int)buffer_rec[9]*128 + (int)buffer_rec[10];
+                robot1.dir_angle = (int)buffer_rec[11]*128 + (int)buffer_rec[12];
+                robot1.dist_goal = (int)buffer_rec[13]*128 + (int)buffer_rec[14];
+                robot1.camera_x = (int)buffer_rec[15]*128 + (int)buffer_rec[16];
+                robot1.camera_y = (int)buffer_rec[17]*128 + (int)buffer_rec[18];
+                robot1.commands_var = (int)buffer_rec[19];
+                robot1.diff_theta = (int)buffer_rec[20]*128 + (int)buffer_rec[21];
+                robot1.OCR1B_PWM = (int)buffer_rec[22]*128 + (int)buffer_rec[23];
+                robot1.OCR1C_PWM = (int)buffer_rec[24]*128 + (int)buffer_rec[25];
+                robot1.bank = (int)buffer_rec[26];
+                
+                if (ANALOG) {
+                    robot1.PT_LO = (int)buffer_rec[27]*128 + (int)buffer_rec[28];
+                    robot1.PT_LI = (int)buffer_rec[29]*128 + (int)buffer_rec[30];
+                    robot1.PT_RI = (int)buffer_rec[31]*128 + (int)buffer_rec[32];
+                    robot1.PT_RO = (int)buffer_rec[33]*128 + (int)buffer_rec[34];
+                    robot1.PT_BR = (int)buffer_rec[35]*128 + (int)buffer_rec[36];
+                    robot1.PT_BL = (int)buffer_rec[37]*128 + (int)buffer_rec[38];
+                    robot1.PT_PUCK = (int)buffer_rec[39]*128 + (int)buffer_rec[40];
+                }
+                
+            }
+            
+            else if (robot_num == 2) {          // If we received from robot 2
+                robot2.state = (int)buffer_rec[1];
+                robot2.x = (int)buffer_rec[2];
+                robot2.y = (int)buffer_rec[3];
+                robot2.yaw = (int)buffer_rec[4]*128 + (int)buffer_rec[5];
+                robot2.status_go_to_goal = (int)buffer_rec[6];
+                robot2.dir_x = (int)buffer_rec[7]*128 + (int)buffer_rec[8];
+                robot2.dir_y = (int)buffer_rec[9]*128 + (int)buffer_rec[10];
+                robot2.dir_angle = (int)buffer_rec[11]*128 + (int)buffer_rec[12];
+                robot2.dist_goal = (int)buffer_rec[13]*128 + (int)buffer_rec[14];
+                robot2.camera_x = (int)buffer_rec[15]*128 + (int)buffer_rec[16];
+                robot2.camera_y = (int)buffer_rec[17]*128 + (int)buffer_rec[18];
+                robot2.commands_var = (int)buffer_rec[19];
+                robot2.diff_theta = (int)buffer_rec[20]*128 + (int)buffer_rec[21];
+                robot2.OCR1B_PWM = (int)buffer_rec[22]*128 + (int)buffer_rec[23];
+                robot2.OCR1C_PWM = (int)buffer_rec[24]*128 + (int)buffer_rec[25];
+                robot2.bank = (int)buffer_rec[26];
+                
+                if (ANALOG) {
+                    robot2.PT_LO = (int)buffer_rec[27]*128 + (int)buffer_rec[28];
+                    robot2.PT_LI = (int)buffer_rec[29]*128 + (int)buffer_rec[30];
+                    robot2.PT_RI = (int)buffer_rec[31]*128 + (int)buffer_rec[32];
+                    robot2.PT_RO = (int)buffer_rec[33]*128 + (int)buffer_rec[34];
+                    robot2.PT_BR = (int)buffer_rec[35]*128 + (int)buffer_rec[36];
+                    robot2.PT_BL = (int)buffer_rec[37]*128 + (int)buffer_rec[38];
+                    robot2.PT_PUCK = (int)buffer_rec[39]*128 + (int)buffer_rec[40];
+                }
+                
+            }
+            
+            else if (robot_num == 3) {          // If we received from robot 3
+                robot3.state = (int)buffer_rec[1];
+                robot3.x = (int)buffer_rec[2];
+                robot3.y = (int)buffer_rec[3];
+                robot3.yaw = (int)buffer_rec[4]*128 + (int)buffer_rec[5];
+                robot3.status_go_to_goal = (int)buffer_rec[6];
+                robot3.dir_x = (int)buffer_rec[7]*128 + (int)buffer_rec[8];
+                robot3.dir_y = (int)buffer_rec[9]*128 + (int)buffer_rec[10];
+                robot3.dir_angle = (int)buffer_rec[11]*128 + (int)buffer_rec[12];
+                robot3.dist_goal = (int)buffer_rec[13]*128 + (int)buffer_rec[14];
+                robot3.camera_x = (int)buffer_rec[15]*128 + (int)buffer_rec[16];
+                robot3.camera_y = (int)buffer_rec[17]*128 + (int)buffer_rec[18];
+                robot3.commands_var = (int)buffer_rec[19];
+                robot3.diff_theta = (int)buffer_rec[20]*128 + (int)buffer_rec[21];
+                robot3.OCR1B_PWM = (int)buffer_rec[22]*128 + (int)buffer_rec[23];
+                robot3.OCR1C_PWM = (int)buffer_rec[24]*128 + (int)buffer_rec[25];
+                robot3.bank = (int)buffer_rec[26];
+                
+                if (ANALOG) {
+                    robot3.PT_LO = (int)buffer_rec[27]*128 + (int)buffer_rec[28];
+                    robot3.PT_LI = (int)buffer_rec[29]*128 + (int)buffer_rec[30];
+                    robot3.PT_RI = (int)buffer_rec[31]*128 + (int)buffer_rec[32];
+                    robot3.PT_RO = (int)buffer_rec[33]*128 + (int)buffer_rec[34];
+                    robot3.PT_BR = (int)buffer_rec[35]*128 + (int)buffer_rec[36];
+                    robot3.PT_BL = (int)buffer_rec[37]*128 + (int)buffer_rec[38];
+                    robot3.PT_PUCK = (int)buffer_rec[39]*128 + (int)buffer_rec[40];
+                }
+                
+            }
+            
+			flag_data = 0;      // Reset the flag that done receiving form RF
+            m_green(OFF);       // Turn off indicator of receiving from RF
+            sei();              // Enable back interrupts
+			
 		}
         
-        //ANALOG CODE
-         for (int i=0;i<NUM_LEDS;i++)
-         {
-         get_analog_val(i);
-         
-         //Wait until flag is on
-         while(!check(ADCSRA,ADIF));
-         switch(i)
-         {
-         case(0):
-         PT1_left_outside = ADC;
-         break;
-         case(1):
-         PT2_left_inside = ADC;
-         break;
-         case(2):
-         PT3_right_inside = ADC;
-         break;
-         case(3):
-         PT4_right_outside = ADC;
-         break;
-         case(4):
-         PT5_back_right = ADC;
-         break;
-         case(5):
-         PT6_back_left = ADC;
-         break;
-         case(6):
-         PT7_have_puck = ADC;
-         break;
-         }
-         
-         //After doing the conversion reset flag
-         set(ADCSRA,ADIF);
-         }
-        
-        
-        
-        //SEND COMMANDS
-        if (flag_timer == 1)
+        send_to_MATLAB();       // Communicate with MATLAB
+	}
+}
+// --------------------------------------------------------------
+
+
+// --------------------------------------------------------------
+// Interruption handler for the data received from the module (D2)
+// --------------------------------------------------------------
+ISR(INT2_vect)
+{
+	m_rf_read(buffer_rec,PACKET_LENGTH);        // Read buffer from RF from robots
+	flag_data = 1;                              // Set the flag that we received
+	m_green(ON);                                // Indicator receiving from RF
+}
+// --------------------------------------------------------------
+
+
+
+
+// --------------------------------------------------------------
+// Initialize M2
+// --------------------------------------------------------------
+void init_M2(void){
+    m_red(ON);                          // Indicator for initilization
+    
+	m_clockdivide(N_CLOCK);             // Set the clock system prescaler
+    
+    m_bus_init();                       // Initialize bus
+    
+	if (USB) {                          // If I am using a USB then
+        m_usb_init();                   // Initialize USB and
+        while(!m_usb_isconnected());    // wait for a connection
+    }
+	
+	m_rf_open(CHANNEL,REC_ADDRESS,PACKET_LENGTH);   // Open the RF channel
+	
+	m_red(OFF);                         // Turn off the LEDs
+    m_green(OFF);                       // ^
+    
+}
+// --------------------------------------------------------------
+
+
+
+
+
+
+
+
+// --------------------------------------------------------------
+// Send Data through USB
+// --------------------------------------------------------------
+void send_to_MATLAB(){
+    if (USB){
+        // Send/Receive data through USB whenever MATLAB asks for it
+        // Check if there is something in the RX buffer and how many bytes it is
+        int data_to_read = m_usb_rx_available();
+        if(data_to_read)
         {
-			/*if (timer_switch == 0)
-             {
-             //Create the packet to send to system
-             send_buffer[0] = ALEX_ADDRESS_SYSTEM;
-             send_buffer[1] = x_robot;
-             send_buffer[2] = y_robot;
-             m_rf_send(SEN_ADDRESS_SYSTEM,send_buffer,PACKET_LENGTH_SYSTEM);
-             timer_switch = 1;
-             }
-             else
-             {
-             
-             //DEBUG COMMANDS SENDING
-             //Open the channel
-             m_rf_open(CHANNEL_DEBUG,REC_ADDRESS_DEBUG,PACKET_LENGTH_DEBUG);
             
-            output_buffer[0] = 1;
-            output_buffer[1] = state;
-            output_buffer[2] = x_robot;
-            output_buffer[3] = y_robot;
-            aux_conversion = div(theta_robot,128);
-			
-            //Put packets together for sending
-            output_buffer[4] = (signed char)aux_conversion.quot;
-            output_buffer[5] = (signed char)aux_conversion.rem;
-			
-            //Debugging
-            output_buffer[6] = (signed char)status_go_to_goal;
-			
-            aux_conversion = div((int)dir_x,128);
-            output_buffer[7] = (signed char)aux_conversion.quot;
-            output_buffer[8] = (signed char)aux_conversion.rem;
-			
-            aux_conversion = div((int)dir_y,128);
-            output_buffer[9] = (signed char)aux_conversion.quot;
-            output_buffer[10] = (signed char)aux_conversion.rem;
-			
-            aux_conversion = div((int)dir_angle,128);
-            output_buffer[11] = (signed char)aux_conversion.quot;
-            output_buffer[12] = (signed char)aux_conversion.rem;
-			
-            aux_conversion = div((int)dist_goal,128);
-            output_buffer[13] = (signed char)aux_conversion.quot;
-            output_buffer[14] = (signed char)aux_conversion.rem;
-			
-            aux_conversion = div(cam_X,128);
-            output_buffer[15] = (signed char)aux_conversion.quot;
-            output_buffer[16] = (signed char)aux_conversion.rem;
-			
-            aux_conversion = div(cam_Y,128);
-            output_buffer[17] = (signed char)aux_conversion.quot;
-            output_buffer[18] = (signed char)aux_conversion.rem;
-			
-            output_buffer[19] = (signed char)commands_var;
-			
-            aux_conversion = div((int)diff_theta,128);
-            output_buffer[20] = (signed char)aux_conversion.quot;
-            output_buffer[21] = (signed char)aux_conversion.rem;
-			
-            aux_conversion = div((int)OCR1B,128);
-            output_buffer[22] = (signed char)aux_conversion.quot;
-            output_buffer[23] = (signed char)aux_conversion.rem;
-			
-            aux_conversion = div((int)OCR1C,128);
-            output_buffer[24] = (signed char)aux_conversion.quot;
-            output_buffer[25] = (signed char)aux_conversion.rem;
-			
-            output_buffer[26] = (signed char)bank;
+            if (flag == 0) {                    // If we haven't received anything before
+                while(!m_usb_rx_available());   // Wait to receive instructions
+                
+                
+                flag = m_usb_rx_char();         // Get the first byte as what to do next
+                
+                if (flag == 1){                 // If MATLAB needs the Position and Orientation data send them ASAP
+                    m_usb_rx_flush();           // Flush the RX buffer
+                    
+                    m_usb_tx_int(robot1.x);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.y);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.yaw);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.status_go_to_goal);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.dir_x);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.dir_y);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.dir_angle);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.dist_goal);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.camera_x);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.camera_y);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.commands_var);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.diff_theta);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.bank);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.OCR1B_PWM);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.OCR1C_PWM);
+                    m_usb_tx_string("\n");
+                    
+                    flag = 0;                   // Reset the flag that we haven't received anything
+                }
+                
+                else if (flag == 4){                 // If MATLAB needs the Position and Orientation data send them ASAP
+                    m_usb_rx_flush();           // Flush the RX buffer
+                    
+                    m_usb_tx_int(robot1.PT_LO);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.PT_LI);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.PT_RI);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.PT_RO);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.PT_BL);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.PT_BR);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.PT_PUCK);
+                    m_usb_tx_string("\n");
+                    
+                    flag = 0;                   // Reset the flag that we haven't received anything
+                }
+                
+                
+                else if (flag == 2){                 // If MATLAB needs the Position and Orientation data send them ASAP
+                    m_usb_rx_flush();           // Flush the RX buffer
+                    
+                    m_usb_tx_int(robot2.x);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.y);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.yaw);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.status_go_to_goal);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.dir_x);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.dir_y);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.dir_angle);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.dist_goal);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.camera_x);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.camera_y);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.commands_var);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.diff_theta);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.bank);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.OCR1B_PWM);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.OCR1C_PWM);
+                    m_usb_tx_string("\n");
+                    
+                    flag = 0;                   // Reset the flag that we haven't received anything
+                }
+                
+                else if (flag == 5){                 // If MATLAB needs the Position and Orientation data send them ASAP
+                    m_usb_rx_flush();           // Flush the RX buffer
+                    
+                    m_usb_tx_int(robot2.PT_LO);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.PT_LI);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.PT_RI);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.PT_RO);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.PT_BL);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.PT_BR);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.PT_PUCK);
+                    m_usb_tx_string("\n");
+                    
+                    flag = 0;                   // Reset the flag that we haven't received anything
+                }
+                
+                else if (flag == 3){                 // If MATLAB needs the Position and Orientation data send them ASAP
+                    m_usb_rx_flush();           // Flush the RX buffer
+                    
+                    m_usb_tx_int(robot3.x);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.y);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.yaw);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.status_go_to_goal);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.dir_x);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.dir_y);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.dir_angle);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.dist_goal);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.camera_x);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.camera_y);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.commands_var);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.diff_theta);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.bank);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.OCR1B_PWM);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.OCR1C_PWM);
+                    m_usb_tx_string("\n");
+                    
+                    flag = 0;                   // Reset the flag that we haven't received anything
+                }
+                
+                else if (flag == 6){                 // If MATLAB needs the Position and Orientation data send them ASAP
+                    m_usb_rx_flush();           // Flush the RX buffer
+                    
+                    m_usb_tx_int(robot3.PT_LO);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.PT_LI);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.PT_RI);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.PT_RO);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.PT_BL);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.PT_BR);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.PT_PUCK);
+                    m_usb_tx_string("\n");
+                    
+                    flag = 0;                   // Reset the flag that we haven't received anything
+                }
+                
+            }
             
-            /*aux_conversion = div(PT1_left_outside,128);
-             output_buffer[27] = (signed char)aux_conversion.quot;
-             output_buffer[28] = (signed char)aux_conversion.rem;
-             
-             aux_conversion = div(PT2_left_inside,128);
-             output_buffer[29] = (signed char)aux_conversion.quot;
-             output_buffer[30] = (signed char)aux_conversion.rem;
-             
-             aux_conversion = div(PT3_right_inside,128);
-             output_buffer[31] = (signed char)aux_conversion.quot;
-             output_buffer[32] = (signed char)aux_conversion.rem;
-             
-             aux_conversion = div(PT4_right_outside,128);
-             output_buffer[33] = (signed char)aux_conversion.quot;
-             output_buffer[34] = (signed char)aux_conversion.rem;
-             
-             aux_conversion = div(PT5_back_right,128);
-             output_buffer[35] = (signed char)aux_conversion.quot;
-             output_buffer[36] = (signed char)aux_conversion.rem;
-             
-             aux_conversion = div(PT6_back_left,128);
-             output_buffer[37] = (signed char)aux_conversion.quot;
-             output_buffer[38] = (signed char)aux_conversion.rem;
-             
-             aux_conversion = div(PT7_have_puck,128);
-             output_buffer[39] = (signed char)aux_conversion.quot;
-             output_buffer[40] = (signed char)aux_conversion.rem;
-			
-            m_rf_send(SEN_ADDRESS_DEBUG,output_buffer,PACKET_LENGTH_DEBUG);
-			
-            //Open again the system channel
-             m_rf_open(CHANNEL_SYSTEM,ALEX_ADDRESS_SYSTEM,PACKET_LENGTH_SYSTEM);
-             timer_switch = 0;
-             }
-			
-			
-			//Reset flag
-			flag_timer = 0;
-			//m_green(OFF);
             
-			
+            else {
+                // More coming up here
+            }
+            
         }
-    
-
-        
-		
-        //STATE COMMANDS
-         switch (state)
-         {
-         long stop_counter = 0;
-         case INITIAL_STATE:
-         //m_green(ON);
-         if (check(PINB,2))
-         {
-         goal_pos_x = GOAL_A_POS_X;
-         goal_pos_y = GOAL_A_POS_Y;
-         }else
-         {
-         goal_pos_x = GOAL_B_POS_X;
-         goal_pos_y = GOAL_B_POS_Y;
-         }
-         status_go_to_goal = 0;
-         state = GO_TO_GOAL_CURVED;
-         break;
-         
-         case GO_TO_GOAL:
-         if (status_go_to_goal == 0)
-         {
-         dir_x = goal_pos_x-x_robot;
-         dir_y = goal_pos_y-y_robot;
-         dir_angle = atan2(-dir_x,dir_y)*180/M_PI;
-         
-         status_go_to_goal = 1;
-         }else if (status_go_to_goal == 1)
-         {
-         dir_x = goal_pos_x-x_robot;
-         dir_y = goal_pos_y-y_robot;
-         dir_angle = atan2(-dir_x,dir_y)*180/M_PI;
-         
-         if ((theta_robot >= dir_angle-THRESHOLD_ANGLE_GOAL) && (theta_robot <= dir_angle+THRESHOLD_ANGLE_GOAL))
-         status_go_to_goal = 2;
-         else
-         {
-         float angle_dir_aux = dir_angle-180;
-         float add_360 = 0;
-         if (angle_dir_aux < -180)
-         {
-         angle_dir_aux += 360;
-         add_360 = 1;
-         }
-         
-         
-         if (add_360 == 0 && (angle_dir_aux <= theta_robot && theta_robot <= dir_angle))
-         {
-         turn_left();
-         commands_var = 1;
-         }
-         else if (add_360 == 0 && (angle_dir_aux > theta_robot || theta_robot > dir_angle))
-         {
-         turn_right();
-         commands_var = 2;
-         }
-         else if (add_360 == 1 && ((theta_robot <=dir_angle && theta_robot >=-180) || ((theta_robot >= angle_dir_aux) && (theta_robot <= 180))))
-         {
-         turn_left();
-         commands_var = 3;
-         }
-         else if (add_360 == 1 && (theta_robot > dir_angle && theta_robot < angle_dir_aux))
-         {
-         turn_right();
-         commands_var = 4;
-         }else
-         commands_var = 0;
-         
-         }
-         }else if (status_go_to_goal == 2)
-         {
-         dist_goal = sqrt((x_robot-goal_pos_x)*(x_robot-goal_pos_x)+(y_robot-goal_pos_y)*(y_robot-goal_pos_y));
-         if (dist_goal < THRESHOLD_DIST_GOAL)
-         status_go_to_goal = 3;
-         else
-         {
-         
-         if (theta_robot < dir_angle-THRESHOLD_ANGLE_GOAL || theta_robot > dir_angle+THRESHOLD_ANGLE_GOAL)
-         status_go_to_goal = 0;
-         else
-         {
-         commands_var = 5;
-         go_fwd();
-         }
-         
-         
-         }
-         }
-         else if (status_go_to_goal == 3)
-         {
-         //stop_motor();
-         status_go_to_goal = 0;
-         state = STOP_STATE;
-         }
-         break;
-         
-         
-         case GO_TO_GOAL_CURVED:
-         
-         if (status_go_to_goal == 0)
-         {
-         dist_goal = sqrt((x_robot-goal_pos_x)*(x_robot-goal_pos_x)+(y_robot-goal_pos_y)*(y_robot-goal_pos_y));
-         if (dist_goal < THRESHOLD_DIST_GOAL)
-         status_go_to_goal = 1;
-         else
-         {
-         
-         dir_x = goal_pos_x-x_robot;
-         dir_y = goal_pos_y-y_robot;
-         dir_angle = atan2(-dir_x,dir_y)*180/M_PI;
-         
-         
-         float angle_dir_aux = dir_angle-180;
-         float add_360 = 0;
-         if (angle_dir_aux < -180)
-         {
-         angle_dir_aux += 360;
-         add_360 = 1;
-         }
-         
-         
-         if (add_360 == 0 && (angle_dir_aux <= theta_robot && theta_robot <= dir_angle))
-         {
-         diff_theta = dir_angle - theta_robot;
-         bank = 0;
-         commands_var = 1;
-         }
-         else if (add_360 == 0 && (angle_dir_aux > theta_robot || theta_robot > dir_angle))
-         {
-         if (theta_robot < 0)
-         diff_theta = (theta_robot+360) - dir_angle;
-         else
-         diff_theta = (theta_robot) - dir_angle;
-         bank = 1;
-         commands_var = 2;
-         }
-         else if (add_360 == 1 && ((theta_robot <=dir_angle && theta_robot >=-180) || ((theta_robot >= angle_dir_aux) && (theta_robot <= 180))))
-         {
-         if (theta_robot < 0)
-         diff_theta = dir_angle - theta_robot;
-         else
-         diff_theta = (dir_angle + 360) - theta_robot;
-         bank = 0;
-         commands_var = 3;
-         }
-         else if (add_360 == 1 && (theta_robot > dir_angle && theta_robot < angle_dir_aux))
-         {
-         diff_theta = theta_robot - dir_angle;
-         bank = 1;
-         commands_var = 4;
-         }else {
-         diff_theta = 0;
-         bank = 0;
-         commands_var = 0;
-         }
-         
-         move_robot(diff_theta,bank);
-         //move_robot(diff_theta,dist_goal,bank);
-         }
-         
-         }
-         else if (status_go_to_goal == 1)
-         {
-         //stop_motor();
-         status_go_to_goal = 0;
-         stop_counter = 0;
-         go_bwd();
-         while(stop_counter<TIME_STOP)
-         {
-         stop_counter++;
-         }
-         state = STOP_STATE;
-         }
-         break;
-         
-         case SYSTEM_STATE:
-         switch (buffer_rec[0])
-         {
-         //Comm test
-         case 0xA0:
-         state = BLUE_LED_STATE;
-         break;
-         
-         //Play
-         case 0xA1:
-         //if (pause_bool)
-         //{
-         //state = past_state;
-         //pause_bool = 0;
-         //}else
-         //{
-         //state = INITIAL_STATE;
-         //}
-         state = INITIAL_STATE;
-         m_red(ON);
-         break;
-         
-         //Goal A
-         case 0xA2:
-         if (check(PINB,2))
-         celebrate();
-         stop_motor();
-         scoreA = buffer_rec[1];
-         scoreB = buffer_rec[2];
-         state = STOP_STATE;
-         break;
-         
-         //Goal B
-         case 0xA3:
-         if (!check(PINB,2))
-         celebrate();
-         stop_motor();
-         scoreA = buffer_rec[1];
-         scoreB = buffer_rec[2];
-         state = STOP_STATE;
-         break;
-         
-         //Pause
-         case 0xA4:
-         pause_bool = 1;
-         stop_counter = 0;
-         go_bwd();
-         while(stop_counter<TIME_STOP)
-         {
-         stop_counter++;
-         }
-         state = STOP_STATE;
-         break;
-         
-         //Halftime
-         case 0xA6:
-         stop_counter = 0;
-         go_bwd();
-         while(stop_counter<TIME_STOP)
-         {
-         stop_counter++;
-         }
-         state = STOP_STATE;
-         break;
-         
-         //Game over
-         case 0xA7:
-         if (check(PINB,2))
-         {
-         if (scoreA > scoreB)
-         celebrate();
-         }else
-         {
-         if (scoreA < scoreB)
-         celebrate();
-         }
-         stop_motor();
-         stop_counter = 0;
-         go_bwd();
-         while(stop_counter<TIME_STOP)
-         {
-         stop_counter++;
-         }
-         state = STOP_STATE;
-         break;
-         
-         //Enemy positions
-         case 0xA8:
-         enemy_rob1_x = buffer_rec[2];
-         enemy_rob1_y = buffer_rec[3];
-         enemy_rob2_x = buffer_rec[5];
-         enemy_rob2_y = buffer_rec[6];
-         enemy_rob3_x = buffer_rec[8];
-         enemy_rob3_y = buffer_rec[9];
-         break;
-         
-         default:
-         break;
-         }
-         break;
-         
-         case BLUE_LED_STATE:
-         stop_motor();
-         turnOnBlueLED();
-         state = STOP_STATE;
-         break;
-         
-         case STOP_STATE:
-         m_green(ON);
-         stop_motor();
-         break;
-         
-         default:
-         stop_motor();
-         //while(1)
-         //{
-         //m_red(TOGGLE);
-         //m_green(TOGGLE);
-         //m_wait(250);
-         //}
-         }*/
-        
     }
-    
-    
 }
-
-void set_timer1(void)
-{
-    //Set B6 and B7 as output
-    set(DDRB,6);
-    set(DDRB,7);
-    
-    OCR1A = PWM_MAXIMUM;
-    OCR1B = 0;
-    OCR1C = 0;
-    
-    //Set to UP to OCR1A
-    set(TCCR1B,WGM13);
-    set(TCCR1B,WGM12);
-    set(TCCR1A,WGM11);
-    set(TCCR1A,WGM10);
-    
-    //Set to clear at OCR1B, set at rollover
-    set(TCCR1A,COM1B1);
-    clear(TCCR1A,COM1B0);
-    
-    //Set to clear at OCR1C, set at rollover
-    set(TCCR1A,COM1C1);
-    clear(TCCR1A,COM1C0);
-    
-    //Set timer prescaler to /1
-    clear(TCCR1B,CS12);
-    clear(TCCR1B,CS11);
-    set(TCCR1B,CS10);
-}
+// --------------------------------------------------------------
 
 
-/*//Timer 3 Initialization (SOLENOID)
- void set_timer3(void)
- {
- OCR3A = 391;
- 
- //Set C6 as output (debugging)
- set(DDRC,6);
- 
- //Set to UP to OCR3A
- clear(TCCR3B,WGM33);
- set(TCCR3B,WGM32);
- clear(TCCR3A,WGM31);
- clear(TCCR3A,WGM30);
- 
- //Set to toggle (debugging)
- clear(TCCR3A,COM3A1);
- set(TCCR3A,COM3A0);
- 
- //Demask OCR3A interrupt
- set(TIMSK3,OCIE3A);
- 
- //Set timer prescaler to /1024
- set(TCCR3B,CS32);
- clear(TCCR3B,CS31);
- set(TCCR3B,CS30);
- }*/
 
-//Timer 4 specifications (SENDING PROCEDURE)
-void set_timer4(void)
-{
-    //Set the counter variable
-    OCR4C = 195;
-    
-    //Set UP to OCR4C
-    clear(TCCR4D,WGM41);
-    clear(TCCR4D,WGM40);
-    
-    //Set the interruption to overflow
-    set(TIMSK4,TOIE4);
-    
-    //Set prescaler to /4096
-    set(TCCR4B,CS43);
-    set(TCCR4B,CS42);
-    clear(TCCR4B,CS41);
-    set(TCCR4B,CS40);
-}
-
-//A/D Initialization
-void init_analog(void)
-{
-    //Set the reference voltage to Vcc
-    clear(ADMUX,REFS1);
-    set(ADMUX,REFS0);
-    
-    //Set the ADC Clock Prescaler (/128)
-    set(ADCSRA,ADPS2);
-    set(ADCSRA,ADPS1);
-    set(ADCSRA,ADPS0);
-    
-    //Disable set(DIDR2,ADC9D);
-    set(DIDR0,ADC0D);
-    set(DIDR0,ADC1D);
-    set(DIDR0,ADC4D);
-    set(DIDR0,ADC5D);
-    set(DIDR0,ADC6D);
-    set(DIDR0,ADC7D);
-    set(DIDR2,ADC8D);
-    set(DIDR2,ADC9D);
-    
-    //Set the triggering to free-running
-    set(ADCSRA,ADATE);
-    
-}
-
-void get_analog_val(int id)
-{
-    //Disable ADC
-    clear(ADCSRA,ADEN);
-    
-    //Check which analog device we want to get the values from and select it
-    switch (id)
-    {
-        case 0:
-            //Single-Ended Channel Selection (F0)
-            clear(ADCSRB,MUX5);
-            clear(ADMUX,MUX2);
-            clear(ADMUX,MUX1);
-            clear(ADMUX,MUX0);
-            break;
-            
-        case 1:
-            //Single-Ended Channel Selection (F1)
-            clear(ADCSRB,MUX5);
-            clear(ADMUX,MUX2);
-            clear(ADMUX,MUX1);
-            set(ADMUX,MUX0);
-            break;
-            
-        case 2:
-            //Single-Ended Channel Selection (F4)
-            clear(ADCSRB,MUX5);
-            set(ADMUX,MUX2);
-            clear(ADMUX,MUX1);
-            clear(ADMUX,MUX0);
-            break;
-            
-        case 3:
-            //Single-Ended Channel Selection (F5)
-            clear(ADCSRB,MUX5);
-            set(ADMUX,MUX2);
-            clear(ADMUX,MUX1);
-            set(ADMUX,MUX0);
-            break;
-            
-        case 4:
-            //Single-Ended Channel Selection (F6)
-            clear(ADCSRB,MUX5);
-            set(ADMUX,MUX2);
-            set(ADMUX,MUX1);
-            clear(ADMUX,MUX0);
-            break;
-            
-        case 5:
-            //Single-Ended Channel Selection (F7)
-            clear(ADCSRB,MUX5);
-            set(ADMUX,MUX2);
-            set(ADMUX,MUX1);
-            set(ADMUX,MUX0);
-            break;
-            
-        case 6:
-            //Single-Ended Channel Selection (D4)
-            set(ADCSRB,MUX5);
-            clear(ADMUX,MUX2);
-            clear(ADMUX,MUX1);
-            clear(ADMUX,MUX0);
-            break;
-            
-        case 7:
-            //Single-Ended Channel Selection (D6)
-            set(ADCSRB,MUX5);
-            clear(ADMUX,MUX2);
-            clear(ADMUX,MUX1);
-            set(ADMUX,MUX0);
-            break;
-            
-    }
-    
-    //Enable ADC Subsystem & Begin Conversion
-    set(ADCSRA,ADEN);
-    set(ADCSRA,ADSC);
-    set(ADCSRA,ADIF);
-}
-
-void init_ports(void)
-{
-    //B3 and D3 as outputs
-	set(DDRB,3);
-	set(DDRD,3);
-	set(PORTB,3);
-	set(PORTD,3);
-    
-    //Set B2 as input and enable pull-up
-    clear(DDRB,2);
-    set(PORTB,2);
-	
-	//Set D5 as output
-	set(DDRD,5);
-	clear(PORTD,5);
-}
-
-
-void stop_motor(void)
-{
-    OCR1B = 0;
-    OCR1C = 0;
-}
-
-void turn_left(void)
-{
-    set(PORTB,3);
-    set(PORTD,3);
-	OCR1B = PWM_SPEED_TURN_RGHT;
-    OCR1C = PWM_SPEED_TURN_LFT;
-	//m_green(OFF);
-}
-
-void turn_right(void)
-{
-    clear(PORTB,3);
-    clear(PORTD,3);
-    OCR1B = PWM_SPEED_TURN_RGHT;
-    OCR1C = PWM_SPEED_TURN_LFT;
-	//m_green(ON);
-}
-
-void go_bwd(void)
-{
-    clear(PORTB,3);
-    set(PORTD,3);
-    OCR1B = PWM_SPEED_FWD_LFT;
-    OCR1C = PWM_SPEED_FWD_RGHT;
-}
-
-void go_fwd(void)
-{
-	set(PORTB,3);
-	clear(PORTD,3);
-	OCR1B = PWM_SPEED_FWD_LFT;
-	OCR1C = PWM_SPEED_FWD_RGHT;
-}
-
-
-/*void move_robot(float theta, float dist, int dir){
- dist = 0
- if (dir == 0) {             // Move with a right curve
- OCR1B = MIN_SPEED+(MAX_SPEED-MIN_SPEED)*(dist/240.0);
- OCR1C = MIN_SPEED+((theta/180.0)*WEIGHT_TURN+(dist/240.0)*WEIGTH_FWD)*(MAX_SPEED-MIN_SPEED)/(WEIGTH_FWD+WEIGHT_TURN);
- }
- else
- {                      // Move with a left curve
- OCR1B = MIN_SPEED+((theta/180.0)*WEIGHT_TURN+(dist/240.0)*WEIGTH_FWD)*(MAX_SPEED-MIN_SPEED)/(WEIGTH_FWD+WEIGHT_TURN);
- OCR1C = MIN_SPEED+(MAX_SPEED-MIN_SPEED)*(dist/240.0);
- }
- //m_green(ON);
- clear(PORTB,0);
- set(PORTB,1);
- }*/
-
-void move_robot(float theta, int dir){
-	if (dir == 1) {             // Move with a right curve
-		OCR1B = PWM_SPEED_FWD_LFT;
-		if (theta> TURNING_ANGLE)
-			OCR1C = PWM_MIN_RGHT;
-		else
-			OCR1C = PWM_MIN_RGHT+((TURNING_ANGLE - theta)/TURNING_ANGLE)*(PWM_SPEED_FWD_RGHT-PWM_MIN_RGHT);
-	}
-	else
-	{                      // Move with a left curve
-		OCR1C = PWM_SPEED_FWD_RGHT;
-		if (theta> TURNING_ANGLE)
-			OCR1B = PWM_MIN_LEFT;
-		else
-			OCR1B = PWM_MIN_LEFT+((TURNING_ANGLE - theta)/TURNING_ANGLE)*(PWM_SPEED_FWD_LFT-PWM_MIN_LEFT);
-		
-	}
-	
-	set(PORTB,0);
-	clear(PORTB,1);
-}
-
-void turnOnBlueLED(void)
-{
-	set(PORTD,5);
-}
-
-void celebrate(void)
-{
-	
-}
-
-/*ISR(TIMER3_COMPA_vect)
- {
- m_red(ON);
- flag_timer = 1;
- }*/
-
-ISR(TIMER4_OVF_vect)
-{
-    //m_green(ON);
-    flag_timer = 1;
-}
-
-/*ISR(INT2_vect)
- {
- //Read
- m_rf_read(buffer_rec,PACKET_LENGTH_SYSTEM);
- past_state = state;
- state = SYSTEM_STATE;
- //m_green(ON); // Indicator receiving from RF
- }*/

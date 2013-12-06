@@ -20,11 +20,13 @@
 #include <stdlib.h>
 
 #define N_CLOCK 0
-#define PACKET_LENGTH 40
+#define PACKET_LENGTH 41
 #define REC_ADDRESS 0X60
 #define CHANNEL 1
 #define USB 1               // If using the USB set to 1
 
+
+#define ANALOG 1               // If receiving the ADC values from RF set to 1
 
 // --------------------------------------------------------------
 // Global Variables
@@ -105,13 +107,16 @@ int main(void)
                 robot1.OCR1C_PWM = (int)buffer_rec[24]*128 + (int)buffer_rec[25];
                 robot1.bank = (int)buffer_rec[26];
                 
-                robot1.PT_LO = (int)buffer_rec[27]*128 + (int)buffer_rec[28];
-                robot1.PT_LI = (int)buffer_rec[29]*128 + (int)buffer_rec[30];
-                robot1.PT_RI = (int)buffer_rec[31]*128 + (int)buffer_rec[32];
-                robot1.PT_RO = (int)buffer_rec[33]*128 + (int)buffer_rec[34];
-                robot1.PT_BR = (int)buffer_rec[35]*128 + (int)buffer_rec[36];
-                robot1.PT_BL = (int)buffer_rec[37]*128 + (int)buffer_rec[38];
-                robot1.PT_PUCK = (int)buffer_rec[39]*128 + (int)buffer_rec[40];
+                if (ANALOG) {
+                    robot1.PT_LO = (int)buffer_rec[27]*128 + (int)buffer_rec[28];
+                    robot1.PT_LI = (int)buffer_rec[29]*128 + (int)buffer_rec[30];
+                    robot1.PT_RI = (int)buffer_rec[31]*128 + (int)buffer_rec[32];
+                    robot1.PT_RO = (int)buffer_rec[33]*128 + (int)buffer_rec[34];
+                    robot1.PT_BR = (int)buffer_rec[35]*128 + (int)buffer_rec[36];
+                    robot1.PT_BL = (int)buffer_rec[37]*128 + (int)buffer_rec[38];
+                    robot1.PT_PUCK = (int)buffer_rec[39]*128 + (int)buffer_rec[40];
+                }
+                
             }
             
             else if (robot_num == 2) {          // If we received from robot 2
@@ -132,13 +137,16 @@ int main(void)
                 robot2.OCR1C_PWM = (int)buffer_rec[24]*128 + (int)buffer_rec[25];
                 robot2.bank = (int)buffer_rec[26];
                 
-                robot2.PT_LO = (int)buffer_rec[27]*128 + (int)buffer_rec[28];
-                robot2.PT_LI = (int)buffer_rec[29]*128 + (int)buffer_rec[30];
-                robot2.PT_RI = (int)buffer_rec[31]*128 + (int)buffer_rec[32];
-                robot2.PT_RO = (int)buffer_rec[33]*128 + (int)buffer_rec[34];
-                robot2.PT_BR = (int)buffer_rec[35]*128 + (int)buffer_rec[36];
-                robot2.PT_BL = (int)buffer_rec[37]*128 + (int)buffer_rec[38];
-                robot2.PT_PUCK = (int)buffer_rec[39]*128 + (int)buffer_rec[40];
+                if (ANALOG) {
+                    robot2.PT_LO = (int)buffer_rec[27]*128 + (int)buffer_rec[28];
+                    robot2.PT_LI = (int)buffer_rec[29]*128 + (int)buffer_rec[30];
+                    robot2.PT_RI = (int)buffer_rec[31]*128 + (int)buffer_rec[32];
+                    robot2.PT_RO = (int)buffer_rec[33]*128 + (int)buffer_rec[34];
+                    robot2.PT_BR = (int)buffer_rec[35]*128 + (int)buffer_rec[36];
+                    robot2.PT_BL = (int)buffer_rec[37]*128 + (int)buffer_rec[38];
+                    robot2.PT_PUCK = (int)buffer_rec[39]*128 + (int)buffer_rec[40];
+                }
+                
             }
             
             else if (robot_num == 3) {          // If we received from robot 3
@@ -159,13 +167,16 @@ int main(void)
                 robot3.OCR1C_PWM = (int)buffer_rec[24]*128 + (int)buffer_rec[25];
                 robot3.bank = (int)buffer_rec[26];
                 
-                robot3.PT_LO = (int)buffer_rec[27]*128 + (int)buffer_rec[28];
-                robot3.PT_LI = (int)buffer_rec[29]*128 + (int)buffer_rec[30];
-                robot3.PT_RI = (int)buffer_rec[31]*128 + (int)buffer_rec[32];
-                robot3.PT_RO = (int)buffer_rec[33]*128 + (int)buffer_rec[34];
-                robot3.PT_BR = (int)buffer_rec[35]*128 + (int)buffer_rec[36];
-                robot3.PT_BL = (int)buffer_rec[37]*128 + (int)buffer_rec[38];
-                robot3.PT_PUCK = (int)buffer_rec[39]*128 + (int)buffer_rec[40];
+                if (ANALOG) {
+                    robot3.PT_LO = (int)buffer_rec[27]*128 + (int)buffer_rec[28];
+                    robot3.PT_LI = (int)buffer_rec[29]*128 + (int)buffer_rec[30];
+                    robot3.PT_RI = (int)buffer_rec[31]*128 + (int)buffer_rec[32];
+                    robot3.PT_RO = (int)buffer_rec[33]*128 + (int)buffer_rec[34];
+                    robot3.PT_BR = (int)buffer_rec[35]*128 + (int)buffer_rec[36];
+                    robot3.PT_BL = (int)buffer_rec[37]*128 + (int)buffer_rec[38];
+                    robot3.PT_PUCK = (int)buffer_rec[39]*128 + (int)buffer_rec[40];
+                }
+                
             }
             
 			flag_data = 0;      // Reset the flag that done receiving form RF
@@ -278,7 +289,29 @@ void send_to_MATLAB(){
                     flag = 0;                   // Reset the flag that we haven't received anything
                 }
                 
-                if (flag == 2){                 // If MATLAB needs the Position and Orientation data send them ASAP
+                else if (flag == 4){                 // If MATLAB needs the Position and Orientation data send them ASAP
+                    m_usb_rx_flush();           // Flush the RX buffer
+                    
+                    m_usb_tx_int(robot1.PT_LO);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.PT_LI);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.PT_RI);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.PT_RO);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.PT_BL);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.PT_BR);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot1.PT_PUCK);
+                    m_usb_tx_string("\n");
+                    
+                    flag = 0;                   // Reset the flag that we haven't received anything
+                }
+                
+                
+                else if (flag == 2){                 // If MATLAB needs the Position and Orientation data send them ASAP
                     m_usb_rx_flush();           // Flush the RX buffer
                     
                     m_usb_tx_int(robot2.x);
@@ -315,7 +348,28 @@ void send_to_MATLAB(){
                     flag = 0;                   // Reset the flag that we haven't received anything
                 }
                 
-                if (flag == 3){                 // If MATLAB needs the Position and Orientation data send them ASAP
+                else if (flag == 5){                 // If MATLAB needs the Position and Orientation data send them ASAP
+                    m_usb_rx_flush();           // Flush the RX buffer
+                    
+                    m_usb_tx_int(robot2.PT_LO);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.PT_LI);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.PT_RI);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.PT_RO);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.PT_BL);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.PT_BR);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot2.PT_PUCK);
+                    m_usb_tx_string("\n");
+                    
+                    flag = 0;                   // Reset the flag that we haven't received anything
+                }
+                
+                else if (flag == 3){                 // If MATLAB needs the Position and Orientation data send them ASAP
                     m_usb_rx_flush();           // Flush the RX buffer
                     
                     m_usb_tx_int(robot3.x);
@@ -351,6 +405,28 @@ void send_to_MATLAB(){
                     
                     flag = 0;                   // Reset the flag that we haven't received anything
                 }
+                
+                else if (flag == 6){                 // If MATLAB needs the Position and Orientation data send them ASAP
+                    m_usb_rx_flush();           // Flush the RX buffer
+                    
+                    m_usb_tx_int(robot3.PT_LO);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.PT_LI);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.PT_RI);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.PT_RO);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.PT_BL);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.PT_BR);
+                    m_usb_tx_string("\n");
+                    m_usb_tx_int(robot3.PT_PUCK);
+                    m_usb_tx_string("\n");
+                    
+                    flag = 0;                   // Reset the flag that we haven't received anything
+                }
+                
             }
             
             
