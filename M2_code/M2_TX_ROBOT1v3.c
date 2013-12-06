@@ -12,9 +12,9 @@
 #include <avr/interrupt.h>
 
 #define N_CLOCK 0
-#define NUM_LEDS 6
+#define NUM_LEDS 7
 #define SIZE_ARRAY_BLOBS 12
-#define PACKET_LENGTH_DEBUG 27
+#define PACKET_LENGTH_DEBUG 41
 #define PACKET_LENGTH_SYSTEM 10
 #define SEN_ADDRESS_SYSTEM 0xDA
 #define ALEX_ADDRESS_SYSTEM 0x42
@@ -42,8 +42,8 @@
 #define PWM_SPEED_TURN_RGHT 380
 //#define PWM_SPEED_FWD_LFT 393
 //#define PWM_SPEED_FWD_RGHT 380
-#define PWM_SPEED_FWD_LFT 3800
-#define PWM_SPEED_FWD_RGHT 3700
+#define PWM_SPEED_FWD_LFT 2800
+#define PWM_SPEED_FWD_RGHT 2700
 #define PWM_MAXIMUM 5000
 #define PWM_MIN_LEFT 363
 #define PWM_MIN_RGHT 350
@@ -93,6 +93,7 @@ int main(void)
 	int pause_bool = 0;
 	int enemy_rob1_x = 0,enemy_rob1_y = 0,enemy_rob2_x = 0,enemy_rob2_y = 0,enemy_rob3_x = 0,enemy_rob3_y = 0;
 	int scoreA = 0,scoreB = 0;
+	int PT1_left_outside = 0, PT2_left_inside = 0, PT3_right_inside = 0, PT4_right_outside = 0, PT5_back_right = 0, PT6_back_left = 0, PT7_have_puck = 0;
     
     //Variables debugging
     float dir_x = 0;
@@ -149,14 +150,13 @@ int main(void)
         aux = m_wii_open();
     }
     
-    m_wait(1000);
-    m_red(OFF);*/
+    m_wait(1000);*/
+    m_red(OFF);
 	
     
     //Open the channel
     //m_rf_open(CHANNEL_SYSTEM,ALEX_ADDRESS_SYSTEM,PACKET_LENGTH_SYSTEM);
 	m_rf_open(CHANNEL_DEBUG,REC_ADDRESS_DEBUG,PACKET_LENGTH_DEBUG);
-	m_green(ON);
 		
     //Enable interruptions
     sei();
@@ -182,11 +182,13 @@ int main(void)
 		{
          go_fwd();
 		 m_red(ON);
+		 m_green(OFF);
         }
         else
 		{
          go_bwd();
 		 m_red(OFF);
+		 m_green(ON);
         }
 		
 		
@@ -204,21 +206,42 @@ int main(void)
  
 		}
         
-        /*
-         //ANALOG CODE
-         int i;
-         for (i=0;i<NUM_LEDS;i++)
-         {
-         get_analog_val(i);
+        /*//ANALOG CODE
+        for (int i=0;i<NUM_LEDS;i++)
+        {
+			get_analog_val(i);
          
-         //Wait until flag is on
-         while(!check(ADCSRA,ADIF));
-         LED_values_raw[i] = ADC;
+			//Wait until flag is on
+			while(!check(ADCSRA,ADIF));
+			switch(i)
+			{
+				case(0):
+					PT1_left_outside = ADC;
+					break;
+				case(1): 
+					PT2_left_inside = ADC;
+					break;
+				case(2):
+					PT3_right_inside = ADC;
+					break;
+				case(3):
+					PT4_right_outside = ADC;
+					break;
+				case(4):
+					PT5_back_right = ADC;
+					break;
+				case(5): 
+					PT6_back_left = ADC;
+					break;
+				case(6):
+					PT7_have_puck = ADC;
+					break;
+			}
          
-         //After doing the conversion reset flag
-         set(ADCSRA,ADIF);
-         }
-         */
+			//After doing the conversion reset flag
+			set(ADCSRA,ADIF);
+        }*/
+         
         
         
         //SEND COMMANDS
@@ -292,6 +315,34 @@ int main(void)
 				output_buffer[25] = (signed char)aux_conversion.rem;
 			
 				output_buffer[26] = (signed char)bank;
+				
+				/*aux_conversion = div(PT1_left_outside,128);
+				output_buffer[27] = (signed char)aux_conversion.quot;
+				output_buffer[28] = (signed char)aux_conversion.rem;
+				
+				aux_conversion = div(PT2_left_inside,128);
+				output_buffer[29] = (signed char)aux_conversion.quot;
+				output_buffer[30] = (signed char)aux_conversion.rem;
+				
+				aux_conversion = div(PT3_right_inside,128);
+				output_buffer[31] = (signed char)aux_conversion.quot;
+				output_buffer[32] = (signed char)aux_conversion.rem;
+				
+				aux_conversion = div(PT4_right_outside,128);
+				output_buffer[33] = (signed char)aux_conversion.quot;
+				output_buffer[34] = (signed char)aux_conversion.rem;
+				
+				aux_conversion = div(PT5_back_right,128);
+				output_buffer[35] = (signed char)aux_conversion.quot;
+				output_buffer[36] = (signed char)aux_conversion.rem;
+				
+				aux_conversion = div(PT6_back_left,128);
+				output_buffer[37] = (signed char)aux_conversion.quot;
+				output_buffer[38] = (signed char)aux_conversion.rem;
+				
+				aux_conversion = div(PT7_have_puck,128);
+				output_buffer[39] = (signed char)aux_conversion.quot;
+				output_buffer[40] = (signed char)aux_conversion.rem;*/
 			
 				m_rf_send(SEN_ADDRESS_DEBUG,output_buffer,PACKET_LENGTH_DEBUG);
 			
@@ -308,7 +359,7 @@ int main(void)
 			
         }
 		
-        //STATE COMMANDS
+        /*//STATE COMMANDS
         switch (state)
         {
 			long stop_counter = 0;
@@ -603,7 +654,7 @@ int main(void)
                     //m_green(TOGGLE);
                     //m_wait(250);
                 //}
-        }
+        }*/
         
     }
   
@@ -797,18 +848,19 @@ void get_analog_val(int id)
 
 void init_ports(void)
 {
-    //B0 and B1 as outputs
-    set(DDRB,0);
-    set(DDRB,1);
-	//set(DDRB,3);
-	//set(DDRD,3);
-    set(PORTB,0);
-	//set(PORTB,3);
-	//set(PORTD,3);
+    //B3 and D3 as outputs
+	set(DDRB,3);
+	set(DDRD,3);
+	set(PORTB,3);
+	set(PORTD,3);
     
-    //Set B2 as input
+    //Set B2 as input and enable pull-up
     clear(DDRB,2);
-    //set(PORTB,2);
+    set(PORTB,2);
+	
+	//Set E6 as output
+	set(DDRE,6);
+	clear(PORTE,6);
 }
 
 
@@ -820,8 +872,8 @@ void stop_motor(void)
 
 void turn_left(void)
 {
-    set(PORTB,0);
-    set(PORTB,1);
+    set(PORTB,3);
+    set(PORTD,3);
 	OCR1B = PWM_SPEED_TURN_RGHT;
     OCR1C = PWM_SPEED_TURN_LFT;
 	//m_green(OFF);
@@ -829,8 +881,8 @@ void turn_left(void)
 
 void turn_right(void)
 {
-    clear(PORTB,0);
-    clear(PORTB,1);
+    clear(PORTB,3);
+    clear(PORTD,3);
     OCR1B = PWM_SPEED_TURN_RGHT;
     OCR1C = PWM_SPEED_TURN_LFT;
 	//m_green(ON);
@@ -838,16 +890,16 @@ void turn_right(void)
 
 void go_bwd(void)
 {
-    clear(PORTB,0);
-    set(PORTB,1);
+    clear(PORTB,3);
+    set(PORTD,3);
     OCR1B = PWM_SPEED_FWD_LFT;
     OCR1C = PWM_SPEED_FWD_RGHT;
 }
 
 void go_fwd(void)
 {
-	set(PORTB,0);
-	clear(PORTB,1);
+	set(PORTB,3);
+	clear(PORTD,3);
 	OCR1B = PWM_SPEED_FWD_LFT;
 	OCR1C = PWM_SPEED_FWD_RGHT;
 }
@@ -893,7 +945,7 @@ void move_robot(float theta, int dir){
 
 void turnOnBlueLED(void)
 {
-	//m_green(ON);
+	set(PORTE,6);
 }
 
 void celebrate(void)
