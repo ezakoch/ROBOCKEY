@@ -114,6 +114,10 @@
       <SubType>compile</SubType>
       <Link>m_rf.c</Link>
     </Compile>
+    <Compile Include="..\..\m_usb.c">
+      <SubType>compile</SubType>
+      <Link>m_usb.c</Link>
+    </Compile>
     <Compile Include="..\..\m_wii.c">
       <SubType>compile</SubType>
       <Link>m_wii.c</Link>

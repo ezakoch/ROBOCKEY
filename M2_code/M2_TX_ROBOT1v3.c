@@ -14,7 +14,7 @@
 #define N_CLOCK 0
 #define NUM_LEDS 7
 #define SIZE_ARRAY_BLOBS 12
-#define PACKET_LENGTH_DEBUG 41
+#define PACKET_LENGTH_DEBUG 32
 #define PACKET_LENGTH_SYSTEM 10
 #define SEN_ADDRESS_SYSTEM 0xDA
 #define ALEX_ADDRESS_SYSTEM 0x42
@@ -265,82 +265,62 @@ int main(void)
 				output_buffer[1] = state;
 				output_buffer[2] = x_robot;
 				output_buffer[3] = y_robot;
+							
 				aux_conversion = div(theta_robot,128);
-			
-				//Put packets together for sending
 				output_buffer[4] = (signed char)aux_conversion.quot;
 				output_buffer[5] = (signed char)aux_conversion.rem;
 			
-				//Debugging
 				output_buffer[6] = (signed char)status_go_to_goal;
 			
-				aux_conversion = div((int)dir_x,128);
+				aux_conversion = div((int)dir_angle,128);
 				output_buffer[7] = (signed char)aux_conversion.quot;
 				output_buffer[8] = (signed char)aux_conversion.rem;
 			
-				aux_conversion = div((int)dir_y,128);
+				aux_conversion = div((int)dist_goal,128);
 				output_buffer[9] = (signed char)aux_conversion.quot;
 				output_buffer[10] = (signed char)aux_conversion.rem;
 			
-				aux_conversion = div((int)dir_angle,128);
+				aux_conversion = div(cam_X,128);
 				output_buffer[11] = (signed char)aux_conversion.quot;
 				output_buffer[12] = (signed char)aux_conversion.rem;
 			
-				aux_conversion = div((int)dist_goal,128);
+				aux_conversion = div(cam_Y,128);
 				output_buffer[13] = (signed char)aux_conversion.quot;
 				output_buffer[14] = (signed char)aux_conversion.rem;
 			
-				aux_conversion = div(cam_X,128);
-				output_buffer[15] = (signed char)aux_conversion.quot;
-				output_buffer[16] = (signed char)aux_conversion.rem;
-			
-				aux_conversion = div(cam_Y,128);
-				output_buffer[17] = (signed char)aux_conversion.quot;
-				output_buffer[18] = (signed char)aux_conversion.rem;
-			
-				output_buffer[19] = (signed char)commands_var;
+				output_buffer[15] = (signed char)commands_var;
 			
 				aux_conversion = div((int)diff_theta,128);
-				output_buffer[20] = (signed char)aux_conversion.quot;
-				output_buffer[21] = (signed char)aux_conversion.rem;
+				output_buffer[16] = (signed char)aux_conversion.quot;
+				output_buffer[17] = (signed char)aux_conversion.rem;
 			
-				aux_conversion = div((int)OCR1B,128);
-				output_buffer[22] = (signed char)aux_conversion.quot;
-				output_buffer[23] = (signed char)aux_conversion.rem;
-			
-				aux_conversion = div((int)OCR1C,128);
-				output_buffer[24] = (signed char)aux_conversion.quot;
-				output_buffer[25] = (signed char)aux_conversion.rem;
-			
-				output_buffer[26] = (signed char)bank;
-				
 				aux_conversion = div(PT1_left_outside,128);
-				output_buffer[27] = (signed char)aux_conversion.quot;
-				output_buffer[28] = (signed char)aux_conversion.rem;
+				output_buffer[18] = (signed char)aux_conversion.quot;
+				output_buffer[19] = (signed char)aux_conversion.rem;
 				
 				aux_conversion = div(PT2_left_inside,128);
-				output_buffer[29] = (signed char)aux_conversion.quot;
-				output_buffer[30] = (signed char)aux_conversion.rem;
+				output_buffer[20] = (signed char)aux_conversion.quot;
+				output_buffer[21] = (signed char)aux_conversion.rem;
 				
 				aux_conversion = div(PT3_right_inside,128);
-				output_buffer[31] = (signed char)aux_conversion.quot;
-				output_buffer[32] = (signed char)aux_conversion.rem;
+				output_buffer[22] = (signed char)aux_conversion.quot;
+				output_buffer[23] = (signed char)aux_conversion.rem;
 				
 				aux_conversion = div(PT4_right_outside,128);
-				output_buffer[33] = (signed char)aux_conversion.quot;
-				output_buffer[34] = (signed char)aux_conversion.rem;
+				output_buffer[24] = (signed char)aux_conversion.quot;
+				output_buffer[25] = (signed char)aux_conversion.rem;
 				
 				aux_conversion = div(PT5_back_right,128);
-				output_buffer[35] = (signed char)aux_conversion.quot;
-				output_buffer[36] = (signed char)aux_conversion.rem;
+				output_buffer[26] = (signed char)aux_conversion.quot;
+				output_buffer[27] = (signed char)aux_conversion.rem;
 				
 				aux_conversion = div(PT6_back_left,128);
-				output_buffer[37] = (signed char)aux_conversion.quot;
-				output_buffer[38] = (signed char)aux_conversion.rem;
+				output_buffer[28] = (signed char)aux_conversion.quot;
+				output_buffer[29] = (signed char)aux_conversion.rem;
 				
 				aux_conversion = div(PT7_have_puck,128);
-				output_buffer[39] = (signed char)aux_conversion.quot;
-				output_buffer[40] = (signed char)aux_conversion.rem;
+				output_buffer[30] = (signed char)aux_conversion.quot;
+				output_buffer[31] = (signed char)aux_conversion.rem;
 			
 				m_rf_send(SEN_ADDRESS_DEBUG,output_buffer,PACKET_LENGTH_DEBUG);
 				m_red(TOGGLE);
@@ -483,7 +463,7 @@ int main(void)
                         {
                             diff_theta = dir_angle - theta_robot;
                             bank = 0;
-                            commands_var = 1;
+                            //commands_var = 1;
                         }
                         else if (add_360 == 0 && (angle_dir_aux > theta_robot || theta_robot > dir_angle))
                         {
@@ -492,7 +472,7 @@ int main(void)
                             else
                                 diff_theta = (theta_robot) - dir_angle;
                             bank = 1;
-                            commands_var = 2;
+                            //commands_var = 2;
                         }
                         else if (add_360 == 1 && ((theta_robot <=dir_angle && theta_robot >=-180) || ((theta_robot >= angle_dir_aux) && (theta_robot <= 180))))
                         {
@@ -501,18 +481,19 @@ int main(void)
                             else
                                 diff_theta = (dir_angle + 360) - theta_robot;
                             bank = 0;
-                            commands_var = 3;
+                            //commands_var = 3;
                         }
                         else if (add_360 == 1 && (theta_robot > dir_angle && theta_robot < angle_dir_aux))
                         {
                             diff_theta = theta_robot - dir_angle;
                             bank = 1;
-                            commands_var = 4;
+                            //commands_var = 4;
                         }else {
                             diff_theta = 0;
                             bank = 0;
-                            commands_var = 0;
+                            //commands_var = 0;
                         }
+						commands_var = bank;
 						
 						move_robot(diff_theta,bank);
 						//move_robot(diff_theta,dist_goal,bank);                        
