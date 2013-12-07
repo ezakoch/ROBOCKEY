@@ -95,28 +95,19 @@ int main(void)
                 robot1.y = (int)buffer_rec[3];
                 robot1.yaw = (int)buffer_rec[4]*128 + (int)buffer_rec[5];
                 robot1.status_go_to_goal = (int)buffer_rec[6];
-                robot1.dir_x = (int)buffer_rec[7]*128 + (int)buffer_rec[8];
-                robot1.dir_y = (int)buffer_rec[9]*128 + (int)buffer_rec[10];
-                robot1.dir_angle = (int)buffer_rec[11]*128 + (int)buffer_rec[12];
-                robot1.dist_goal = (int)buffer_rec[13]*128 + (int)buffer_rec[14];
-                robot1.camera_x = (int)buffer_rec[15]*128 + (int)buffer_rec[16];
-                robot1.camera_y = (int)buffer_rec[17]*128 + (int)buffer_rec[18];
-                robot1.commands_var = (int)buffer_rec[19];
-                robot1.diff_theta = (int)buffer_rec[20]*128 + (int)buffer_rec[21];
-                robot1.OCR1B_PWM = (int)buffer_rec[22]*128 + (int)buffer_rec[23];
-                robot1.OCR1C_PWM = (int)buffer_rec[24]*128 + (int)buffer_rec[25];
-                robot1.bank = (int)buffer_rec[26];
-                
-                if (ANALOG) {
-                    robot1.PT_LO = (int)buffer_rec[27]*128 + (int)buffer_rec[28];
-                    robot1.PT_LI = (int)buffer_rec[29]*128 + (int)buffer_rec[30];
-                    robot1.PT_RI = (int)buffer_rec[31]*128 + (int)buffer_rec[32];
-                    robot1.PT_RO = (int)buffer_rec[33]*128 + (int)buffer_rec[34];
-                    robot1.PT_BR = (int)buffer_rec[35]*128 + (int)buffer_rec[36];
-                    robot1.PT_BL = (int)buffer_rec[37]*128 + (int)buffer_rec[38];
-                    robot1.PT_PUCK = (int)buffer_rec[39]*128 + (int)buffer_rec[40];
-                }
-                
+                robot1.dir_angle = (int)buffer_rec[7]*128 + (int)buffer_rec[8];
+                robot1.dist_goal = (int)buffer_rec[9]*128 + (int)buffer_rec[10];
+                robot1.camera_x = (int)buffer_rec[11]*128 + (int)buffer_rec[12];
+                robot1.camera_y = (int)buffer_rec[13]*128 + (int)buffer_rec[14];
+                robot1.commands_var = (int)buffer_rec[15];
+                robot1.diff_theta = (int)buffer_rec[16]*128 + (int)buffer_rec[17];
+                robot1.PT_LO = (int)buffer_rec[18]*128 + (int)buffer_rec[19];
+                robot1.PT_LI = (int)buffer_rec[20]*128 + (int)buffer_rec[21];
+                robot1.PT_RI = (int)buffer_rec[22]*128 + (int)buffer_rec[23];
+                robot1.PT_RO = (int)buffer_rec[24]*128 + (int)buffer_rec[25];
+                robot1.PT_BR = (int)buffer_rec[26]*128 + (int)buffer_rec[27];
+                robot1.PT_BL = (int)buffer_rec[28]*128 + (int)buffer_rec[29];
+                robot1.PT_PUCK = (int)buffer_rec[30]*128 + (int)buffer_rec[31];
             }
             
             else if (robot_num == 2) {          // If we received from robot 2
@@ -125,27 +116,19 @@ int main(void)
                 robot2.y = (int)buffer_rec[3];
                 robot2.yaw = (int)buffer_rec[4]*128 + (int)buffer_rec[5];
                 robot2.status_go_to_goal = (int)buffer_rec[6];
-                robot2.dir_x = (int)buffer_rec[7]*128 + (int)buffer_rec[8];
-                robot2.dir_y = (int)buffer_rec[9]*128 + (int)buffer_rec[10];
-                robot2.dir_angle = (int)buffer_rec[11]*128 + (int)buffer_rec[12];
-                robot2.dist_goal = (int)buffer_rec[13]*128 + (int)buffer_rec[14];
-                robot2.camera_x = (int)buffer_rec[15]*128 + (int)buffer_rec[16];
-                robot2.camera_y = (int)buffer_rec[17]*128 + (int)buffer_rec[18];
-                robot2.commands_var = (int)buffer_rec[19];
-                robot2.diff_theta = (int)buffer_rec[20]*128 + (int)buffer_rec[21];
-                robot2.OCR1B_PWM = (int)buffer_rec[22]*128 + (int)buffer_rec[23];
-                robot2.OCR1C_PWM = (int)buffer_rec[24]*128 + (int)buffer_rec[25];
-                robot2.bank = (int)buffer_rec[26];
-                
-                if (ANALOG) {
-                    robot2.PT_LO = (int)buffer_rec[27]*128 + (int)buffer_rec[28];
-                    robot2.PT_LI = (int)buffer_rec[29]*128 + (int)buffer_rec[30];
-                    robot2.PT_RI = (int)buffer_rec[31]*128 + (int)buffer_rec[32];
-                    robot2.PT_RO = (int)buffer_rec[33]*128 + (int)buffer_rec[34];
-                    robot2.PT_BR = (int)buffer_rec[35]*128 + (int)buffer_rec[36];
-                    robot2.PT_BL = (int)buffer_rec[37]*128 + (int)buffer_rec[38];
-                    robot2.PT_PUCK = (int)buffer_rec[39]*128 + (int)buffer_rec[40];
-                }
+                robot2.dir_angle = (int)buffer_rec[7]*128 + (int)buffer_rec[8];
+                robot2.dist_goal = (int)buffer_rec[9]*128 + (int)buffer_rec[10];
+                robot2.camera_x = (int)buffer_rec[11]*128 + (int)buffer_rec[12];
+                robot2.camera_y = (int)buffer_rec[13]*128 + (int)buffer_rec[14];
+                robot2.commands_var = (int)buffer_rec[15];
+                robot2.diff_theta = (int)buffer_rec[16]*128 + (int)buffer_rec[17];
+                robot2.PT_LO = (int)buffer_rec[18]*128 + (int)buffer_rec[19];
+                robot2.PT_LI = (int)buffer_rec[20]*128 + (int)buffer_rec[21];
+                robot2.PT_RI = (int)buffer_rec[22]*128 + (int)buffer_rec[23];
+                robot2.PT_RO = (int)buffer_rec[24]*128 + (int)buffer_rec[25];
+                robot2.PT_BR = (int)buffer_rec[26]*128 + (int)buffer_rec[27];
+                robot2.PT_BL = (int)buffer_rec[28]*128 + (int)buffer_rec[29];
+                robot2.PT_PUCK = (int)buffer_rec[30]*128 + (int)buffer_rec[31];
                 
             }
             
@@ -155,28 +138,19 @@ int main(void)
                 robot3.y = (int)buffer_rec[3];
                 robot3.yaw = (int)buffer_rec[4]*128 + (int)buffer_rec[5];
                 robot3.status_go_to_goal = (int)buffer_rec[6];
-                robot3.dir_x = (int)buffer_rec[7]*128 + (int)buffer_rec[8];
-                robot3.dir_y = (int)buffer_rec[9]*128 + (int)buffer_rec[10];
-                robot3.dir_angle = (int)buffer_rec[11]*128 + (int)buffer_rec[12];
-                robot3.dist_goal = (int)buffer_rec[13]*128 + (int)buffer_rec[14];
-                robot3.camera_x = (int)buffer_rec[15]*128 + (int)buffer_rec[16];
-                robot3.camera_y = (int)buffer_rec[17]*128 + (int)buffer_rec[18];
-                robot3.commands_var = (int)buffer_rec[19];
-                robot3.diff_theta = (int)buffer_rec[20]*128 + (int)buffer_rec[21];
-                robot3.OCR1B_PWM = (int)buffer_rec[22]*128 + (int)buffer_rec[23];
-                robot3.OCR1C_PWM = (int)buffer_rec[24]*128 + (int)buffer_rec[25];
-                robot3.bank = (int)buffer_rec[26];
-                
-                if (ANALOG) {
-                    robot3.PT_LO = (int)buffer_rec[27]*128 + (int)buffer_rec[28];
-                    robot3.PT_LI = (int)buffer_rec[29]*128 + (int)buffer_rec[30];
-                    robot3.PT_RI = (int)buffer_rec[31]*128 + (int)buffer_rec[32];
-                    robot3.PT_RO = (int)buffer_rec[33]*128 + (int)buffer_rec[34];
-                    robot3.PT_BR = (int)buffer_rec[35]*128 + (int)buffer_rec[36];
-                    robot3.PT_BL = (int)buffer_rec[37]*128 + (int)buffer_rec[38];
-                    robot3.PT_PUCK = (int)buffer_rec[39]*128 + (int)buffer_rec[40];
-                }
-                
+                robot3.dir_angle = (int)buffer_rec[7]*128 + (int)buffer_rec[8];
+                robot3.dist_goal = (int)buffer_rec[9]*128 + (int)buffer_rec[10];
+                robot3.camera_x = (int)buffer_rec[11]*128 + (int)buffer_rec[12];
+                robot3.camera_y = (int)buffer_rec[13]*128 + (int)buffer_rec[14];
+                robot3.commands_var = (int)buffer_rec[15];
+                robot3.diff_theta = (int)buffer_rec[16]*128 + (int)buffer_rec[17];
+                robot3.PT_LO = (int)buffer_rec[18]*128 + (int)buffer_rec[19];
+                robot3.PT_LI = (int)buffer_rec[20]*128 + (int)buffer_rec[21];
+                robot3.PT_RI = (int)buffer_rec[22]*128 + (int)buffer_rec[23];
+                robot3.PT_RO = (int)buffer_rec[24]*128 + (int)buffer_rec[25];
+                robot3.PT_BR = (int)buffer_rec[26]*128 + (int)buffer_rec[27];
+                robot3.PT_BL = (int)buffer_rec[28]*128 + (int)buffer_rec[29];
+                robot3.PT_PUCK = (int)buffer_rec[30]*128 + (int)buffer_rec[31];
             }
             
 			flag_data = 0;      // Reset the flag that done receiving form RF
@@ -263,10 +237,6 @@ void send_to_MATLAB(){
                     m_usb_tx_string("\n");
                     m_usb_tx_int(robot1.status_go_to_goal);
                     m_usb_tx_string("\n");
-                    m_usb_tx_int(robot1.dir_x);
-                    m_usb_tx_string("\n");
-                    m_usb_tx_int(robot1.dir_y);
-                    m_usb_tx_string("\n");
                     m_usb_tx_int(robot1.dir_angle);
                     m_usb_tx_string("\n");
                     m_usb_tx_int(robot1.dist_goal);
@@ -278,12 +248,6 @@ void send_to_MATLAB(){
                     m_usb_tx_int(robot1.commands_var);
                     m_usb_tx_string("\n");
                     m_usb_tx_int(robot1.diff_theta);
-                    m_usb_tx_string("\n");
-                    m_usb_tx_int(robot1.bank);
-                    m_usb_tx_string("\n");
-                    m_usb_tx_int(robot1.OCR1B_PWM);
-                    m_usb_tx_string("\n");
-                    m_usb_tx_int(robot1.OCR1C_PWM);
                     m_usb_tx_string("\n");
                     
                     flag = 0;                   // Reset the flag that we haven't received anything
@@ -322,10 +286,6 @@ void send_to_MATLAB(){
                     m_usb_tx_string("\n");
                     m_usb_tx_int(robot2.status_go_to_goal);
                     m_usb_tx_string("\n");
-                    m_usb_tx_int(robot2.dir_x);
-                    m_usb_tx_string("\n");
-                    m_usb_tx_int(robot2.dir_y);
-                    m_usb_tx_string("\n");
                     m_usb_tx_int(robot2.dir_angle);
                     m_usb_tx_string("\n");
                     m_usb_tx_int(robot2.dist_goal);
@@ -337,12 +297,6 @@ void send_to_MATLAB(){
                     m_usb_tx_int(robot2.commands_var);
                     m_usb_tx_string("\n");
                     m_usb_tx_int(robot2.diff_theta);
-                    m_usb_tx_string("\n");
-                    m_usb_tx_int(robot2.bank);
-                    m_usb_tx_string("\n");
-                    m_usb_tx_int(robot2.OCR1B_PWM);
-                    m_usb_tx_string("\n");
-                    m_usb_tx_int(robot2.OCR1C_PWM);
                     m_usb_tx_string("\n");
                     
                     flag = 0;                   // Reset the flag that we haven't received anything
@@ -380,10 +334,6 @@ void send_to_MATLAB(){
                     m_usb_tx_string("\n");
                     m_usb_tx_int(robot3.status_go_to_goal);
                     m_usb_tx_string("\n");
-                    m_usb_tx_int(robot3.dir_x);
-                    m_usb_tx_string("\n");
-                    m_usb_tx_int(robot3.dir_y);
-                    m_usb_tx_string("\n");
                     m_usb_tx_int(robot3.dir_angle);
                     m_usb_tx_string("\n");
                     m_usb_tx_int(robot3.dist_goal);
@@ -395,12 +345,6 @@ void send_to_MATLAB(){
                     m_usb_tx_int(robot3.commands_var);
                     m_usb_tx_string("\n");
                     m_usb_tx_int(robot3.diff_theta);
-                    m_usb_tx_string("\n");
-                    m_usb_tx_int(robot3.bank);
-                    m_usb_tx_string("\n");
-                    m_usb_tx_int(robot3.OCR1B_PWM);
-                    m_usb_tx_string("\n");
-                    m_usb_tx_int(robot3.OCR1C_PWM);
                     m_usb_tx_string("\n");
                     
                     flag = 0;                   // Reset the flag that we haven't received anything

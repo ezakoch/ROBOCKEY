@@ -60,9 +60,9 @@ hold on
             'Position', [180 text_y+y_space 80 20],'BackgroundColor',userdata.defaultBackground);
         h.robot1.var1 = uicontrol('Style', 'text', 'String', 'Status GO_TO_GOAL','Fontsize',text_size,...
             'Position', [text_x text_y 180 20],'BackgroundColor',userdata.defaultBackground);
-        h.robot1.var2 = uicontrol('Style', 'text', 'String', 'Dir x to GOAL','Fontsize',text_size,...
+        h.robot1.var2 = uicontrol('Style', 'text', 'String', '-','Fontsize',text_size,...
             'Position', [text_x text_y-y_space 180 20],'BackgroundColor',userdata.defaultBackground);
-        h.robot1.var3 = uicontrol('Style', 'text', 'String', 'Dir y to GOAL','Fontsize',text_size,...
+        h.robot1.var3 = uicontrol('Style', 'text', 'String', '-','Fontsize',text_size,...
             'Position', [text_x text_y-2*y_space 180 20],'BackgroundColor',userdata.defaultBackground);
         h.robot1.var4 = uicontrol('Style', 'text', 'String', 'Angle to GOAL','Fontsize',text_size,...
             'Position', [text_x text_y-3*y_space 180 20],'BackgroundColor',userdata.defaultBackground);
@@ -74,11 +74,11 @@ hold on
             'Position', [text_x text_y-6*y_space 180 20],'BackgroundColor',userdata.defaultBackground);
         h.robot1.var8 = uicontrol('Style', 'text', 'String', 'Diff Theta','Fontsize',text_size,...
             'Position', [text_x text_y-7*y_space 180 20],'BackgroundColor',userdata.defaultBackground);
-        h.robot1.var9 = uicontrol('Style', 'text', 'String', 'Bank','Fontsize',text_size,...
+        h.robot1.var9 = uicontrol('Style', 'text', 'String', '-','Fontsize',text_size,...
             'Position', [text_x text_y-8*y_space 180 20],'BackgroundColor',userdata.defaultBackground);
-        h.robot1.var10 = uicontrol('Style', 'text', 'String', 'OCR1B','Fontsize',text_size,...
+        h.robot1.var10 = uicontrol('Style', 'text', 'String', '-','Fontsize',text_size,...
             'Position', [text_x text_y-9*y_space 180 20],'BackgroundColor',userdata.defaultBackground);
-        h.robot1.var11 = uicontrol('Style', 'text', 'String', 'OCR1C','Fontsize',text_size,...
+        h.robot1.var11 = uicontrol('Style', 'text', 'String', '-','Fontsize',text_size,...
             'Position', [text_x text_y-10*y_space 180 20],'BackgroundColor',userdata.defaultBackground);
         h.robot1.var12 = uicontrol('Style', 'text', 'String', '-','Fontsize',text_size,...
             'Position', [text_x text_y-11*y_space 180 20],'BackgroundColor',userdata.defaultBackground);
@@ -188,8 +188,8 @@ hold on
         userdata.enemies.robot3.y = [];
         
         
-        init_plot_sensors_robot1();
-        init_plot_sensors_robot2();
+%         init_plot_sensors_robot1();
+%         init_plot_sensors_robot2();
         
         tic
         while (userdata.flag_plot_sensors)
@@ -203,38 +203,38 @@ hold on
             end
             get_robot1_variables(i);  
             
-            fwrite(userdata.handle, 4);
-            nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
-            while(nBytes==0)
-                nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
-            end
-            get_robot1_ADC(i);
+%             fwrite(userdata.handle, 4);
+%             nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
+%             while(nBytes==0)
+%                 nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
+%             end
+%             get_robot1_ADC(i);
             
-            
-            % ASK ROBOT 2 FOR EACH VARIABLES
-            fwrite(userdata.handle, 2);
-            nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
-            while(nBytes==0)
-                nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
-            end
-            get_robot2_variables(i); 
-            
-            fwrite(userdata.handle, 5);
-            nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
-            while(nBytes==0)
-                nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
-            end
-            get_robot2_ADC(i);
-            
-            
-            
-            % ASK ROBOT 3 FOR EACH VARIABLES
-            fwrite(userdata.handle, 3);
-            nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
-            while(nBytes==0)
-                nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
-            end
-            get_robot3_variables(i); 
+%             
+%             % ASK ROBOT 2 FOR EACH VARIABLES
+%             fwrite(userdata.handle, 2);
+%             nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
+%             while(nBytes==0)
+%                 nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
+%             end
+%             get_robot2_variables(i); 
+%             
+%             fwrite(userdata.handle, 5);
+%             nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
+%             while(nBytes==0)
+%                 nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
+%             end
+%             get_robot2_ADC(i);
+%             
+%             
+%             
+%             % ASK ROBOT 3 FOR EACH VARIABLES
+%             fwrite(userdata.handle, 3);
+%             nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
+%             while(nBytes==0)
+%                 nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
+%             end
+%             get_robot3_variables(i); 
             
             
 %                 if (userdata.enemies.flag)
