@@ -18,7 +18,7 @@ int main(void)
 	char rx_buffer;
 	m_clockdivide(0);
 	//m_usb_init(); // connect usb
-	m_red(ON);
+	//m_red(ON);
 	init();
     while(1)
     {

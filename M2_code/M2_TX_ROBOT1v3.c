@@ -38,12 +38,12 @@
 //#define GOAL_B_POS_Y 0
 #define THRESHOLD_ANGLE_GOAL 7
 #define THRESHOLD_DIST_GOAL 20
-#define PWM_SPEED_TURN_LFT 380 //RIGHT NOT TURNING WITH LESS THAN 380
-#define PWM_SPEED_TURN_RGHT 380
+#define PWM_SPEED_TURN_LFT 3600 //RIGHT NOT TURNING WITH LESS THAN 380
+#define PWM_SPEED_TURN_RGHT 3600
 //#define PWM_SPEED_FWD_LFT 393
 //#define PWM_SPEED_FWD_RGHT 380
-#define PWM_SPEED_FWD_LFT 2800
-#define PWM_SPEED_FWD_RGHT 2700
+#define PWM_SPEED_FWD_LFT 3600//3300
+#define PWM_SPEED_FWD_RGHT 3600//3300
 #define PWM_MAXIMUM 5000
 #define PWM_MIN_LEFT 363
 #define PWM_MIN_RGHT 350
@@ -145,12 +145,12 @@ int main(void)
     
     //Initialize wii camera
     char aux = 0;
-    /*while(!aux)
+	while(!aux)
     {
         aux = m_wii_open();
-    }
+    };
     
-    m_wait(1000);*/
+    m_wait(1000);
     m_red(OFF);
 	
     
@@ -176,20 +176,18 @@ int main(void)
          turn_right();
 		 m_red(OFF);
         }*/
-		
-		// Motor testing
+
+		/*// Motor testing
         if (check(PINB,2)) 
 		{
-         go_fwd();
-		 m_red(ON);
-		 m_green(OFF);
-        }
+			go_fwd();
+			m_red(ON);
+		}
         else
 		{
-         go_bwd();
-		 m_red(OFF);
-		 m_green(ON);
-        }
+			go_bwd();
+			m_red(OFF);
+        }*/
 		
 		
         //LOCALIZATION CODE
@@ -206,7 +204,7 @@ int main(void)
  
 		}
         
-        /*//ANALOG CODE
+        //ANALOG CODE
         for (int i=0;i<NUM_LEDS;i++)
         {
 			get_analog_val(i);
@@ -240,7 +238,7 @@ int main(void)
          
 			//After doing the conversion reset flag
 			set(ADCSRA,ADIF);
-        }*/
+        }
          
         
         
@@ -316,7 +314,7 @@ int main(void)
 			
 				output_buffer[26] = (signed char)bank;
 				
-				/*aux_conversion = div(PT1_left_outside,128);
+				aux_conversion = div(PT1_left_outside,128);
 				output_buffer[27] = (signed char)aux_conversion.quot;
 				output_buffer[28] = (signed char)aux_conversion.rem;
 				
@@ -342,9 +340,10 @@ int main(void)
 				
 				aux_conversion = div(PT7_have_puck,128);
 				output_buffer[39] = (signed char)aux_conversion.quot;
-				output_buffer[40] = (signed char)aux_conversion.rem;*/
+				output_buffer[40] = (signed char)aux_conversion.rem;
 			
 				m_rf_send(SEN_ADDRESS_DEBUG,output_buffer,PACKET_LENGTH_DEBUG);
+				m_red(TOGGLE);
 			
 				/*//Open again the system channel			
 				m_rf_open(CHANNEL_SYSTEM,ALEX_ADDRESS_SYSTEM,PACKET_LENGTH_SYSTEM);
@@ -359,7 +358,7 @@ int main(void)
 			
         }
 		
-        /*//STATE COMMANDS
+        //STATE COMMANDS
         switch (state)
         {
 			long stop_counter = 0;
@@ -457,7 +456,7 @@ int main(void)
                 
                 
             case GO_TO_GOAL_CURVED:
-                
+                m_green(ON);
                 if (status_go_to_goal == 0)
                 {
                     dist_goal = sqrt((x_robot-goal_pos_x)*(x_robot-goal_pos_x)+(y_robot-goal_pos_y)*(y_robot-goal_pos_y));
@@ -523,6 +522,7 @@ int main(void)
                 else if (status_go_to_goal == 1)
                 {
                     //stop_motor();
+					m_red(ON);
                     status_go_to_goal = 0;
 					stop_counter = 0;
 					go_bwd();
@@ -654,7 +654,7 @@ int main(void)
                     //m_green(TOGGLE);
                     //m_wait(250);
                 //}
-        }*/
+        }
         
     }
   
@@ -858,9 +858,9 @@ void init_ports(void)
     clear(DDRB,2);
     set(PORTB,2);
 	
-	//Set E6 as output
-	set(DDRE,6);
-	clear(PORTE,6);
+	//Set D5 as output
+	set(DDRD,5);
+	clear(PORTD,5);
 }
 
 
@@ -872,36 +872,38 @@ void stop_motor(void)
 
 void turn_left(void)
 {
-    set(PORTB,3);
-    set(PORTD,3);
-	OCR1B = PWM_SPEED_TURN_RGHT;
-    OCR1C = PWM_SPEED_TURN_LFT;
-	//m_green(OFF);
+    clear(PORTB,3);
+   set(PORTD,3);
+	OCR1B = PWM_SPEED_TURN_LFT;
+    OCR1C = PWM_SPEED_TURN_RGHT;
+	//m_green(ON);
 }
 
 void turn_right(void)
 {
-    clear(PORTB,3);
+    set(PORTB,3);
     clear(PORTD,3);
-    OCR1B = PWM_SPEED_TURN_RGHT;
-    OCR1C = PWM_SPEED_TURN_LFT;
+    OCR1B = PWM_SPEED_TURN_LFT;
+    OCR1C = PWM_SPEED_TURN_RGHT;
 	//m_green(ON);
 }
 
 void go_bwd(void)
 {
-    clear(PORTB,3);
+    set(PORTB,3);
     set(PORTD,3);
     OCR1B = PWM_SPEED_FWD_LFT;
     OCR1C = PWM_SPEED_FWD_RGHT;
+	//m_green(TOGGLE);
 }
 
 void go_fwd(void)
 {
-	set(PORTB,3);
+	clear(PORTB,3);
 	clear(PORTD,3);
 	OCR1B = PWM_SPEED_FWD_LFT;
 	OCR1C = PWM_SPEED_FWD_RGHT;
+	//m_green(ON);
 }
 
 
@@ -939,8 +941,8 @@ void move_robot(float theta, int dir){
 		
 	}
 	
-	set(PORTB,0);
-	clear(PORTB,1);
+	clear(PORTB,3);
+	clear(PORTD,3);
 }
 
 void turnOnBlueLED(void)
