@@ -3,35 +3,58 @@ function init_plot_sensors_robot2( src,evnt )
 global userdata
     
         % Initialiaze figures
-        fig5 = figure(5);
-        set(fig5,'Position',[0 0 1200 800])
+        fig4 = figure(4);
+        set(fig4,'Position',[0 0 1200 800])
 
-        subplot(2,1,1)
-        hold all
-        
-        userdata.ADC.robot2.plot_PT_LO = plot(0,0);
-        userdata.ADC.robot2.plot_PT_LI = plot(0,0);
-        userdata.ADC.robot2.plot_PT_RI = plot(0,0);
-        userdata.ADC.robot2.plot_PT_RO = plot(0,0);
-        userdata.ADC.robot2.plot_PT_BL = plot(0,0);
-        userdata.ADC.robot2.plot_PT_BR = plot(0,0);
-        userdata.ADC.robot2.plot_PT_PUCK = plot(0,0);
-        
-        
+        subplot(2,3,1)
+        hold on
+        userdata.ADC.robot2.plot_PT_LO = plot(0,0,'b-');
+        userdata.ADC.robot2.plot_PT_RO = plot(0,0,'r-');
         title('Sensors')
         xlabel('Time (sec)')
         ylabel('ADC (0-1023)')
         legend([userdata.ADC.robot2.plot_PT_LO...
-                userdata.ADC.robot2.plot_PT_LI...
-                userdata.ADC.robot2.plot_PT_RI...
-                userdata.ADC.robot2.plot_PT_RO...
-                userdata.ADC.robot2.plot_PT_BL...
-                userdata.ADC.robot2.plot_PT_BR...
-                userdata.ADC.robot2.plot_PT_PUCK],...
-            'LO','LI','RI','RO','BL','BR','PUCK','Location','NorthEastOutside')
-        ylim([-100 1124])
+                userdata.ADC.robot2.plot_PT_RO],...
+            'LO','RO','Location','NorthEastOutside')
+        ylim([0 1023])
         grid on
         hold off
+        
+        
+        
+        subplot(2,3,2)
+        hold on
+        userdata.ADC.robot2.plot_PT_LI = plot(0,0,'b-');
+        userdata.ADC.robot2.plot_PT_RI = plot(0,0,'r-');
+        userdata.ADC.robot2.plot_PT_PUCK = plot(0,0,'c-');
+        title('Sensors')
+        xlabel('Time (sec)')
+        ylabel('ADC (0-1023)')
+        legend([userdata.ADC.robot2.plot_PT_LI...
+                userdata.ADC.robot2.plot_PT_RI...
+                userdata.ADC.robot2.plot_PT_PUCK],...
+            'LI','RI','PUCK','Location','NorthEastOutside')
+        ylim([0 1023])
+        grid on
+        hold off
+        
+        
+        
+        subplot(2,3,3)
+        hold on
+        userdata.ADC.robot2.plot_PT_BL = plot(0,0,'b-');
+        userdata.ADC.robot2.plot_PT_BR = plot(0,0,'r-');
+        title('Sensors')
+        xlabel('Time (sec)')
+        ylabel('ADC (0-1023)')
+        legend([userdata.ADC.robot2.plot_PT_BL...
+                userdata.ADC.robot2.plot_PT_BR],...
+            'BL','BR','Location','NorthEastOutside')
+        ylim([0 1023])
+        grid on
+        hold off
+        
+        
         
         subplot(2,2,4)
         hold on
@@ -69,7 +92,7 @@ global userdata
         text_x = 100;
         text_y = 40;
         
-         h.robot_num = uicontrol('Style', 'text', 'String', 'Robot 2','Fontsize',18,...
+        h.robot_num = uicontrol('Style', 'text', 'String', 'Robot 1','Fontsize',18,...
             'Position', [300 8*text_y 150 20],'BackgroundColor',userdata.defaultBackground);
         
         h.PT_LO = uicontrol('Style', 'text', 'String', 'LO','Fontsize',18,...

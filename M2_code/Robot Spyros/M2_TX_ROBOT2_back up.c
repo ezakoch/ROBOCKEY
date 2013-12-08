@@ -5,7 +5,7 @@
 #include "m_bus.h"
 #include "m_rf.h"
 #include "m_wii.h"
-#include "Localize.h"
+#include "Functions/Localize.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -187,12 +187,12 @@ int main(void)
     
     //Main loop
     start_timer0();
-//    
-//    TARGETS_X[0] = GOAL_A_POS_X;
-//    TARGETS_Y[0] = GOAL_A_POS_Y;
-//    TARGETS_X[1] = GOAL_B_POS_X;
-//    TARGETS_Y[1] = GOAL_B_POS_Y;
-//    
+    //
+    //    TARGETS_X[0] = GOAL_A_POS_X;
+    //    TARGETS_Y[0] = GOAL_A_POS_Y;
+    //    TARGETS_X[1] = GOAL_B_POS_X;
+    //    TARGETS_Y[1] = GOAL_B_POS_Y;
+    //
     TARGETS_X[0] = 0;
     TARGETS_Y[0] = 0;
     TARGETS_X[1] = 80;
@@ -366,9 +366,9 @@ int main(void)
                     {
                         goal_pos_x = GOAL_A_POS_X;
                         goal_pos_y = GOAL_A_POS_Y;
-//                        goal_pos_x = TARGETS_X[TARGET_NUM];
-//                        goal_pos_y = TARGETS_Y[TARGET_NUM];
-//                        
+                        //                        goal_pos_x = TARGETS_X[TARGET_NUM];
+                        //                        goal_pos_y = TARGETS_Y[TARGET_NUM];
+                        //
                     }else
                     {
                         goal_pos_x = GOAL_B_POS_X;
@@ -378,8 +378,115 @@ int main(void)
                     state = GO_TO_GOAL_CURVED;
                     break;
                     
+                case GO_TO_GOAL:
+                    if (status_go_to_goal == 0)
+                    {
+                        dir_x = goal_pos_x-x_robot;
+                        dir_y = goal_pos_y-y_robot;
+                        dir_angle = atan2(-dir_x,dir_y)*180/M_PI;
+                        
+                        status_go_to_goal = 1;
+                    }else if (status_go_to_goal == 1)
+                    {
+                        dir_x = goal_pos_x-x_robot;
+                        dir_y = goal_pos_y-y_robot;
+                        dir_angle = atan2(-dir_x,dir_y)*180/M_PI;
+                        
+                        
+                        if ((theta_robot >= dir_angle-THRESHOLD_ANGLE_GOAL) && (theta_robot <= dir_angle+THRESHOLD_ANGLE_GOAL))
+                            status_go_to_goal = 2;
+                        else
+                        {
+                            float angle_dir_aux = dir_angle-180;
+                            float add_360 = 0;
+                            if (angle_dir_aux < -180)
+                            {
+                                angle_dir_aux += 360;
+                                add_360 = 1;
+                            }
+                            
+                            
+                            if (add_360 == 0 && (angle_dir_aux <= theta_robot && theta_robot <= dir_angle))
+                            {
+                                turn_left();
+                                commands_var = 1;
+                            }
+                            else if (add_360 == 0 && (angle_dir_aux > theta_robot || theta_robot > dir_angle))
+                            {
+                                turn_right();
+                                commands_var = 2;
+                            }
+                            else if (add_360 == 1 && ((theta_robot <=dir_angle && theta_robot >=-180) || ((theta_robot >= angle_dir_aux) && (theta_robot <= 180))))
+                            {
+                                turn_left();
+                                commands_var = 3;
+                            }
+                            else if (add_360 == 1 && (theta_robot > dir_angle && theta_robot < angle_dir_aux))
+                            {
+                                turn_right();
+                                commands_var = 4;
+                            }else
+                                commands_var = 0;
+                            
+                        }
+                    }else if (status_go_to_goal == 2)
+                    {
+                        status_go_to_goal = 0;
+                        /*
+                         if ((commands_var == 1)||(commands_var == 3)) {
+                         start_timer0();
+                         while(flag_turn)
+                         {
+                         turn_right();
+                         }
+                         //stop_timer0();
+                         }
+                         else
+                         {
+                         start_timer0();
+                         while(flag_turn)
+                         {
+                         turn_left();
+                         }
+                         //stop_timer0();
+                         }
+                         
+                         
+                         state = GO_TO_GOAL_CURVED;
+                         status_go_to_goal = 0;
+                         break;
+                         
+                         dist_goal = sqrt((x_robot-goal_pos_x)*(x_robot-goal_pos_x)+(y_robot-goal_pos_y)*(y_robot-goal_pos_y));
+                         if (dist_goal < THRESHOLD_DIST_GOAL)
+                         status_go_to_goal = 3;
+                         else
+                         {
+                         
+                         if (theta_robot < dir_angle-THRESHOLD_ANGLE_GOAL || theta_robot > dir_angle+THRESHOLD_ANGLE_GOAL)
+                         status_go_to_goal = 0;
+                         else
+                         {
+                         commands_var = 5;
+                         go_fwd();
+                         }
+                         
+                         
+                         }
+                         */
+                    }
+                    else if (status_go_to_goal == 3)
+                    {
+                        //stop_motor();
+                        status_go_to_goal = 0;
+                        state = STOP_STATE;
+                    }
+                    break;
+                    
                     
                 case GO_TO_GOAL_CURVED:
+                    //m_green(ON);
+                    
+                    
                     
                     dir_x = goal_pos_x-x_robot;
                     dir_y = goal_pos_y-y_robot;
@@ -399,6 +506,9 @@ int main(void)
                             if (dist_goal < THRESHOLD_DIST_GOAL){
                                 status_go_to_goal = 2;
                             }
+                            
+                            
+                            //move_robot(diff_theta,dist_goal,bank);
                             else if (diff_theta < THRESHOLD_ANGLE_GOAL) {
                                 status_go_to_goal = 1;
                             }
@@ -415,14 +525,14 @@ int main(void)
                             status_go_to_goal = 2;
                             set(PORTD,5);
                             
-//                            stop_motor();
-//                            stop_counter = 0;
-//                            go_bwd();
-//                            
-//                            while(stop_counter<TIME_STOP)
-//                            {
-//                                stop_counter++;
-//                            }
+                            //                            stop_motor();
+                            //                            stop_counter = 0;
+                            //                            go_bwd();
+                            //
+                            //                            while(stop_counter<TIME_STOP)
+                            //                            {
+                            //                                stop_counter++;
+                            //                            }
                             //stop_motor();
                             //m_wait(1000);
                         }
@@ -458,7 +568,7 @@ int main(void)
                     {
                         
                         stop_motor();
- 
+                        
                         
                         //m_wait(1000);
                         //clear(PORTD,5);
@@ -468,7 +578,7 @@ int main(void)
                         }
                         else {
                             TARGET_NUM = 0;
-//                            clear(PORTD,5);
+                            //                            clear(PORTD,5);
                         }
                         goal_pos_x = TARGETS_X[TARGET_NUM];
                         goal_pos_y = TARGETS_Y[TARGET_NUM];
@@ -476,7 +586,7 @@ int main(void)
                         
                         //state = STOP_STATE;
                         
-                         //state = STOP_STATE;
+                        //state = STOP_STATE;
                         
                     }
                     break;
@@ -660,7 +770,7 @@ void calculate_diff_theta(float theta_des, float* err_theta, int* dir_to_turn){
         //commands_var = 0;
     }
     //commands_var = bank;
-
+    
     
 }
 

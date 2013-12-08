@@ -6,32 +6,55 @@ global userdata
         fig4 = figure(4);
         set(fig4,'Position',[0 0 1200 800])
 
-        subplot(2,1,1)
-        hold all
-        
-        userdata.ADC.robot1.plot_PT_LO = plot(0,0);
-        userdata.ADC.robot1.plot_PT_LI = plot(0,0);
-        userdata.ADC.robot1.plot_PT_RI = plot(0,0);
-        userdata.ADC.robot1.plot_PT_RO = plot(0,0);
-        userdata.ADC.robot1.plot_PT_BL = plot(0,0);
-        userdata.ADC.robot1.plot_PT_BR = plot(0,0);
-        userdata.ADC.robot1.plot_PT_PUCK = plot(0,0);
-        
-        
+        subplot(2,3,1)
+        hold on
+        userdata.ADC.robot1.plot_PT_LO = plot(0,0,'b-');
+        userdata.ADC.robot1.plot_PT_RO = plot(0,0,'r-');
         title('Sensors')
         xlabel('Time (sec)')
         ylabel('ADC (0-1023)')
         legend([userdata.ADC.robot1.plot_PT_LO...
-                userdata.ADC.robot1.plot_PT_LI...
-                userdata.ADC.robot1.plot_PT_RI...
-                userdata.ADC.robot1.plot_PT_RO...
-                userdata.ADC.robot1.plot_PT_BL...
-                userdata.ADC.robot1.plot_PT_BR...
-                userdata.ADC.robot1.plot_PT_PUCK],...
-            'LO','LI','RI','RO','BL','BR','PUCK','Location','NorthEastOutside')
-        ylim([-100 1124])
+                userdata.ADC.robot1.plot_PT_RO],...
+            'LO','RO','Location','NorthEastOutside')
+        ylim([0 1023])
         grid on
         hold off
+        
+        
+        
+        subplot(2,3,2)
+        hold on
+        userdata.ADC.robot1.plot_PT_LI = plot(0,0,'b-');
+        userdata.ADC.robot1.plot_PT_RI = plot(0,0,'r-');
+        userdata.ADC.robot1.plot_PT_PUCK = plot(0,0,'c-');
+        title('Sensors')
+        xlabel('Time (sec)')
+        ylabel('ADC (0-1023)')
+        legend([userdata.ADC.robot1.plot_PT_LI...
+                userdata.ADC.robot1.plot_PT_RI...
+                userdata.ADC.robot1.plot_PT_PUCK],...
+            'LI','RI','PUCK','Location','NorthEastOutside')
+        ylim([0 1023])
+        grid on
+        hold off
+        
+        
+        
+        subplot(2,3,3)
+        hold on
+        userdata.ADC.robot1.plot_PT_BL = plot(0,0,'b-');
+        userdata.ADC.robot1.plot_PT_BR = plot(0,0,'r-');
+        title('Sensors')
+        xlabel('Time (sec)')
+        ylabel('ADC (0-1023)')
+        legend([userdata.ADC.robot1.plot_PT_BL...
+                userdata.ADC.robot1.plot_PT_BR],...
+            'BL','BR','Location','NorthEastOutside')
+        ylim([0 1023])
+        grid on
+        hold off
+        
+        
         
         subplot(2,2,4)
         hold on

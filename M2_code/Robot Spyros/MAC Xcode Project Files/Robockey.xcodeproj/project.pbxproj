@@ -7,28 +7,18 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		DF2DDAE41844FD1800F4D207 /* M2_RX.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = M2_RX.c; path = ../M2_RX.c; sourceTree = "<group>"; };
-		DF2DDAE51844FD3B00F4D207 /* M2_TX_ROBOT1.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = M2_TX_ROBOT1.c; path = ../M2_TX_ROBOT1.c; sourceTree = "<group>"; };
-		DF77FB1C184015F000DF4849 /* Localize.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Localize.c; path = ../Functions/Localize.c; sourceTree = "<group>"; };
-		DF7F35D21850754700F62D19 /* M2_TX_ROBOT1v3.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = M2_TX_ROBOT1v3.c; path = ../M2_TX_ROBOT1v3.c; sourceTree = "<group>"; };
-		DF7F35D3185298FD00F62D19 /* M2_TX_ROBOT2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = M2_TX_ROBOT2.c; path = ../M2_TX_ROBOT2.c; sourceTree = "<group>"; };
-		DFAADF3A18530A94004F8E56 /* M2_TX_ROBOT2 copy.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = "M2_TX_ROBOT2 copy.c"; path = "../M2_TX_ROBOT2 copy.c"; sourceTree = "<group>"; };
-		DFB18F89184708DC00EE7C67 /* M2_TX_ROBOT1v2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = M2_TX_ROBOT1v2.c; path = ../M2_TX_ROBOT1v2.c; sourceTree = "<group>"; };
-		DFC40C33183B2D1400348150 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = main.c; path = ../main.c; sourceTree = "<group>"; };
+		DFAADF3B1853FD69004F8E56 /* Localize.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Localize.c; path = ../Localize.c; sourceTree = "<group>"; };
+		DFAADF3C1853FD69004F8E56 /* M2_TX_ROBOT2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = M2_TX_ROBOT2.c; path = ../M2_TX_ROBOT2.c; sourceTree = "<group>"; };
+		DFAADF3D1853FD69004F8E56 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = main.c; path = ../main.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		DF17E3F217F4A97400131969 = {
 			isa = PBXGroup;
 			children = (
-				DFAADF3A18530A94004F8E56 /* M2_TX_ROBOT2 copy.c */,
-				DF7F35D3185298FD00F62D19 /* M2_TX_ROBOT2.c */,
-				DF7F35D21850754700F62D19 /* M2_TX_ROBOT1v3.c */,
-				DFB18F89184708DC00EE7C67 /* M2_TX_ROBOT1v2.c */,
-				DF2DDAE51844FD3B00F4D207 /* M2_TX_ROBOT1.c */,
-				DF2DDAE41844FD1800F4D207 /* M2_RX.c */,
-				DF77FB1C184015F000DF4849 /* Localize.c */,
-				DFC40C33183B2D1400348150 /* main.c */,
+				DFAADF3B1853FD69004F8E56 /* Localize.c */,
+				DFAADF3C1853FD69004F8E56 /* M2_TX_ROBOT2.c */,
+				DFAADF3D1853FD69004F8E56 /* main.c */,
 			);
 			sourceTree = "<group>";
 		};

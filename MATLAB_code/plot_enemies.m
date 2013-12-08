@@ -188,8 +188,8 @@ hold on
         userdata.enemies.robot3.y = [];
         
         
-%         init_plot_sensors_robot1();
-%         init_plot_sensors_robot2();
+        init_plot_sensors_robot1();
+        init_plot_sensors_robot2();
         
         tic
         while (userdata.flag_plot_sensors)
@@ -203,12 +203,12 @@ hold on
             end
             get_robot1_variables(i);  
             
-%             fwrite(userdata.handle, 4);
-%             nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
-%             while(nBytes==0)
-%                 nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
-%             end
-%             get_robot1_ADC(i);
+            fwrite(userdata.handle, 4);
+            nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
+            while(nBytes==0)
+                nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
+            end
+            get_robot1_ADC(i);
             
 %             
 %             % ASK ROBOT 2 FOR EACH VARIABLES
@@ -219,12 +219,12 @@ hold on
             end
             get_robot2_variables(i); 
 %             
-%             fwrite(userdata.handle, 5);
-%             nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
-%             while(nBytes==0)
-%                 nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
-%             end
-%             get_robot2_ADC(i);
+            fwrite(userdata.handle, 5);
+            nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
+            while(nBytes==0)
+                nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
+            end
+            get_robot2_ADC(i);
 %             
 %             
 %             
