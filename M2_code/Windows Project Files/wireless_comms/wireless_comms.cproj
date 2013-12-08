@@ -98,27 +98,31 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\Functions\Localize.c">
+    <Compile Include="..\..\Robot Alex\Localize_Alex.c">
       <SubType>compile</SubType>
-      <Link>Localize.c</Link>
+      <Link>Localize_Alex.c</Link>
     </Compile>
-    <Compile Include="..\..\M2_TX_ROBOT1v4.c">
+    <Compile Include="..\..\Robot Alex\M2_TX_ROBOT1v4.c">
       <SubType>compile</SubType>
       <Link>M2_TX_ROBOT1v4.c</Link>
     </Compile>
-    <Compile Include="..\..\m_bus.c">
+    <Compile Include="..\..\Robot Alex\m_bus.c">
       <SubType>compile</SubType>
       <Link>m_bus.c</Link>
     </Compile>
-    <Compile Include="..\..\m_rf.c">
+    <Compile Include="..\..\Robot Alex\m_imu.c">
+      <SubType>compile</SubType>
+      <Link>m_imu.c</Link>
+    </Compile>
+    <Compile Include="..\..\Robot Alex\m_rf.c">
       <SubType>compile</SubType>
       <Link>m_rf.c</Link>
     </Compile>
-    <Compile Include="..\..\m_usb.c">
+    <Compile Include="..\..\Robot Alex\m_usb.c">
       <SubType>compile</SubType>
       <Link>m_usb.c</Link>
     </Compile>
-    <Compile Include="..\..\m_wii.c">
+    <Compile Include="..\..\Robot Alex\m_wii.c">
       <SubType>compile</SubType>
       <Link>m_wii.c</Link>
     </Compile>

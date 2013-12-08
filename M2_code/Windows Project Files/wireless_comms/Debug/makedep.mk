@@ -2,15 +2,17 @@
 # Automatically-generated file. Do not edit or delete the file
 ################################################################################
 
-..\..\Functions\Localize.c
+..\..\Robot Alex\Localize_Alex.c
 
-..\..\M2_TX_ROBOT1v4.c
+..\..\Robot Alex\M2_TX_ROBOT1v4.c
 
-..\..\m_bus.c
+..\..\Robot Alex\m_bus.c
 
-..\..\m_rf.c
+..\..\Robot Alex\m_imu.c
 
-..\..\m_usb.c
+..\..\Robot Alex\m_rf.c
 
-..\..\m_wii.c
+..\..\Robot Alex\m_usb.c
+
+..\..\Robot Alex\m_wii.c
 

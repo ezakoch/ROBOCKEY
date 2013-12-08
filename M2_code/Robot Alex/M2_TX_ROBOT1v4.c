@@ -5,7 +5,7 @@
 #include "m_bus.h"
 #include "m_rf.h"
 #include "m_wii.h"
-#include "Functions/Localize.h"
+#include "Localize.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

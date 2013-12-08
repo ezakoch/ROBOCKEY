@@ -1,4 +1,5 @@
-m_usb.d m_usb.o: ../../../m_usb.c ../../../m_usb.h ../../../m_general.h \
+m_usb.d m_usb.o: ../../../Robot\ Alex/m_usb.c \
+ ../../../Robot\ Alex/m_usb.h ../../../Robot\ Alex/m_general.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr8\ gcc\native\3.4.2.1002\avr8-gnu-toolchain\bin\../lib/gcc/avr/4.7.2/include/stdint.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr8\ gcc\native\3.4.2.1002\avr8-gnu-toolchain\bin\../lib/gcc/avr/4.7.2/../../../../avr/include/stdint.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr8\ gcc\native\3.4.2.1002\avr8-gnu-toolchain\bin\../lib/gcc/avr/4.7.2/include/stdbool.h \
@@ -19,9 +20,9 @@ m_usb.d m_usb.o: ../../../m_usb.c ../../../m_usb.h ../../../m_general.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr8\ gcc\native\3.4.2.1002\avr8-gnu-toolchain\bin\../lib/gcc/avr/4.7.2/../../../../avr/include/math.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr8\ gcc\native\3.4.2.1002\avr8-gnu-toolchain\bin\../lib/gcc/avr/4.7.2/../../../../avr/include/stdlib.h
 
-../../../m_usb.h:
+../../../Robot\ Alex/m_usb.h:
 
-../../../m_general.h:
+../../../Robot\ Alex/m_general.h:
 
 c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr8\ gcc\native\3.4.2.1002\avr8-gnu-toolchain\bin\../lib/gcc/avr/4.7.2/include/stdint.h:
 
