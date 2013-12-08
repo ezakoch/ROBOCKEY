@@ -28,44 +28,39 @@
 #define SYSTEM_STATE 99
 #define STOP_STATE 21
 #define BLUE_LED_STATE 22
-#define GOAL_A_POS_X -100 //-115
+#define GOAL_A_POS_X -115
 #define GOAL_A_POS_Y 0
-#define GOAL_B_POS_X 115
-#define GOAL_B_POS_Y 0
+//#define GOAL_B_POS_X 115
+//#define GOAL_B_POS_Y 0
 //#define GOAL_A_POS_X 0
 //#define GOAL_A_POS_Y 0
-//#define GOAL_B_POS_X 0
-//#define GOAL_B_POS_Y 0
-#define THRESHOLD_ANGLE_GOAL 15
+#define GOAL_B_POS_X 0
+#define GOAL_B_POS_Y 0
+#define THRESHOLD_ANGLE_GOAL 5
 #define THRESHOLD_DIST_GOAL 5
-#define PWM_SPEED_TURN_LFT 2000 //RIGHT NOT TURNING WITH LESS THAN 380
-#define PWM_SPEED_TURN_RGHT 2000
+#define PWM_SPEED_TURN_LFT 2800 //RIGHT NOT TURNING WITH LESS THAN 380
+#define PWM_SPEED_TURN_RGHT 2800
 //#define PWM_SPEED_FWD_LFT 393
 //#define PWM_SPEED_FWD_RGHT 380
-#define PWM_SPEED_FWD_LFT 2800//3300
-#define PWM_SPEED_FWD_RGHT 2800//3300
+#define PWM_SPEED_FWD_LFT 3000//3300
+#define PWM_SPEED_FWD_RGHT 3000//3300
 #define PWM_MAXIMUM 5000
 #define PWM_MIN_LEFT 1500
 #define PWM_MIN_RGHT 1500
 #define WEIGHT_TURN 5
 #define WEIGTH_FWD 1
-#define TIME_STOP 1000
+#define TIME_STOP 120000
 #define TURNING_ANGLE 180.0
 
 #define TIME_TO_TURN 125
 
-#define Kp 8
-#define Kp_move 10
+#define Kp 10
 #define Kd 500
 #define time 0.002
 
 int diff_error = 0, cur_error = 0, prev_error = 0;
 float TARGETS_X[2]={0.0};
 float TARGETS_Y[2]={0.0};
-int theta_robot = 0;
-
-
-void calculate_diff_theta(float theta_des, float* err_theta, int* dir_to_turn);
 
 //Function prototypes
 void set_timer1(void);
@@ -136,7 +131,7 @@ int main(void)
     //Variable for the wii cam blobs
     unsigned int blobs_wii[SIZE_ARRAY_BLOBS];
     
-    int x_robot = 0, y_robot = 0;
+    int x_robot = 0, y_robot = 0, theta_robot = 0;
     div_t aux_conversion;
     
     //Set the clock system prescaler
@@ -187,23 +182,17 @@ int main(void)
     
     //Main loop
     start_timer0();
-//    
-//    TARGETS_X[0] = GOAL_A_POS_X;
-//    TARGETS_Y[0] = GOAL_A_POS_Y;
-//    TARGETS_X[1] = GOAL_B_POS_X;
-//    TARGETS_Y[1] = GOAL_B_POS_Y;
-//    
-    TARGETS_X[0] = 0;
-    TARGETS_Y[0] = 0;
-    TARGETS_X[1] = 80;
-    TARGETS_Y[1] = 30;
+    
+    TARGETS_X[0] = GOAL_A_POS_X;
+    TARGETS_Y[0] = GOAL_A_POS_Y;
+    TARGETS_X[1] = GOAL_B_POS_X;
+    TARGETS_Y[1] = GOAL_B_POS_Y;
     
     int TARGET_NUM = 0;
     
     
     while (1)
     {
-        
         if (flag_turn == 0) {
             //start_timer0();
             //if (flag_turn == 0) {
@@ -378,7 +367,7 @@ int main(void)
                 output_buffer[30] = (signed char)aux_conversion.quot;
                 output_buffer[31] = (signed char)aux_conversion.rem;
                 
-                m_rf_send(SEN_ADDRESS_DEBUG,output_buffer,PACKET_LENGTH_DEBUG);
+                //m_rf_send(SEN_ADDRESS_DEBUG,output_buffer,PACKET_LENGTH_DEBUG);
                 m_red(TOGGLE);
                 
                 /*//Open again the system channel
@@ -403,10 +392,10 @@ int main(void)
                 case INITIAL_STATE:
                     if (check(PINB,2))
                     {
-                        goal_pos_x = GOAL_A_POS_X;
-                        goal_pos_y = GOAL_A_POS_Y;
-                        //goal_pos_x = TARGETS_X[TARGET_NUM];
-                        //goal_pos_y = TARGETS_Y[TARGET_NUM];
+                        //goal_pos_x = GOAL_A_POS_X;
+                        //goal_pos_y = GOAL_A_POS_Y;
+                        goal_pos_x = TARGETS_X[TARGET_NUM];
+                        goal_pos_y = TARGETS_Y[TARGET_NUM];
                         
                     }else
                     {
@@ -430,7 +419,6 @@ int main(void)
                         dir_x = goal_pos_x-x_robot;
                         dir_y = goal_pos_y-y_robot;
                         dir_angle = atan2(-dir_x,dir_y)*180/M_PI;
-                        
                         
                         if ((theta_robot >= dir_angle-THRESHOLD_ANGLE_GOAL) && (theta_robot <= dir_angle+THRESHOLD_ANGLE_GOAL))
                             status_go_to_goal = 2;
@@ -531,8 +519,51 @@ int main(void)
                     dir_y = goal_pos_y-y_robot;
                     dir_angle = atan2(-dir_x,dir_y)*180/M_PI;
                     
-                    calculate_diff_theta(dir_angle,&diff_theta, &bank);
                     
+                    float angle_dir_aux = dir_angle-180;
+                    float add_360 = 0;
+                    if (angle_dir_aux < -180)
+                    {
+                        angle_dir_aux += 360;
+                        add_360 = 1;
+                    }
+                    
+                    
+                    if (add_360 == 0 && (angle_dir_aux <= theta_robot && theta_robot <= dir_angle))
+                    {
+                        diff_theta = dir_angle - theta_robot;
+                        bank = 0;
+                        //commands_var = 1;
+                    }
+                    else if (add_360 == 0 && (angle_dir_aux > theta_robot || theta_robot > dir_angle))
+                    {
+                        if (theta_robot < 0)
+                            diff_theta = (theta_robot+360) - dir_angle;
+                        else
+                            diff_theta = (theta_robot) - dir_angle;
+                        bank = 1;
+                        //commands_var = 2;
+                    }
+                    else if (add_360 == 1 && ((theta_robot <=dir_angle && theta_robot >=-180) || ((theta_robot >= angle_dir_aux) && (theta_robot <= 180))))
+                    {
+                        if (theta_robot < 0)
+                            diff_theta = dir_angle - theta_robot;
+                        else
+                            diff_theta = (dir_angle + 360) - theta_robot;
+                        bank = 0;
+                        //commands_var = 3;
+                    }
+                    else if (add_360 == 1 && (theta_robot > dir_angle && theta_robot < angle_dir_aux))
+                    {
+                        diff_theta = theta_robot - dir_angle;
+                        bank = 1;
+                        //commands_var = 4;
+                    }else {
+                        diff_theta = 0;
+                        bank = 0;
+                        //commands_var = 0;
+                    }
+                    commands_var = bank;
                     
                     cur_error = diff_theta;
                     diff_error = cur_error - prev_error;
@@ -540,20 +571,14 @@ int main(void)
                     
                     if (status_go_to_goal == 0)
                     {
+                        set(PORTD,5);
                         {
-                            dist_goal = sqrt((x_robot-goal_pos_x)*(x_robot-goal_pos_x)+(y_robot-goal_pos_y)*(y_robot-goal_pos_y));
-                            if (dist_goal < THRESHOLD_DIST_GOAL){
-                                status_go_to_goal = 2;
-                            }
-                            
-                            
+                            turn_robot(diff_theta,bank,diff_error);
                             //move_robot(diff_theta,dist_goal,bank);
-                            else if (diff_theta < THRESHOLD_ANGLE_GOAL) {
+                            if (diff_theta < THRESHOLD_ANGLE_GOAL) {
                                 status_go_to_goal = 1;
+                                clear(PORTD,5);
                             }
-                            else
-                                turn_robot(diff_theta,bank,diff_error);
-                            
                         }
                         
                     }
@@ -562,71 +587,38 @@ int main(void)
                         dist_goal = sqrt((x_robot-goal_pos_x)*(x_robot-goal_pos_x)+(y_robot-goal_pos_y)*(y_robot-goal_pos_y));
                         if (dist_goal < THRESHOLD_DIST_GOAL){
                             status_go_to_goal = 2;
-                            set(PORTD,5);
-                            
-//                            stop_motor();
-//                            stop_counter = 0;
-//                            go_bwd();
-//                            
-//                            while(stop_counter<TIME_STOP)
-//                            {
-//                                stop_counter++;
-//                            }
-                            //stop_motor();
-                            //m_wait(1000);
                         }
                         else if (diff_theta > 2.0*THRESHOLD_ANGLE_GOAL)
-                        {
                             status_go_to_goal = 0;
-                            set(PORTD,5);
-                        }
                         else {
-                            clear(PORTD,5);
                             move_robot(diff_theta,bank,diff_error);
                         }
                         
                     }
-                    else if (status_go_to_goal == 2){
-                        
-                        calculate_diff_theta(0,&diff_theta, &bank);
-                        
-                        
-                        if (diff_theta < THRESHOLD_ANGLE_GOAL)
-                        {
-                            status_go_to_goal = 3;
-                            //stop_motor();
-                            //m_wait(1000);
-                            //set(PORTD,5);
-                        }
-                        else {
-                            turn_robot(diff_theta,bank,diff_error);
-                        }
-                        
-                    }
-                    else if (status_go_to_goal == 3)
+                    else if (status_go_to_goal == 2)
                     {
-                        
-                        stop_motor();
- 
-                        
-                        //m_wait(1000);
-                        //clear(PORTD,5);
                         if (TARGET_NUM == 0) {
                             TARGET_NUM = 1;
-                            
                         }
                         else {
                             TARGET_NUM = 0;
-//                            clear(PORTD,5);
                         }
                         goal_pos_x = TARGETS_X[TARGET_NUM];
                         goal_pos_y = TARGETS_Y[TARGET_NUM];
                         status_go_to_goal = 0;
                         
-                        //state = STOP_STATE;
-                        
-                         //state = STOP_STATE;
-                        
+                        /*
+                         //stop_motor();
+                         m_red(ON);
+                         status_go_to_goal = 0;
+                         stop_counter = 0;
+                         go_bwd();
+                         while(stop_counter<TIME_STOP)
+                         {
+                         stop_counter++;
+                         }
+                         state = STOP_STATE;
+                         */
                     }
                     break;
                     
@@ -762,56 +754,6 @@ int main(void)
     
 }
 
-
-void calculate_diff_theta(float theta_des, float* err_theta, int* dir_to_turn){
-    
-    float angle_dir_aux = theta_des-180;
-    float add_360 = 0;
-    if (angle_dir_aux < -180)
-    {
-        angle_dir_aux += 360;
-        add_360 = 1;
-    }
-    
-    
-    if (add_360 == 0 && (angle_dir_aux <= theta_robot && theta_robot <= theta_des))
-    {
-        *err_theta = theta_des - theta_robot;
-        *dir_to_turn = 0;
-        //commands_var = 1;
-    }
-    else if (add_360 == 0 && (angle_dir_aux > theta_robot || theta_robot > theta_des))
-    {
-        if (theta_robot < 0)
-            *err_theta = (theta_robot+360) - theta_des;
-        else
-            *err_theta = (theta_robot) - theta_des;
-        *dir_to_turn = 1;
-        //commands_var = 2;
-    }
-    else if (add_360 == 1 && ((theta_robot <=theta_des && theta_robot >=-180) || ((theta_robot >= angle_dir_aux) && (theta_robot <= 180))))
-    {
-        if (theta_robot < 0)
-            *err_theta = theta_des - theta_robot;
-        else
-            *err_theta = (theta_des + 360) - theta_robot;
-        *dir_to_turn = 0;
-        //commands_var = 3;
-    }
-    else if (add_360 == 1 && (theta_robot > theta_des && theta_robot < angle_dir_aux))
-    {
-        *err_theta = theta_robot - theta_des;
-        *dir_to_turn = 1;
-        //commands_var = 4;
-    }else {
-        err_theta = 0;
-        dir_to_turn = 0;
-        //commands_var = 0;
-    }
-    //commands_var = bank;
-
-    
-}
 
 void set_timer0(void)
 {
@@ -1128,8 +1070,8 @@ void go_fwd(void)
 void turn_robot(float theta, int dir, float diff){
 	if (dir == 1) {             // Move with a right curve
 		//OCR1C = PWM_SPEED_FWD_LFT;
-		OCR1B = (int)(PWM_MIN_RGHT+theta*Kp);// + diff*Kd);
-        OCR1C = (int)(PWM_MIN_RGHT+theta*Kp);// + diff*Kd);
+		OCR1B = (int)(PWM_MIN_RGHT+theta*Kp + diff*Kd);
+        OCR1C = (int)(PWM_MIN_RGHT+theta*Kp + diff*Kd);
         
         set(PORTB,3);
         clear(PORTD,3);
@@ -1137,8 +1079,8 @@ void turn_robot(float theta, int dir, float diff){
 	else
 	{                      // Move with a left curve
 		//OCR1B = PWM_SPEED_FWD_RGHT;
-		OCR1C = (int)(PWM_MIN_LEFT+theta*Kp);// + diff*Kd);;
-        OCR1B = (int)(PWM_MIN_LEFT+theta*Kp);// + diff*Kd);
+		OCR1C = (int)(PWM_MIN_LEFT+theta*Kp + diff*Kd);;
+        OCR1B = (int)(PWM_MIN_LEFT+theta*Kp + diff*Kd);
         
         clear(PORTB,3);
         set(PORTD,3);
@@ -1151,8 +1093,8 @@ void turn_robot(float theta, int dir, float diff){
 void move_robot(float theta, int dir, float diff){
 	if (dir == 1) {             // Move with a right curve
 		//OCR1C = PWM_SPEED_FWD_LFT;
-		OCR1B = (int)(PWM_SPEED_FWD_LFT);
-        OCR1C = (int)(PWM_SPEED_FWD_RGHT+theta*Kp_move);
+		OCR1B = (int)(PWM_SPEED_FWD_LFT-theta*2.0*Kp);
+        OCR1C = (int)(PWM_SPEED_FWD_RGHT+theta*2.0*Kp);
         
         clear(PORTB,3);
         clear(PORTD,3);
@@ -1160,8 +1102,8 @@ void move_robot(float theta, int dir, float diff){
 	else
 	{                      // Move with a left curve
 		//OCR1B = PWM_SPEED_FWD_RGHT;
-        OCR1B = (int)(PWM_SPEED_FWD_LFT+theta*Kp_move);
-		OCR1C = (int)(PWM_SPEED_FWD_RGHT);
+        OCR1B = (int)(PWM_SPEED_FWD_LFT+theta*2.0*Kp);
+		OCR1C = (int)(PWM_SPEED_FWD_RGHT-theta*2.0*Kp);
         
         
         clear(PORTB,3);

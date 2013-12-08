@@ -20,7 +20,7 @@
 #include <stdlib.h>
 
 #define N_CLOCK 0
-#define PACKET_LENGTH 41
+#define PACKET_LENGTH 32
 #define REC_ADDRESS 0X60
 #define CHANNEL 1
 #define USB 1               // If using the USB set to 1

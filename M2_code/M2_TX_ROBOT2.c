@@ -14,7 +14,7 @@
 #define N_CLOCK 0
 #define NUM_LEDS 7
 #define SIZE_ARRAY_BLOBS 12
-#define PACKET_LENGTH_DEBUG 41
+#define PACKET_LENGTH_DEBUG 32
 #define PACKET_LENGTH_SYSTEM 10
 #define SEN_ADDRESS_SYSTEM 0xDA
 #define ALEX_ADDRESS_SYSTEM 0x42
@@ -38,12 +38,12 @@
 //#define GOAL_B_POS_Y 0
 #define THRESHOLD_ANGLE_GOAL 7
 #define THRESHOLD_DIST_GOAL 20
-#define PWM_SPEED_TURN_LFT 380 //RIGHT NOT TURNING WITH LESS THAN 380
-#define PWM_SPEED_TURN_RGHT 380
+#define PWM_SPEED_TURN_LFT 3600 //RIGHT NOT TURNING WITH LESS THAN 380
+#define PWM_SPEED_TURN_RGHT 3600
 //#define PWM_SPEED_FWD_LFT 393
 //#define PWM_SPEED_FWD_RGHT 380
-#define PWM_SPEED_FWD_LFT 2800
-#define PWM_SPEED_FWD_RGHT 2700
+#define PWM_SPEED_FWD_LFT 3600//3300
+#define PWM_SPEED_FWD_RGHT 3600//3300
 #define PWM_MAXIMUM 5000
 #define PWM_MIN_LEFT 363
 #define PWM_MIN_RGHT 350
@@ -77,7 +77,7 @@ int state = INITIAL_STATE; //CHANGE TO SYSTEM STATE?????????????????????????????
 int past_state = INITIAL_STATE;
 
 //Variable for receiving data
-char buffer_rec[PACKET_LENGTH_SYSTEM] = {0};   
+char buffer_rec[PACKET_LENGTH_SYSTEM] = {0};
 
 //Function prototypes
 ISR(INT2_vect);
@@ -107,7 +107,7 @@ int main(void)
 	
 	//System packet
 	signed char send_buffer[PACKET_LENGTH_SYSTEM] = {0};
-		
+    
 	//Debug packet
 	signed char output_buffer [PACKET_LENGTH_DEBUG] = {0};
 	
@@ -124,7 +124,7 @@ int main(void)
     m_green(OFF);
     m_red(OFF);
 	
-	m_red(ON);    
+	m_red(ON);
     //Initialize bus
     m_bus_init();
     
@@ -145,19 +145,19 @@ int main(void)
     
     //Initialize wii camera
     char aux = 0;
-    /*while(!aux)
+	while(!aux)
     {
         aux = m_wii_open();
-    }
+    };
     
-    m_wait(1000);*/
-    //m_red(OFF);
+    m_wait(1000);
+    m_red(OFF);
 	
     
     //Open the channel
     //m_rf_open(CHANNEL_SYSTEM,ALEX_ADDRESS_SYSTEM,PACKET_LENGTH_SYSTEM);
 	m_rf_open(CHANNEL_DEBUG,REC_ADDRESS_DEBUG,PACKET_LENGTH_DEBUG);
-		
+    
     //Enable interruptions
     sei();
     
@@ -166,30 +166,28 @@ int main(void)
     {
 		
 		/*// Motor testing
-        if (check(PINB,2)) 
-		{
+         if (check(PINB,2))
+         {
          turn_left();
 		 m_red(ON);
-        }
-        else
-		{
+         }
+         else
+         {
          turn_right();
 		 m_red(OFF);
-        }*/
-		
-		// Motor testing
-        if (check(PINB,2)) 
-		{
+         }*/
+        
+		/*// Motor testing
+         if (check(PINB,2))
+         {
          go_fwd();
-		 //m_red(ON);
-		 m_green(OFF);
-        }
-        else
-		{
+         m_red(ON);
+         }
+         else
+         {
          go_bwd();
-		 //m_red(OFF);
-		 m_green(ON);
-        }
+         m_red(OFF);
+         }*/
 		
 		
         //LOCALIZATION CODE
@@ -203,14 +201,14 @@ int main(void)
         {
             //Get the position and orientation of the robot from the constellation
             localize_OK = localize(blobs_wii[0],blobs_wii[3],blobs_wii[6],blobs_wii[9],blobs_wii[1],blobs_wii[4],blobs_wii[7],blobs_wii[10],&x_robot,&y_robot,&theta_robot,&cam_X,&cam_Y);
- 
+            
 		}
         
-        /*//ANALOG CODE
+        //ANALOG CODE
         for (int i=0;i<NUM_LEDS;i++)
         {
 			get_analog_val(i);
-         
+            
 			//Wait until flag is on
 			while(!check(ADCSRA,ADIF));
 			switch(i)
@@ -218,7 +216,7 @@ int main(void)
 				case(0):
 					PT1_left_outside = ADC;
 					break;
-				case(1): 
+				case(1):
 					PT2_left_inside = ADC;
 					break;
 				case(2):
@@ -230,139 +228,120 @@ int main(void)
 				case(4):
 					PT5_back_right = ADC;
 					break;
-				case(5): 
+				case(5):
 					PT6_back_left = ADC;
 					break;
 				case(6):
 					PT7_have_puck = ADC;
 					break;
 			}
-         
+            
 			//After doing the conversion reset flag
 			set(ADCSRA,ADIF);
-        }*/
-         
+        }
+        
         
         
         //SEND COMMANDS
         if (flag_timer == 1)
         {
 			/*if (timer_switch == 0)
-			{
-				//Create the packet to send to system
-				send_buffer[0] = ALEX_ADDRESS_SYSTEM;
-				send_buffer[1] = x_robot;
-				send_buffer[2] = y_robot;
-				m_rf_send(SEN_ADDRESS_SYSTEM,send_buffer,PACKET_LENGTH_SYSTEM);
-				timer_switch = 1;
-			}
-			else
-			{
-            		
-				//DEBUG COMMANDS SENDING
-				//Open the channel
-				m_rf_open(CHANNEL_DEBUG,REC_ADDRESS_DEBUG,PACKET_LENGTH_DEBUG);*/	
+             {
+             //Create the packet to send to system
+             send_buffer[0] = ALEX_ADDRESS_SYSTEM;
+             send_buffer[1] = x_robot;
+             send_buffer[2] = y_robot;
+             m_rf_send(SEN_ADDRESS_SYSTEM,send_buffer,PACKET_LENGTH_SYSTEM);
+             timer_switch = 1;
+             }
+             else
+             {
+             
+             //DEBUG COMMANDS SENDING
+             //Open the channel
+             m_rf_open(CHANNEL_DEBUG,REC_ADDRESS_DEBUG,PACKET_LENGTH_DEBUG);*/
             
-                output_buffer[0] = 1;
-				output_buffer[1] = state;
-				output_buffer[2] = x_robot;
-				output_buffer[3] = y_robot;
-				aux_conversion = div(theta_robot,128);
+            output_buffer[0] = 1;
+            output_buffer[1] = state;
+            output_buffer[2] = x_robot;
+            output_buffer[3] = y_robot;
+            
+            aux_conversion = div(theta_robot,128);
+            output_buffer[4] = (signed char)aux_conversion.quot;
+            output_buffer[5] = (signed char)aux_conversion.rem;
 			
-				//Put packets together for sending
-				output_buffer[4] = (signed char)aux_conversion.quot;
-				output_buffer[5] = (signed char)aux_conversion.rem;
+            output_buffer[6] = (signed char)status_go_to_goal;
 			
-				//Debugging
-				output_buffer[6] = (signed char)status_go_to_goal;
+            aux_conversion = div((int)dir_angle,128);
+            output_buffer[7] = (signed char)aux_conversion.quot;
+            output_buffer[8] = (signed char)aux_conversion.rem;
 			
-				aux_conversion = div((int)dir_x,128);
-				output_buffer[7] = (signed char)aux_conversion.quot;
-				output_buffer[8] = (signed char)aux_conversion.rem;
+            aux_conversion = div((int)dist_goal,128);
+            output_buffer[9] = (signed char)aux_conversion.quot;
+            output_buffer[10] = (signed char)aux_conversion.rem;
 			
-				aux_conversion = div((int)dir_y,128);
-				output_buffer[9] = (signed char)aux_conversion.quot;
-				output_buffer[10] = (signed char)aux_conversion.rem;
+            aux_conversion = div(cam_X,128);
+            output_buffer[11] = (signed char)aux_conversion.quot;
+            output_buffer[12] = (signed char)aux_conversion.rem;
 			
-				aux_conversion = div((int)dir_angle,128);
-				output_buffer[11] = (signed char)aux_conversion.quot;
-				output_buffer[12] = (signed char)aux_conversion.rem;
+            aux_conversion = div(cam_Y,128);
+            output_buffer[13] = (signed char)aux_conversion.quot;
+            output_buffer[14] = (signed char)aux_conversion.rem;
 			
-				aux_conversion = div((int)dist_goal,128);
-				output_buffer[13] = (signed char)aux_conversion.quot;
-				output_buffer[14] = (signed char)aux_conversion.rem;
+            output_buffer[15] = (signed char)commands_var;
 			
-				aux_conversion = div(cam_X,128);
-				output_buffer[15] = (signed char)aux_conversion.quot;
-				output_buffer[16] = (signed char)aux_conversion.rem;
+            aux_conversion = div((int)diff_theta,128);
+            output_buffer[16] = (signed char)aux_conversion.quot;
+            output_buffer[17] = (signed char)aux_conversion.rem;
 			
-				aux_conversion = div(cam_Y,128);
-				output_buffer[17] = (signed char)aux_conversion.quot;
-				output_buffer[18] = (signed char)aux_conversion.rem;
+            aux_conversion = div(PT1_left_outside,128);
+            output_buffer[18] = (signed char)aux_conversion.quot;
+            output_buffer[19] = (signed char)aux_conversion.rem;
+            
+            aux_conversion = div(PT2_left_inside,128);
+            output_buffer[20] = (signed char)aux_conversion.quot;
+            output_buffer[21] = (signed char)aux_conversion.rem;
+            
+            aux_conversion = div(PT3_right_inside,128);
+            output_buffer[22] = (signed char)aux_conversion.quot;
+            output_buffer[23] = (signed char)aux_conversion.rem;
+            
+            aux_conversion = div(PT4_right_outside,128);
+            output_buffer[24] = (signed char)aux_conversion.quot;
+            output_buffer[25] = (signed char)aux_conversion.rem;
+            
+            aux_conversion = div(PT5_back_right,128);
+            output_buffer[26] = (signed char)aux_conversion.quot;
+            output_buffer[27] = (signed char)aux_conversion.rem;
+            
+            aux_conversion = div(PT6_back_left,128);
+            output_buffer[28] = (signed char)aux_conversion.quot;
+            output_buffer[29] = (signed char)aux_conversion.rem;
+            
+            aux_conversion = div(PT7_have_puck,128);
+            output_buffer[30] = (signed char)aux_conversion.quot;
+            output_buffer[31] = (signed char)aux_conversion.rem;
 			
-				output_buffer[19] = (signed char)commands_var;
+            m_rf_send(SEN_ADDRESS_DEBUG,output_buffer,PACKET_LENGTH_DEBUG);
+            m_red(TOGGLE);
 			
-				aux_conversion = div((int)diff_theta,128);
-				output_buffer[20] = (signed char)aux_conversion.quot;
-				output_buffer[21] = (signed char)aux_conversion.rem;
-			
-				aux_conversion = div((int)OCR1B,128);
-				output_buffer[22] = (signed char)aux_conversion.quot;
-				output_buffer[23] = (signed char)aux_conversion.rem;
-			
-				aux_conversion = div((int)OCR1C,128);
-				output_buffer[24] = (signed char)aux_conversion.quot;
-				output_buffer[25] = (signed char)aux_conversion.rem;
-			
-				output_buffer[26] = (signed char)bank;
-				
-				/*aux_conversion = div(PT1_left_outside,128);
-				output_buffer[27] = (signed char)aux_conversion.quot;
-				output_buffer[28] = (signed char)aux_conversion.rem;
-				
-				aux_conversion = div(PT2_left_inside,128);
-				output_buffer[29] = (signed char)aux_conversion.quot;
-				output_buffer[30] = (signed char)aux_conversion.rem;
-				
-				aux_conversion = div(PT3_right_inside,128);
-				output_buffer[31] = (signed char)aux_conversion.quot;
-				output_buffer[32] = (signed char)aux_conversion.rem;
-				
-				aux_conversion = div(PT4_right_outside,128);
-				output_buffer[33] = (signed char)aux_conversion.quot;
-				output_buffer[34] = (signed char)aux_conversion.rem;
-				
-				aux_conversion = div(PT5_back_right,128);
-				output_buffer[35] = (signed char)aux_conversion.quot;
-				output_buffer[36] = (signed char)aux_conversion.rem;
-				
-				aux_conversion = div(PT6_back_left,128);
-				output_buffer[37] = (signed char)aux_conversion.quot;
-				output_buffer[38] = (signed char)aux_conversion.rem;
-				
-				aux_conversion = div(PT7_have_puck,128);
-				output_buffer[39] = (signed char)aux_conversion.quot;
-				output_buffer[40] = (signed char)aux_conversion.rem;*/
-			
-				m_rf_send(SEN_ADDRESS_DEBUG,output_buffer,PACKET_LENGTH_DEBUG);
-			
-				/*//Open again the system channel			
-				m_rf_open(CHANNEL_SYSTEM,ALEX_ADDRESS_SYSTEM,PACKET_LENGTH_SYSTEM);
-				timer_switch = 0;
-			}*/
+            /*//Open again the system channel
+             m_rf_open(CHANNEL_SYSTEM,ALEX_ADDRESS_SYSTEM,PACKET_LENGTH_SYSTEM);
+             timer_switch = 0;
+             }*/
 			
 			
 			//Reset flag
 			flag_timer = 0;
 			//m_green(OFF);
-				
+            
 			
         }
 		
-        /*//STATE COMMANDS
+        //STATE COMMANDS
         switch (state)
         {
-			long stop_counter = 0;
+                long stop_counter = 0;
             case INITIAL_STATE:
 				//m_green(ON);
                 if (check(PINB,2))
@@ -457,7 +436,7 @@ int main(void)
                 
                 
             case GO_TO_GOAL_CURVED:
-                
+                m_green(ON);
                 if (status_go_to_goal == 0)
                 {
                     dist_goal = sqrt((x_robot-goal_pos_x)*(x_robot-goal_pos_x)+(y_robot-goal_pos_y)*(y_robot-goal_pos_y));
@@ -484,7 +463,7 @@ int main(void)
                         {
                             diff_theta = dir_angle - theta_robot;
                             bank = 0;
-                            commands_var = 1;
+                            //commands_var = 1;
                         }
                         else if (add_360 == 0 && (angle_dir_aux > theta_robot || theta_robot > dir_angle))
                         {
@@ -493,7 +472,7 @@ int main(void)
                             else
                                 diff_theta = (theta_robot) - dir_angle;
                             bank = 1;
-                            commands_var = 2;
+                            //commands_var = 2;
                         }
                         else if (add_360 == 1 && ((theta_robot <=dir_angle && theta_robot >=-180) || ((theta_robot >= angle_dir_aux) && (theta_robot <= 180))))
                         {
@@ -502,27 +481,29 @@ int main(void)
                             else
                                 diff_theta = (dir_angle + 360) - theta_robot;
                             bank = 0;
-                            commands_var = 3;
+                            //commands_var = 3;
                         }
                         else if (add_360 == 1 && (theta_robot > dir_angle && theta_robot < angle_dir_aux))
                         {
                             diff_theta = theta_robot - dir_angle;
                             bank = 1;
-                            commands_var = 4;
+                            //commands_var = 4;
                         }else {
                             diff_theta = 0;
                             bank = 0;
-                            commands_var = 0;
+                            //commands_var = 0;
                         }
+						commands_var = bank;
 						
 						move_robot(diff_theta,bank);
-						//move_robot(diff_theta,dist_goal,bank);                        
+						//move_robot(diff_theta,dist_goal,bank);
                     }
 					
                 }
                 else if (status_go_to_goal == 1)
                 {
                     //stop_motor();
+					m_red(ON);
                     status_go_to_goal = 0;
 					stop_counter = 0;
 					go_bwd();
@@ -533,106 +514,106 @@ int main(void)
                     state = STOP_STATE;
                 }
                 break;
-             
+                
 			case SYSTEM_STATE:
 				switch (buffer_rec[0])
-				{
+            {
 					//Comm test
-					case 0xA0:
-						state = BLUE_LED_STATE;
-						break;
-						
+                case 0xA0:
+                    state = BLUE_LED_STATE;
+                    break;
+                    
 					//Play
-					case 0xA1:
-						//if (pause_bool)
-						//{
-							//state = past_state;
-							//pause_bool = 0;
-						//}else
-						//{
-							//state = INITIAL_STATE;
-						//}
-						state = INITIAL_STATE;
-						m_red(ON);
-						break;
+                case 0xA1:
+                    //if (pause_bool)
+                    //{
+                    //state = past_state;
+                    //pause_bool = 0;
+                    //}else
+                    //{
+                    //state = INITIAL_STATE;
+                    //}
+                    state = INITIAL_STATE;
+                    m_red(ON);
+                    break;
 					
 					//Goal A
-					case 0xA2:
-						if (check(PINB,2))
-							celebrate();
-						stop_motor();					
-						scoreA = buffer_rec[1];
-						scoreB = buffer_rec[2];
-						state = STOP_STATE;
-						break;
-						
+                case 0xA2:
+                    if (check(PINB,2))
+                        celebrate();
+                    stop_motor();
+                    scoreA = buffer_rec[1];
+                    scoreB = buffer_rec[2];
+                    state = STOP_STATE;
+                    break;
+                    
 					//Goal B
-					case 0xA3:
-						if (!check(PINB,2))
-							celebrate();
-						stop_motor();
-						scoreA = buffer_rec[1];
-						scoreB = buffer_rec[2];
-						state = STOP_STATE;
-						break;
-						
+                case 0xA3:
+                    if (!check(PINB,2))
+                        celebrate();
+                    stop_motor();
+                    scoreA = buffer_rec[1];
+                    scoreB = buffer_rec[2];
+                    state = STOP_STATE;
+                    break;
+                    
 					//Pause
-					case 0xA4:
-						pause_bool = 1;
-						stop_counter = 0;
-						go_bwd();
-						while(stop_counter<TIME_STOP)
-						{
-							stop_counter++;
-						}
-						state = STOP_STATE;
-						break;
-						
+                case 0xA4:
+                    pause_bool = 1;
+                    stop_counter = 0;
+                    go_bwd();
+                    while(stop_counter<TIME_STOP)
+                    {
+                        stop_counter++;
+                    }
+                    state = STOP_STATE;
+                    break;
+                    
 					//Halftime
-					case 0xA6:
-						stop_counter = 0;
-						go_bwd();
-						while(stop_counter<TIME_STOP)
-						{
-							stop_counter++;
-						}
-						state = STOP_STATE;
-						break;
-						
+                case 0xA6:
+                    stop_counter = 0;
+                    go_bwd();
+                    while(stop_counter<TIME_STOP)
+                    {
+                        stop_counter++;
+                    }
+                    state = STOP_STATE;
+                    break;
+                    
 					//Game over
-					case 0xA7:
-						if (check(PINB,2))
-						{
-							if (scoreA > scoreB)
-								celebrate();						
-						}else
-						{
-							if (scoreA < scoreB)
+                case 0xA7:
+                    if (check(PINB,2))
+                    {
+                        if (scoreA > scoreB)
+                            celebrate();
+                    }else
+                    {
+                        if (scoreA < scoreB)
 							celebrate();
-						}
-						stop_motor();
-						stop_counter = 0;
-						go_bwd();
-						while(stop_counter<TIME_STOP)
-						{
-							stop_counter++;
-						}
-						state = STOP_STATE;													
-						break;
-						
+                    }
+                    stop_motor();
+                    stop_counter = 0;
+                    go_bwd();
+                    while(stop_counter<TIME_STOP)
+                    {
+                        stop_counter++;
+                    }
+                    state = STOP_STATE;
+                    break;
+                    
 					//Enemy positions
-					case 0xA8:
-						enemy_rob1_x = buffer_rec[2];
-						enemy_rob1_y = buffer_rec[3];
-						enemy_rob2_x = buffer_rec[5];
-						enemy_rob2_y = buffer_rec[6];
-						enemy_rob3_x = buffer_rec[8];
-						enemy_rob3_y = buffer_rec[9];
-						break;					
+                case 0xA8:
+                    enemy_rob1_x = buffer_rec[2];
+                    enemy_rob1_y = buffer_rec[3];
+                    enemy_rob2_x = buffer_rec[5];
+                    enemy_rob2_y = buffer_rec[6];
+                    enemy_rob3_x = buffer_rec[8];
+                    enemy_rob3_y = buffer_rec[9];
+                    break;
 					
-					default:
-						break;						
-				}
+                default:
+                    break;
+            }
 				break;
 				
 			case BLUE_LED_STATE:
@@ -644,20 +625,20 @@ int main(void)
 			case STOP_STATE:
 				m_green(ON);
 				stop_motor();
-				break;			  
+				break;
                 
             default:
 			    stop_motor();
                 //while(1)
                 //{
-                    //m_red(TOGGLE);
-                    //m_green(TOGGLE);
-                    //m_wait(250);
+                //m_red(TOGGLE);
+                //m_green(TOGGLE);
+                //m_wait(250);
                 //}
-        }*/
+        }
         
     }
-  
+    
     
 }
 
@@ -858,9 +839,9 @@ void init_ports(void)
     clear(DDRB,2);
     set(PORTB,2);
 	
-	//Set E6 as output
-	set(DDRE,6);
-	clear(PORTE,6);
+	//Set D5 as output
+	set(DDRD,5);
+	clear(PORTD,5);
 }
 
 
@@ -872,54 +853,56 @@ void stop_motor(void)
 
 void turn_left(void)
 {
-    set(PORTB,3);
+    clear(PORTB,3);
     set(PORTD,3);
-	OCR1B = PWM_SPEED_TURN_RGHT;
-    OCR1C = PWM_SPEED_TURN_LFT;
-	//m_green(OFF);
+	OCR1B = PWM_SPEED_TURN_LFT;
+    OCR1C = PWM_SPEED_TURN_RGHT;
+	//m_green(ON);
 }
 
 void turn_right(void)
 {
-    clear(PORTB,3);
+    set(PORTB,3);
     clear(PORTD,3);
-    OCR1B = PWM_SPEED_TURN_RGHT;
-    OCR1C = PWM_SPEED_TURN_LFT;
+    OCR1B = PWM_SPEED_TURN_LFT;
+    OCR1C = PWM_SPEED_TURN_RGHT;
 	//m_green(ON);
 }
 
 void go_bwd(void)
 {
-    clear(PORTB,3);
+    set(PORTB,3);
     set(PORTD,3);
     OCR1B = PWM_SPEED_FWD_LFT;
     OCR1C = PWM_SPEED_FWD_RGHT;
+	//m_green(TOGGLE);
 }
 
 void go_fwd(void)
 {
-	set(PORTB,3);
+	clear(PORTB,3);
 	clear(PORTD,3);
 	OCR1B = PWM_SPEED_FWD_LFT;
 	OCR1C = PWM_SPEED_FWD_RGHT;
+	//m_green(ON);
 }
 
 
 /*void move_robot(float theta, float dist, int dir){
-	dist = 0
-    if (dir == 0) {             // Move with a right curve
-        OCR1B = MIN_SPEED+(MAX_SPEED-MIN_SPEED)*(dist/240.0);
-        OCR1C = MIN_SPEED+((theta/180.0)*WEIGHT_TURN+(dist/240.0)*WEIGTH_FWD)*(MAX_SPEED-MIN_SPEED)/(WEIGTH_FWD+WEIGHT_TURN);
-    }
-    else 
-	{                      // Move with a left curve
-        OCR1B = MIN_SPEED+((theta/180.0)*WEIGHT_TURN+(dist/240.0)*WEIGTH_FWD)*(MAX_SPEED-MIN_SPEED)/(WEIGTH_FWD+WEIGHT_TURN);
-        OCR1C = MIN_SPEED+(MAX_SPEED-MIN_SPEED)*(dist/240.0);
-    }
-    //m_green(ON);
-    clear(PORTB,0);
-    set(PORTB,1);
-}*/
+ dist = 0
+ if (dir == 0) {             // Move with a right curve
+ OCR1B = MIN_SPEED+(MAX_SPEED-MIN_SPEED)*(dist/240.0);
+ OCR1C = MIN_SPEED+((theta/180.0)*WEIGHT_TURN+(dist/240.0)*WEIGTH_FWD)*(MAX_SPEED-MIN_SPEED)/(WEIGTH_FWD+WEIGHT_TURN);
+ }
+ else 
+ {                      // Move with a left curve
+ OCR1B = MIN_SPEED+((theta/180.0)*WEIGHT_TURN+(dist/240.0)*WEIGTH_FWD)*(MAX_SPEED-MIN_SPEED)/(WEIGTH_FWD+WEIGHT_TURN);
+ OCR1C = MIN_SPEED+(MAX_SPEED-MIN_SPEED)*(dist/240.0);
+ }
+ //m_green(ON);
+ clear(PORTB,0);
+ set(PORTB,1);
+ }*/
 
 void move_robot(float theta, int dir){
 	if (dir == 1) {             // Move with a right curve
@@ -939,8 +922,8 @@ void move_robot(float theta, int dir){
 		
 	}
 	
-	set(PORTB,0);
-	clear(PORTB,1);
+	clear(PORTB,3);
+	clear(PORTD,3);
 }
 
 void turnOnBlueLED(void)
@@ -966,10 +949,10 @@ ISR(TIMER4_OVF_vect)
 }
 
 /*ISR(INT2_vect)
-{
-	//Read
-	m_rf_read(buffer_rec,PACKET_LENGTH_SYSTEM);
-	past_state = state;
-	state = SYSTEM_STATE;
-	//m_green(ON); // Indicator receiving from RF
-}*/
+ {
+ //Read
+ m_rf_read(buffer_rec,PACKET_LENGTH_SYSTEM);
+ past_state = state;
+ state = SYSTEM_STATE;
+ //m_green(ON); // Indicator receiving from RF
+ }*/

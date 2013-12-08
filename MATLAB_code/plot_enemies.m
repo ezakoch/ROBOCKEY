@@ -212,12 +212,12 @@ hold on
             
 %             
 %             % ASK ROBOT 2 FOR EACH VARIABLES
-%             fwrite(userdata.handle, 2);
-%             nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
-%             while(nBytes==0)
-%                 nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
-%             end
-%             get_robot2_variables(i); 
+            fwrite(userdata.handle, 2);
+            nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
+            while(nBytes==0)
+                nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
+            end
+            get_robot2_variables(i); 
 %             
 %             fwrite(userdata.handle, 5);
 %             nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
