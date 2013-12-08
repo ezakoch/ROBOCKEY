@@ -24,6 +24,7 @@
 #define CHANNEL_DEBUG 1
 #define GO_TO_GOAL 1
 #define GO_TO_GOAL_CURVED 2
+#define GO_TO_GOAL_WITH_PUCK 3
 #define INITIAL_STATE 0
 #define SYSTEM_STATE 99
 #define STOP_STATE 21
@@ -38,19 +39,24 @@
 //#define GOAL_B_POS_Y 0
 #define THRESHOLD_ANGLE_GOAL 7
 #define THRESHOLD_DIST_GOAL 20
-#define PWM_SPEED_TURN_LFT 3600 //RIGHT NOT TURNING WITH LESS THAN 380
-#define PWM_SPEED_TURN_RGHT 3600
-//#define PWM_SPEED_FWD_LFT 393
-//#define PWM_SPEED_FWD_RGHT 380
-#define PWM_SPEED_FWD_LFT 3600//3300
-#define PWM_SPEED_FWD_RGHT 3600//3300
+#define PWM_SPEED_TURN_LFT 2500 //RIGHT NOT TURNING WITH LESS THAN 380
+#define PWM_SPEED_TURN_RGHT 2500
+#define PWM_SPEED_FWD_LFT 4000//3300
+#define PWM_SPEED_FWD_RGHT 4000//3300
 #define PWM_MAXIMUM 5000
 #define PWM_MIN_LEFT 363
 #define PWM_MIN_RGHT 350
 #define WEIGHT_TURN 5
 #define WEIGTH_FWD 1
-#define TIME_STOP 30000
-#define TURNING_ANGLE 110.0
+#define TIME_STOP 40000
+#define TIME_STOP_TURNING 7500
+#define TURNING_ANGLE 160.0
+#define PWM_SPEED_CIRCLE_LFT 2350
+#define RATIO_TURNING_LFT 0.83
+#define PWM_SPEED_CIRCLE_RGHT 2300
+#define RATIO_TURNING_RGHT 0.845
+
+
 
 //Function prototypes
 void set_timer1(void);
@@ -64,9 +70,12 @@ void turn_right(void);
 void turn_left(void);
 void go_fwd(void);
 void go_bwd(void);
+void circle_left(void);
+void circle_right(void);
 //void move_robot(float theta, float dist, int dir);
 void move_robot(float theta, int dir);
 void turnOnBlueLED(void);
+void turnOffBlueLED(void);
 void celebrate(void);
 
 //Variable used to check timer
@@ -94,6 +103,7 @@ int main(void)
 	int enemy_rob1_x = 0,enemy_rob1_y = 0,enemy_rob2_x = 0,enemy_rob2_y = 0,enemy_rob3_x = 0,enemy_rob3_y = 0;
 	int scoreA = 0,scoreB = 0;
 	int PT1_left_outside = 0, PT2_left_inside = 0, PT3_right_inside = 0, PT4_right_outside = 0, PT5_back_right = 0, PT6_back_left = 0, PT7_have_puck = 0;
+	int circle_started_before = 0;
     
     //Variables debugging
     float dir_x = 0;
@@ -166,16 +176,16 @@ int main(void)
     {
 		
 		/*// Motor testing
-        if (check(PINB,2)) 
-		{
-         turn_left();
-		 m_red(ON);
+        if (check(PINB,2))
+        {
+	        turn_left();
+	        m_red(ON);
         }
         else
-		{
-         turn_right();
-		 m_red(OFF);
-        }*/
+        {
+	        turn_right();
+	        m_red(OFF);
+	    }*/
 
 		/*// Motor testing
         if (check(PINB,2)) 
@@ -188,6 +198,19 @@ int main(void)
 			go_bwd();
 			m_red(OFF);
         }*/
+		
+		/*//Move circle
+		if (check(PINB,2))
+		{
+			circle_left();
+			m_red(ON);
+		}
+		else
+		{
+			circle_right();
+			m_red(OFF);
+		}*/
+		
 		
 		
         //LOCALIZATION CODE
@@ -354,7 +377,7 @@ int main(void)
                     goal_pos_y = GOAL_B_POS_Y;
                 }
                 status_go_to_goal = 0;
-                state = GO_TO_GOAL_CURVED;
+                state = GO_TO_GOAL_WITH_PUCK;
                 break;
                 
             case GO_TO_GOAL:
@@ -409,6 +432,20 @@ int main(void)
                     }
                 }else if (status_go_to_goal == 2)
                 {
+					state = GO_TO_GOAL_CURVED;
+					status_go_to_goal = 0;
+					stop_counter = 0;
+					if (commands_var == 1 || commands_var == 3)
+						turn_right();
+					else if (commands_var == 2 || commands_var == 4)
+						turn_left();
+			
+					while(stop_counter<TIME_STOP_TURNING)
+					{
+						stop_counter++;
+					}
+					break;
+					
                     dist_goal = sqrt((x_robot-goal_pos_x)*(x_robot-goal_pos_x)+(y_robot-goal_pos_y)*(y_robot-goal_pos_y));
                     if (dist_goal < THRESHOLD_DIST_GOAL)
                         status_go_to_goal = 3;
@@ -436,7 +473,8 @@ int main(void)
                 
                 
             case GO_TO_GOAL_CURVED:
-                m_green(ON);
+                //m_green(ON);
+				turnOnBlueLED();
                 if (status_go_to_goal == 0)
                 {
                     dist_goal = sqrt((x_robot-goal_pos_x)*(x_robot-goal_pos_x)+(y_robot-goal_pos_y)*(y_robot-goal_pos_y));
@@ -503,7 +541,7 @@ int main(void)
                 else if (status_go_to_goal == 1)
                 {
                     //stop_motor();
-					m_red(ON);
+					m_green(ON);
                     status_go_to_goal = 0;
 					stop_counter = 0;
 					go_bwd();
@@ -514,6 +552,90 @@ int main(void)
                     state = STOP_STATE;
                 }
                 break;
+				
+			case GO_TO_GOAL_WITH_PUCK:
+			if (status_go_to_goal == 0)
+			{
+				dist_goal = sqrt((x_robot-goal_pos_x)*(x_robot-goal_pos_x)+(y_robot-goal_pos_y)*(y_robot-goal_pos_y));
+				if (dist_goal < THRESHOLD_DIST_GOAL)
+					status_go_to_goal = 1;
+				else
+				{
+					
+					dir_x = goal_pos_x-x_robot;
+					dir_y = goal_pos_y-y_robot;
+					dir_angle = atan2(-dir_x,dir_y)*180/M_PI;
+					
+					
+					float angle_dir_aux = dir_angle-180;
+					float add_360 = 0;
+					if (angle_dir_aux < -180)
+					{
+						angle_dir_aux += 360;
+						add_360 = 1;
+					}
+					
+					
+					if (add_360 == 0 && (angle_dir_aux <= theta_robot && theta_robot <= dir_angle))
+					{
+						diff_theta = dir_angle - theta_robot;
+
+					}
+					else if (add_360 == 0 && (angle_dir_aux > theta_robot || theta_robot > dir_angle))
+					{
+						if (theta_robot < 0)
+							diff_theta = (theta_robot+360) - dir_angle;
+						else
+							diff_theta = (theta_robot) - dir_angle;
+
+					}
+					else if (add_360 == 1 && ((theta_robot <=dir_angle && theta_robot >=-180) || ((theta_robot >= angle_dir_aux) && (theta_robot <= 180))))
+					{
+						if (theta_robot < 0)
+							diff_theta = dir_angle - theta_robot;
+						else
+							diff_theta = (dir_angle + 360) - theta_robot;
+					}
+					else if (add_360 == 1 && (theta_robot > dir_angle && theta_robot < angle_dir_aux))
+					{
+						diff_theta = theta_robot - dir_angle;
+					}else 
+					{
+						diff_theta = 0;
+					}
+					
+					if (diff_theta > -60 && diff_theta <60)
+					{
+						status_go_to_goal = 0;
+						circle_started_before = 0;
+						state = GO_TO_GOAL_CURVED;
+						break;
+					}
+					else
+					{
+						if (y_robot <= 0 && circle_started_before == 0)
+						{
+							circle_left();
+							circle_started_before = 1;
+						}
+						else if (y_robot > 0 && circle_started_before == 0)
+						{
+							circle_right();
+							circle_started_before = 1;							
+						}
+					}	
+														
+				}
+				
+			}
+			else if (status_go_to_goal == 1)
+			{
+				//stop_motor();
+				status_go_to_goal = 0;
+				circle_started_before = 0;
+				state = STOP_STATE;
+			}
+			break;
              
 			case SYSTEM_STATE:
 				switch (buffer_rec[0])
@@ -855,8 +977,8 @@ void turn_left(void)
 {
     clear(PORTB,3);
    set(PORTD,3);
-	OCR1B = PWM_SPEED_TURN_LFT;
-    OCR1C = PWM_SPEED_TURN_RGHT;
+	OCR1B = PWM_SPEED_TURN_RGHT;
+    OCR1C = PWM_SPEED_TURN_LFT;
 	//m_green(ON);
 }
 
@@ -864,8 +986,8 @@ void turn_right(void)
 {
     set(PORTB,3);
     clear(PORTD,3);
-    OCR1B = PWM_SPEED_TURN_LFT;
-    OCR1C = PWM_SPEED_TURN_RGHT;
+    OCR1B = PWM_SPEED_TURN_RGHT;
+    OCR1C = PWM_SPEED_TURN_LFT;
 	//m_green(ON);
 }
 
@@ -873,8 +995,8 @@ void go_bwd(void)
 {
     set(PORTB,3);
     set(PORTD,3);
-    OCR1B = PWM_SPEED_FWD_LFT;
-    OCR1C = PWM_SPEED_FWD_RGHT;
+    OCR1B = PWM_SPEED_FWD_RGHT;
+    OCR1C = PWM_SPEED_FWD_LFT;
 	//m_green(TOGGLE);
 }
 
@@ -882,11 +1004,28 @@ void go_fwd(void)
 {
 	clear(PORTB,3);
 	clear(PORTD,3);
-	OCR1B = PWM_SPEED_FWD_LFT;
-	OCR1C = PWM_SPEED_FWD_RGHT;
+	OCR1B = PWM_SPEED_FWD_RGHT;
+	OCR1C = PWM_SPEED_FWD_LFT;
 	//m_green(ON);
 }
 
+void circle_left()
+{
+	clear(PORTB,3);
+	clear(PORTD,3);
+	OCR1B = PWM_SPEED_CIRCLE_LFT;
+	OCR1C = PWM_SPEED_CIRCLE_LFT*RATIO_TURNING_LFT;
+	//m_green(ON);
+}
+
+void circle_right()
+{
+	clear(PORTB,3);
+	clear(PORTD,3);
+	OCR1B = PWM_SPEED_CIRCLE_RGHT*RATIO_TURNING_RGHT;
+	OCR1C = PWM_SPEED_CIRCLE_RGHT;
+	//m_green(ON);
+}
 
 /*void move_robot(float theta, float dist, int dir){
 	dist = 0
@@ -906,19 +1045,20 @@ void go_fwd(void)
 
 void move_robot(float theta, int dir){
 	if (dir == 1) {             // Move with a right curve
-		OCR1B = PWM_SPEED_FWD_LFT;
+		OCR1C = PWM_SPEED_FWD_LFT;
 		if (theta> TURNING_ANGLE)
-			OCR1C = PWM_MIN_RGHT;
+			OCR1B = PWM_MIN_RGHT;
 		else
-			OCR1C = PWM_MIN_RGHT+((TURNING_ANGLE - theta)/TURNING_ANGLE)*(PWM_SPEED_FWD_RGHT-PWM_MIN_RGHT);
+			OCR1B = PWM_MIN_RGHT+((TURNING_ANGLE - theta)/TURNING_ANGLE)*(PWM_SPEED_FWD_RGHT-PWM_MIN_RGHT);
 	}
 	else
-	{                      // Move with a left curve
-		OCR1C = PWM_SPEED_FWD_RGHT;		
+	{                      
+		// Move with a left curve
+		OCR1B = PWM_SPEED_FWD_RGHT;		
 		if (theta> TURNING_ANGLE)
-			OCR1B = PWM_MIN_LEFT;
+			OCR1C = PWM_MIN_LEFT;
 		else
-			OCR1B = PWM_MIN_LEFT+((TURNING_ANGLE - theta)/TURNING_ANGLE)*(PWM_SPEED_FWD_LFT-PWM_MIN_LEFT);
+			OCR1C = PWM_MIN_LEFT+((TURNING_ANGLE - theta)/TURNING_ANGLE)*(PWM_SPEED_FWD_LFT-PWM_MIN_LEFT);
 		
 	}
 	
@@ -928,7 +1068,12 @@ void move_robot(float theta, int dir){
 
 void turnOnBlueLED(void)
 {
-	set(PORTE,6);
+	set(PORTD,5);
+}
+
+void turnOffBlueLED(void)
+{
+	clear(PORTD,5);
 }
 
 void celebrate(void)
