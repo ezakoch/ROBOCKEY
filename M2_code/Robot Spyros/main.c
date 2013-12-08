@@ -6,6 +6,7 @@
 #include "m_rf.h"
 #include "m_wii.h"
 #include "Localize.h"
+#include "Init_functions.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -24,6 +25,7 @@
 #define CHANNEL_DEBUG 1
 #define GO_TO_GOAL 1
 #define GO_TO_GOAL_CURVED 2
+#define FIND_PUCK 3
 #define INITIAL_STATE 0
 #define SYSTEM_STATE 99
 #define STOP_STATE 21
@@ -44,20 +46,26 @@
 //#define PWM_SPEED_FWD_RGHT 380
 #define PWM_SPEED_FWD_LFT 2800//3300
 #define PWM_SPEED_FWD_RGHT 2800//3300
-#define PWM_MAXIMUM 5000
+
 #define PWM_MIN_LEFT 1500
 #define PWM_MIN_RGHT 1500
 #define WEIGHT_TURN 5
 #define WEIGTH_FWD 1
 #define TIME_STOP 1000
 #define TURNING_ANGLE 180.0
+#define THRESHOLD_PUCK_CENTER_OUTSIDE 0.25
+#define THRESHOLD_PUCK_CENTER_INSIDE 0.15
+#define THRESHOLD_SWITCH_EXTERIOR 40
+#define	THRESHOLD_PUCK_NOT_FIND 20
 
-#define TIME_TO_TURN 125
+
 
 #define Kp 8
 #define Kp_move 10
 #define Kd 500
 #define time 0.002
+
+
 
 int diff_error = 0, cur_error = 0, prev_error = 0;
 float TARGETS_X[2]={0.0};
@@ -87,6 +95,7 @@ void go_bwd(void);
 void turn_robot(float theta, int dir, float diff);
 void move_robot(float theta, int dir, float diff);
 void turnOnBlueLED(void);
+void turnOffBlueLED(void);
 void celebrate(void);
 
 //Variable used to check timer
@@ -106,6 +115,8 @@ ISR(INT2_vect);
 //Main function
 int main(void)
 {
+    m_disableJTAG();
+    
     //Variable declaration
     unsigned char wii_OK = 0;
     unsigned char localize_OK = 0;
@@ -139,95 +150,90 @@ int main(void)
     int x_robot = 0, y_robot = 0;
     div_t aux_conversion;
     
-    //Set the clock system prescaler
-    m_clockdivide(N_CLOCK);
     
-    //Turn off the LEDs
-    m_green(OFF);
-    m_red(OFF);
+    // --------------------------------------------------------------
+    // Initialization
+    // --------------------------------------------------------------
+    m_clockdivide(N_CLOCK);             // Set the clock system prescaler
+    m_green(OFF);                       // Turn off the LEDs
+    m_red(OFF);                         // ^
 	
-	m_red(ON);
-    //Initialize bus
-    m_bus_init();
+	m_red(ON);                          // Initialize RED light indicator
     
-    //Initialize ports
-    init_ports();
+    m_bus_init();                       // Initialize bus
+    init_ports();                       // Initialize ports
+    set_timer1();                       // Set timer 1 for motor
+    set_timer0();                       // Set timer 0 for main loop frame rate
+    start_timer0();                     // Start timer 0
+    //set_timer3();                     // Set timer 3 for solenoid
+    set_timer4();                       // Set timer 4 to every 0.1 s (10 Hz) to send data
+    init_analog();                      // Set the ADC System
     
-    //Set timer 1 for motor
-    set_timer1();
+    char aux = 0;                       // Initialize wii camera
+	while(!aux)                         // ^
+    {                                   // ^
+        aux = m_wii_open();             // ^
+    };                                  // ^
     
-    set_timer0();
-    
-    //Set timer 3 for solenoid
-    //set_timer3();
-    
-    //Set timer to every 0.1 s (10 Hz)
-    set_timer4();
-    
-    //Set the ADC
-    init_analog();
-    
-    
-    //Initialize wii camera
-    char aux = 0;
-	while(!aux)
-    {
-        aux = m_wii_open();
-    };
-    
-    m_wait(1000);
-    m_red(OFF);
-	
-    //Open the channel
-    //m_rf_open(CHANNEL_SYSTEM,ALEX_ADDRESS_SYSTEM,PACKET_LENGTH_SYSTEM);
+    //    m_rf_open(CHANNEL_SYSTEM,ALEX_ADDRESS_SYSTEM,PACKET_LENGTH_SYSTEM);       // Open the RF channel
 	m_rf_open(CHANNEL_DEBUG,REC_ADDRESS_DEBUG,PACKET_LENGTH_DEBUG);
-    m_green(ON);
-    //Enable interruptions
-    sei();
     
-    //Main loop
-    start_timer0();
-//    
-//    TARGETS_X[0] = GOAL_A_POS_X;
-//    TARGETS_Y[0] = GOAL_A_POS_Y;
-//    TARGETS_X[1] = GOAL_B_POS_X;
-//    TARGETS_Y[1] = GOAL_B_POS_Y;
-//    
+    sei();                              // Enable interruptions
+    m_red(OFF);                         // Turn off RED light initialize finished indicator
+    
+    // Initialize Target Waypoints
+    //
+    //    TARGETS_X[0] = GOAL_A_POS_X;
+    //    TARGETS_Y[0] = GOAL_A_POS_Y;
+    //    TARGETS_X[1] = GOAL_B_POS_X;
+    //    TARGETS_Y[1] = GOAL_B_POS_Y;
+    //
     TARGETS_X[0] = 0;
     TARGETS_Y[0] = 0;
     TARGETS_X[1] = 80;
     TARGETS_Y[1] = 30;
     
     int TARGET_NUM = 0;
+    // --------------------------------------------------------------
     
     
+    
+    
+    // --------------------------------------------------------------
+    // Main loop
+    // --------------------------------------------------------------
     while (1)
     {
         
         if (flag_turn == 0) {
-            //LOCALIZATION CODE
-            //Get the blobs
-            cli();
-            wii_OK = m_wii_read(blobs_wii);
-            sei();
             
-            //If data received correctly
+            // --------------------------------------------------------------
+            // LOCALIZATION CODE
+            // --------------------------------------------------------------
+            cli();                                          // Clear Interupts to not interfere with the mWii
+            wii_OK = m_wii_read(blobs_wii);                 // Get the blobs
+            sei();                                          // Enable back the interupts
+            
+            // If data received correctly
             if (wii_OK)
             {
-                //Get the position and orientation of the robot from the constellation
+                // Get the position and orientation of the robot from the constellation
                 localize_OK = localize(blobs_wii[0],blobs_wii[3],blobs_wii[6],blobs_wii[9],blobs_wii[1],blobs_wii[4],blobs_wii[7],blobs_wii[10],&x_robot,&y_robot,&theta_robot,&cam_X,&cam_Y);
                 
             }
+            // --------------------------------------------------------------
             
             
-            //ANALOG CODE
+            
+            
+            // --------------------------------------------------------------
+            // ANALOG CODE
+            // --------------------------------------------------------------
             int i;
             for (i=0;i<NUM_LEDS;i++)
             {
-                get_analog_val(i);
-                
-                //Wait until flag is on
-                while(!check(ADCSRA,ADIF));
+                get_analog_val(i);              // Get the values for each ADC pin
+                while(!check(ADCSRA,ADIF));     // Wait until flag is on
                 switch(i)
                 {
                     case(0):
@@ -253,15 +259,16 @@ int main(void)
                         break;
                 }
                 
-                //After doing the conversion reset flag
-                set(ADCSRA,ADIF);
+                set(ADCSRA,ADIF);               // After doing the conversion reset flag
             }
             
             
-            
-            //SEND COMMANDS
+            // --------------------------------------------------------------
+            // SEND COMMANDS
+            // --------------------------------------------------------------
             if (flag_timer == 1)
             {
+                // SEND DATA TO THE MAIN SYSTEM
                 /*if (timer_switch == 0)
                  {
                  //Create the packet to send to system
@@ -274,7 +281,7 @@ int main(void)
                  else
                  {
                  
-                 //DEBUG COMMANDS SENDING
+                 // SEND DATA TO THE M2 CONNECTED TO MATLAB
                  //Open the channel
                  m_rf_open(CHANNEL_DEBUG,REC_ADDRESS_DEBUG,PACKET_LENGTH_DEBUG);*/
                 
@@ -347,38 +354,168 @@ int main(void)
                  timer_switch = 0;
                  }*/
                 
-                
-                //Reset flag
-                flag_timer = 0;
-                //m_green(OFF);
-                
-                
+                flag_timer = 0;         //Reset flag
+                // m_green(OFF);
             }
             
             
-            
-            //STATE COMMANDS
+            // --------------------------------------------------------------
+            // STATE COMMANDS
+            // --------------------------------------------------------------
             switch (state)
             {
                     long stop_counter = 0;
+                    
+                // --------------------------------------------------------------
+                // FIND PUCK STATE
+                // --------------------------------------------------------------
+                case FIND_PUCK:
+                    
+                    ////Check if we have the puck
+                    //if (PT7_have_puck > 250)
+                    //{
+					//stop_motor();
+					//state = GO_TO_GOAL_WITH_PUCK
+					//status_go_to_goal = 0;
+					//break;
+                    //}
+                    //
+                    ////Check if we have the puck
+                    //if (PT2_left_inside > 1000 &&  PT3_right_inside > 1000)
+                    //{
+					//stop_motor();
+					//state = GO_TO_GOAL_WITH_PUCK;
+					//status_go_to_goal = 0;
+					//break;
+                    //}
+                    
+                    if (status_go_to_goal == 0)
+                    {
+                        turnOffBlueLED();
+                        
+                        int max_lr = 0;
+                        int half_range = 0;
+                        
+                        //Check at which quadrant we are
+                        //Check if the puck is in the left or in the right
+                        if (PT1_left_outside > PT4_right_outside)
+                            max_lr = 0;
+                        else
+                            max_lr = 1;
+                        
+                        //Check if the puck is up or down
+                        if (max_lr == 0)
+                        {
+                            if (PT1_left_outside >= PT6_back_left)
+                                half_range = 0;
+                            else
+                                half_range = 1;
+                        }
+                        else
+                        {
+                            if (PT4_right_outside >= PT5_back_right)
+                                half_range = 0;
+                            else
+                                half_range = 1;
+                        }
+                        
+                        //Move around until the puck is in front
+                        //Case where the puck is in in front
+                        if (half_range == 0)
+                        {
+                            int max_pt = 0;
+                            if (PT1_left_outside >= PT4_right_outside)
+                                max_pt = PT1_left_outside;
+                            else
+                                max_pt = PT4_right_outside;
+                            
+                            if (abs(PT1_left_outside-PT4_right_outside) <= THRESHOLD_PUCK_CENTER_OUTSIDE*max_pt && max_pt >= THRESHOLD_PUCK_NOT_FIND)
+                            {
+                                if ((PT2_left_inside+PT3_right_inside)/2.0 < THRESHOLD_SWITCH_EXTERIOR)
+                                    go_fwd();
+                                else
+                                {
+                                    status_go_to_goal = 1;
+                                    turnOnBlueLED();
+                                    //m_wait(4000);
+                                    //turnOffBlueLED();
+                                }
+                                
+                            }else if (abs(PT1_left_outside-PT4_right_outside) <= THRESHOLD_PUCK_CENTER_OUTSIDE*max_pt && max_pt < THRESHOLD_PUCK_NOT_FIND)
+                                turn_left();
+                            else
+                            {
+                                if (PT1_left_outside > PT4_right_outside)
+                                    turn_left();
+                                else
+                                    turn_right();
+                            }
+                            //Case where the puck is in the back
+                        }else
+                        {
+                            if (PT6_back_left >= PT5_back_right)
+                                turn_left();
+                            else
+                                turn_right();
+                        }
+                    }
+                    else if (status_go_to_goal == 1)
+                    {
+                        //Internal PTs direction
+                        if ((PT2_left_inside+PT3_right_inside)/2.0 < THRESHOLD_SWITCH_EXTERIOR)
+                            status_go_to_goal = 0;
+                        else
+                        {
+                            int max_pt = 0;
+                            if (PT2_left_inside >= PT3_right_inside)
+                                max_pt = PT2_left_inside;
+                            else
+                                max_pt = PT3_right_inside;
+                            
+                            if (abs(PT2_left_inside-PT3_right_inside) < THRESHOLD_PUCK_CENTER_INSIDE*max_pt)
+                                go_fwd();
+                            else
+                            {
+                                if (PT2_left_inside>=PT3_right_inside)
+                                    turn_left();
+                                else
+                                    turn_right();
+                            }
+                        }
+                    }
+                    
+                    break;
+                // --------------------------------------------------------------
+                    
+                    
+                    
+                // --------------------------------------------------------------
+                // INITIAL STATE
+                // --------------------------------------------------------------
                 case INITIAL_STATE:
                     if (check(PINB,2))
                     {
                         goal_pos_x = GOAL_A_POS_X;
                         goal_pos_y = GOAL_A_POS_Y;
-//                        goal_pos_x = TARGETS_X[TARGET_NUM];
-//                        goal_pos_y = TARGETS_Y[TARGET_NUM];
-//                        
+                        //                        goal_pos_x = TARGETS_X[TARGET_NUM];
+                        //                        goal_pos_y = TARGETS_Y[TARGET_NUM];
+                        //
                     }else
                     {
                         goal_pos_x = GOAL_B_POS_X;
                         goal_pos_y = GOAL_B_POS_Y;
                     }
                     status_go_to_goal = 0;
-                    state = GO_TO_GOAL_CURVED;
+                    //                    state = GO_TO_GOAL_CURVED;
+                    state = FIND_PUCK;
                     break;
+                // --------------------------------------------------------------
                     
                     
+                    
+                // --------------------------------------------------------------
+                // GO TO GOAL CURVED STATE
+                // --------------------------------------------------------------
                 case GO_TO_GOAL_CURVED:
                     
                     dir_x = goal_pos_x-x_robot;
@@ -415,14 +552,14 @@ int main(void)
                             status_go_to_goal = 2;
                             set(PORTD,5);
                             
-//                            stop_motor();
-//                            stop_counter = 0;
-//                            go_bwd();
-//                            
-//                            while(stop_counter<TIME_STOP)
-//                            {
-//                                stop_counter++;
-//                            }
+                            //                            stop_motor();
+                            //                            stop_counter = 0;
+                            //                            go_bwd();
+                            //
+                            //                            while(stop_counter<TIME_STOP)
+                            //                            {
+                            //                                stop_counter++;
+                            //                            }
                             //stop_motor();
                             //m_wait(1000);
                         }
@@ -458,7 +595,7 @@ int main(void)
                     {
                         
                         stop_motor();
- 
+                        
                         
                         //m_wait(1000);
                         //clear(PORTD,5);
@@ -468,7 +605,7 @@ int main(void)
                         }
                         else {
                             TARGET_NUM = 0;
-//                            clear(PORTD,5);
+                            //                            clear(PORTD,5);
                         }
                         goal_pos_x = TARGETS_X[TARGET_NUM];
                         goal_pos_y = TARGETS_Y[TARGET_NUM];
@@ -476,13 +613,19 @@ int main(void)
                         
                         //state = STOP_STATE;
                         
-                         //state = STOP_STATE;
+                        //state = STOP_STATE;
                         
                     }
                     break;
+                // --------------------------------------------------------------
+                
                     
+                    
+                // --------------------------------------------------------------
+                // SYSTEM STATE
+                // --------------------------------------------------------------
                 case SYSTEM_STATE:
-                    switch (buffer_rec[0])
+                    switch ((int)buffer_rec[0])
                 {
                         //Comm test
                     case 0xA0:
@@ -582,17 +725,31 @@ int main(void)
                 }
                     break;
                     
+                    
+                // --------------------------------------------------------------
+                // BLUE LED STATE
+                // --------------------------------------------------------------
                 case BLUE_LED_STATE:
                     stop_motor();
                     turnOnBlueLED();
                     state = STOP_STATE;
                     break;
                     
+                    
+                // --------------------------------------------------------------
+                // STOP STATE
+                // --------------------------------------------------------------
                 case STOP_STATE:
                     m_green(ON);
                     stop_motor();
                     break;
+                // --------------------------------------------------------------
+                
                     
+                    
+                // --------------------------------------------------------------
+                // DEFAULT STATE
+                // --------------------------------------------------------------
                 default:
                     stop_motor();
                     //while(1)
@@ -601,6 +758,7 @@ int main(void)
                     //m_green(TOGGLE);
                     //m_wait(250);
                     //}
+                // --------------------------------------------------------------
             }
             
             
@@ -609,11 +767,13 @@ int main(void)
     
     flag_turn = 1;
     start_timer0();
-    
-    
 }
+// --------------------------------------------------------------
 
 
+// --------------------------------------------------------------
+// CALCULATE ERROR IN ORIENTATION and OPTIMAL TURNING
+// --------------------------------------------------------------
 void calculate_diff_theta(float theta_des, float* err_theta, int* dir_to_turn){
     
     float angle_dir_aux = theta_des-180;
@@ -629,7 +789,6 @@ void calculate_diff_theta(float theta_des, float* err_theta, int* dir_to_turn){
     {
         *err_theta = theta_des - theta_robot;
         *dir_to_turn = 0;
-        //commands_var = 1;
     }
     else if (add_360 == 0 && (angle_dir_aux > theta_robot || theta_robot > theta_des))
     {
@@ -638,7 +797,6 @@ void calculate_diff_theta(float theta_des, float* err_theta, int* dir_to_turn){
         else
             *err_theta = (theta_robot) - theta_des;
         *dir_to_turn = 1;
-        //commands_var = 2;
     }
     else if (add_360 == 1 && ((theta_robot <=theta_des && theta_robot >=-180) || ((theta_robot >= angle_dir_aux) && (theta_robot <= 180))))
     {
@@ -647,335 +805,23 @@ void calculate_diff_theta(float theta_des, float* err_theta, int* dir_to_turn){
         else
             *err_theta = (theta_des + 360) - theta_robot;
         *dir_to_turn = 0;
-        //commands_var = 3;
     }
     else if (add_360 == 1 && (theta_robot > theta_des && theta_robot < angle_dir_aux))
     {
         *err_theta = theta_robot - theta_des;
         *dir_to_turn = 1;
-        //commands_var = 4;
     }else {
         err_theta = 0;
         dir_to_turn = 0;
-        //commands_var = 0;
     }
-    //commands_var = bank;
-
-    
 }
-
-void set_timer0(void)
-{
-    OCR0A = TIME_TO_TURN;
-    
-    //Set to UP to FF
-    clear(TCCR0B,WGM02);
-    clear(TCCR0A,WGM01);
-    clear(TCCR0A,WGM00);
-    
-    //Set timer prescaler to /0
-    clear(TCCR0B,CS02);
-    clear(TCCR0B,CS01);
-    clear(TCCR0B,CS00);
-    
-    //Demask OCR3A interrupt
-    set(TIMSK0,TOIE0);
-}
-
-void start_timer0(void)
-{
-    //Set timer prescaler to /256
-    clear(TCCR0B,CS02);
-    clear(TCCR0B,CS01);
-    set(TCCR0B,CS00);
-    
-    
-}
-
-void stop_timer0(void)
-{
-    //Set timer prescaler to /0
-    clear(TCCR0B,CS02);
-    clear(TCCR0B,CS01);
-    clear(TCCR0B,CS00);
-    
-    TCNT0 = 0;
-    
-}
-
-ISR(TIMER0_OVF_vect)
-{
-    //m_green(ON);
-    flag_turn = 0;
-    stop_timer0();
-    
-}
+// --------------------------------------------------------------
 
 
 
-
-void set_timer1(void)
-{
-    //Set B6 and B7 as output
-    set(DDRB,6);
-    set(DDRB,7);
-    
-    OCR1A = PWM_MAXIMUM;
-    OCR1B = 0;
-    OCR1C = 0;
-    
-    //Set to UP to OCR1A
-    set(TCCR1B,WGM13);
-    set(TCCR1B,WGM12);
-    set(TCCR1A,WGM11);
-    set(TCCR1A,WGM10);
-    
-    //Set to clear at OCR1B, set at rollover
-    set(TCCR1A,COM1B1);
-    clear(TCCR1A,COM1B0);
-    
-    //Set to clear at OCR1C, set at rollover
-    set(TCCR1A,COM1C1);
-    clear(TCCR1A,COM1C0);
-    
-    //Set timer prescaler to /1
-    clear(TCCR1B,CS12);
-    clear(TCCR1B,CS11);
-    set(TCCR1B,CS10);
-}
-
-
-/*//Timer 3 Initialization (SOLENOID)
- void set_timer3(void)
- {
- OCR3A = 391;
- 
- //Set C6 as output (debugging)
- set(DDRC,6);
- 
- //Set to UP to OCR3A
- clear(TCCR3B,WGM33);
- set(TCCR3B,WGM32);
- clear(TCCR3A,WGM31);
- clear(TCCR3A,WGM30);
- 
- //Set to toggle (debugging)
- clear(TCCR3A,COM3A1);
- set(TCCR3A,COM3A0);
- 
- //Demask OCR3A interrupt
- set(TIMSK3,OCIE3A);
- 
- //Set timer prescaler to /1024
- set(TCCR3B,CS32);
- clear(TCCR3B,CS31);
- set(TCCR3B,CS30);
- }*/
-
-//Timer 4 specifications (SENDING PROCEDURE)
-void set_timer4(void)
-{
-    //Set the counter variable
-    OCR4C = 195;
-    
-    //Set UP to OCR4C
-    clear(TCCR4D,WGM41);
-    clear(TCCR4D,WGM40);
-    
-    //Set the interruption to overflow
-    set(TIMSK4,TOIE4);
-    
-    //Set prescaler to /4096
-    set(TCCR4B,CS43);
-    set(TCCR4B,CS42);
-    clear(TCCR4B,CS41);
-    set(TCCR4B,CS40);
-}
-
-//A/D Initialization
-void init_analog(void)
-{
-    //Set the reference voltage to Vcc
-    clear(ADMUX,REFS1);
-    set(ADMUX,REFS0);
-    
-    //Set the ADC Clock Prescaler (/128)
-    set(ADCSRA,ADPS2);
-    set(ADCSRA,ADPS1);
-    set(ADCSRA,ADPS0);
-    
-    //Disable set(DIDR2,ADC9D);
-    set(DIDR0,ADC0D);
-    set(DIDR0,ADC1D);
-    set(DIDR0,ADC4D);
-    set(DIDR0,ADC5D);
-    set(DIDR0,ADC6D);
-    set(DIDR0,ADC7D);
-    set(DIDR2,ADC8D);
-    set(DIDR2,ADC9D);
-    
-    //Set the triggering to free-running
-    set(ADCSRA,ADATE);
-    
-}
-
-void get_analog_val(int id)
-{
-    //Disable ADC
-    clear(ADCSRA,ADEN);
-    
-    //Check which analog device we want to get the values from and select it
-    switch (id)
-    {
-        case 0:
-            //Single-Ended Channel Selection (F0)
-            clear(ADCSRB,MUX5);
-            clear(ADMUX,MUX2);
-            clear(ADMUX,MUX1);
-            clear(ADMUX,MUX0);
-            break;
-            
-        case 1:
-            //Single-Ended Channel Selection (F1)
-            clear(ADCSRB,MUX5);
-            clear(ADMUX,MUX2);
-            clear(ADMUX,MUX1);
-            set(ADMUX,MUX0);
-            break;
-            
-        case 2:
-            //Single-Ended Channel Selection (F4)
-            clear(ADCSRB,MUX5);
-            set(ADMUX,MUX2);
-            clear(ADMUX,MUX1);
-            clear(ADMUX,MUX0);
-            break;
-            
-        case 3:
-            //Single-Ended Channel Selection (F5)
-            clear(ADCSRB,MUX5);
-            set(ADMUX,MUX2);
-            clear(ADMUX,MUX1);
-            set(ADMUX,MUX0);
-            break;
-            
-        case 4:
-            //Single-Ended Channel Selection (F6)
-            clear(ADCSRB,MUX5);
-            set(ADMUX,MUX2);
-            set(ADMUX,MUX1);
-            clear(ADMUX,MUX0);
-            break;
-            
-        case 5:
-            //Single-Ended Channel Selection (F7)
-            clear(ADCSRB,MUX5);
-            set(ADMUX,MUX2);
-            set(ADMUX,MUX1);
-            set(ADMUX,MUX0);
-            break;
-            
-        case 6:
-            //Single-Ended Channel Selection (D4)
-            set(ADCSRB,MUX5);
-            clear(ADMUX,MUX2);
-            clear(ADMUX,MUX1);
-            clear(ADMUX,MUX0);
-            break;
-            
-        case 7:
-            //Single-Ended Channel Selection (D6)
-            set(ADCSRB,MUX5);
-            clear(ADMUX,MUX2);
-            clear(ADMUX,MUX1);
-            set(ADMUX,MUX0);
-            break;
-            
-    }
-    
-    //Enable ADC Subsystem & Begin Conversion
-    set(ADCSRA,ADEN);
-    set(ADCSRA,ADSC);
-    set(ADCSRA,ADIF);
-}
-
-void init_ports(void)
-{
-    //B3 and D3 as outputs
-	set(DDRB,3);
-	set(DDRD,3);
-	set(PORTB,3);
-	set(PORTD,3);
-    
-    //Set B2 as input and enable pull-up
-    clear(DDRB,2);
-    set(PORTB,2);
-	
-	//Set D5 as output
-	set(DDRD,5);
-	clear(PORTD,5);
-}
-
-
-void stop_motor(void)
-{
-    OCR1B = 0;
-    OCR1C = 0;
-}
-
-void turn_left(void)
-{
-    clear(PORTB,3);
-    set(PORTD,3);
-	OCR1C = PWM_SPEED_TURN_LFT;
-    OCR1B = PWM_SPEED_TURN_RGHT;
-	//m_green(ON);
-}
-
-void turn_right(void)
-{
-    set(PORTB,3);
-    clear(PORTD,3);
-    OCR1C = PWM_SPEED_TURN_LFT;
-    OCR1B = PWM_SPEED_TURN_RGHT;
-	//m_green(ON);
-}
-
-void go_bwd(void)
-{
-    set(PORTB,3);
-    set(PORTD,3);
-    OCR1C = PWM_SPEED_FWD_LFT;
-    OCR1B = PWM_SPEED_FWD_RGHT;
-	//m_green(TOGGLE);
-}
-
-void go_fwd(void)
-{
-	clear(PORTB,3);
-	clear(PORTD,3);
-	OCR1C = PWM_SPEED_FWD_LFT;
-	OCR1B = PWM_SPEED_FWD_RGHT;
-	//m_green(ON);
-}
-
-
-/*void move_robot(float theta, float dist, int dir){
- dist = 0
- if (dir == 0) {             // Move with a right curve
- OCR1B = MIN_SPEED+(MAX_SPEED-MIN_SPEED)*(dist/240.0);
- OCR1C = MIN_SPEED+((theta/180.0)*WEIGHT_TURN+(dist/240.0)*WEIGTH_FWD)*(MAX_SPEED-MIN_SPEED)/(WEIGTH_FWD+WEIGHT_TURN);
- }
- else
- {                      // Move with a left curve
- OCR1B = MIN_SPEED+((theta/180.0)*WEIGHT_TURN+(dist/240.0)*WEIGTH_FWD)*(MAX_SPEED-MIN_SPEED)/(WEIGTH_FWD+WEIGHT_TURN);
- OCR1C = MIN_SPEED+(MAX_SPEED-MIN_SPEED)*(dist/240.0);
- }
- //m_green(ON);
- clear(PORTB,0);
- set(PORTB,1);
- }*/
-
+// --------------------------------------------------------------
+// ORIENTATION CONTROLLER TO TURN ROBOT
+// --------------------------------------------------------------
 void turn_robot(float theta, int dir, float diff){
 	if (dir == 1) {             // Move with a right curve
 		//OCR1C = PWM_SPEED_FWD_LFT;
@@ -995,10 +841,14 @@ void turn_robot(float theta, int dir, float diff){
         set(PORTD,3);
 		
 	}
-	
-	
 }
+// --------------------------------------------------------------
 
+
+
+// --------------------------------------------------------------
+// ORIENTATION CONTROLLER TO MOVE ROBOT FORWARD
+// --------------------------------------------------------------
 void move_robot(float theta, int dir, float diff){
 	if (dir == 1) {             // Move with a right curve
 		//OCR1C = PWM_SPEED_FWD_LFT;
@@ -1013,39 +863,113 @@ void move_robot(float theta, int dir, float diff){
 		//OCR1B = PWM_SPEED_FWD_RGHT;
         OCR1B = (int)(PWM_SPEED_FWD_LFT+theta*Kp_move);
 		OCR1C = (int)(PWM_SPEED_FWD_RGHT);
-        
-        
+    
         clear(PORTB,3);
         clear(PORTD,3);
 		
 	}
-	
-	
 }
+// --------------------------------------------------------------
 
 
-void turnOnBlueLED(void)
+
+
+
+// --------------------------------------------------------------
+// STOP MOTORS
+// --------------------------------------------------------------
+void stop_motor(void)
 {
-	set(PORTD,5);
+    OCR1B = 0;
+    OCR1C = 0;
 }
+// --------------------------------------------------------------
 
+
+// --------------------------------------------------------------
+// TURN LEFT
+// --------------------------------------------------------------
+void turn_left(void)
+{
+    clear(PORTB,3);
+    set(PORTD,3);
+	OCR1C = PWM_SPEED_TURN_LFT;
+    OCR1B = PWM_SPEED_TURN_RGHT;
+}
+// --------------------------------------------------------------
+
+
+
+// --------------------------------------------------------------
+// TURN RIGHT
+// --------------------------------------------------------------
+void turn_right(void)
+{
+    set(PORTB,3);
+    clear(PORTD,3);
+    OCR1C = PWM_SPEED_TURN_LFT;
+    OCR1B = PWM_SPEED_TURN_RGHT;
+}
+// --------------------------------------------------------------
+
+
+// --------------------------------------------------------------
+// GO BACKWARDS
+// --------------------------------------------------------------
+void go_bwd(void)
+{
+    set(PORTB,3);
+    set(PORTD,3);
+    OCR1C = PWM_SPEED_FWD_LFT;
+    OCR1B = PWM_SPEED_FWD_RGHT;
+}
+// --------------------------------------------------------------
+
+
+// --------------------------------------------------------------
+// GO FORWARD
+// --------------------------------------------------------------
+void go_fwd(void)
+{
+	clear(PORTB,3);
+	clear(PORTD,3);
+	OCR1C = PWM_SPEED_FWD_LFT;
+	OCR1B = PWM_SPEED_FWD_RGHT;
+}
+// --------------------------------------------------------------
+
+
+
+// --------------------------------------------------------------
+// CELEBRATE
+// --------------------------------------------------------------
 void celebrate(void)
 {
 	
 }
+// --------------------------------------------------------------
 
-/*ISR(TIMER3_COMPA_vect)
- {
- m_red(ON);
- flag_timer = 1;
- }*/
 
+
+
+// --------------------------------------------------------------
+// INTERUPTS
+// --------------------------------------------------------------
 ISR(TIMER4_OVF_vect)
 {
     //m_green(ON);
     flag_timer = 1;
     stop_timer0();
 }
+
+ISR(TIMER0_OVF_vect)
+{
+    //m_green(ON);
+    flag_turn = 0;
+    stop_timer0();
+    
+}
+
 
 /*ISR(INT2_vect)
  {
@@ -1055,3 +979,12 @@ ISR(TIMER4_OVF_vect)
  state = SYSTEM_STATE;
  //m_green(ON); // Indicator receiving from RF
  }*/
+
+
+/*ISR(TIMER3_COMPA_vect)
+ {
+ m_red(ON);
+ flag_timer = 1;
+ }*/
+
+// --------------------------------------------------------------
