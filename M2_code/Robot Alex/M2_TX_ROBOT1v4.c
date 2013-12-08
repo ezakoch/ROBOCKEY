@@ -40,10 +40,10 @@
 //#define GOAL_B_POS_Y 0
 #define THRESHOLD_ANGLE_GOAL 7
 #define THRESHOLD_DIST_GOAL 20
-#define PWM_SPEED_TURN_LFT 2500 //RIGHT NOT TURNING WITH LESS THAN 380
-#define PWM_SPEED_TURN_RGHT 2500
-#define PWM_SPEED_FWD_LFT 4000//3300
-#define PWM_SPEED_FWD_RGHT 4000//3300
+#define PWM_SPEED_TURN_LFT 3200 
+#define PWM_SPEED_TURN_RGHT 3200
+#define PWM_SPEED_FWD_LFT 2500//GOTOGOALCURVED 4000
+#define PWM_SPEED_FWD_RGHT 2500//GOTOGOALCURVED 4000
 #define PWM_MAXIMUM 5000
 #define PWM_MIN_LEFT 363
 #define PWM_MIN_RGHT 350
@@ -56,9 +56,10 @@
 #define RATIO_TURNING_LFT 0.83
 #define PWM_SPEED_CIRCLE_RGHT 2300
 #define RATIO_TURNING_RGHT 0.845
-#define THRESHOLD_PUCK_CENTER_OUTSIDE 10
-#define THRESHOLD_PUCK_CENTER_INSIDE 10
-
+#define THRESHOLD_PUCK_CENTER_OUTSIDE 0.25
+#define THRESHOLD_PUCK_CENTER_INSIDE 0.15
+#define THRESHOLD_SWITCH_EXTERIOR 40
+#define	THRESHOLD_PUCK_NOT_FIND 20
 
 
 //Function prototypes
@@ -97,6 +98,8 @@ ISR(INT2_vect);
 //Main function
 int main(void)
 {
+	m_disableJTAG();
+	
     //Variable declaration
     unsigned char wii_OK = 0;
     unsigned char localize_OK = 0;
@@ -643,16 +646,119 @@ int main(void)
 			break;
 			
 			case FIND_PUCK:
+			
+				////Check if we have the puck
+				//if (PT7_have_puck > 250)
+				//{
+					//stop_motor();
+					//state = GO_TO_GOAL_WITH_PUCK
+					//status_go_to_goal = 0;
+					//break;
+				//}
+				//
+				////Check if we have the puck
+				//if (PT2_left_inside > 1000 &&  PT3_right_inside > 1000)
+				//{
+					//stop_motor();
+					//state = GO_TO_GOAL_WITH_PUCK;
+					//status_go_to_goal = 0;
+					//break;
+				//}
+						
+				if (status_go_to_goal == 0)
+				{
+					turnOffBlueLED();
+					
+					int max_lr = 0;
+					int half_range = 0;
 				
+					//Check at which quadrant we are
+					//Check if the puck is in the left or in the right
+					if (PT1_left_outside > PT4_right_outside)
+						max_lr = 0;
+					else
+						max_lr = 1;
 				
+					//Check if the puck is up or down
+					if (max_lr == 0)
+					{
+						if (PT1_left_outside >= PT6_back_left)
+							half_range = 0;
+						else
+							half_range = 1;
+					}
+					else
+					{
+						if (PT4_right_outside >= PT5_back_right)
+							half_range = 0;
+						else
+							half_range = 1;
+					}
 				
-				
-				
-				
-				
-				
-				
-				
+					//Move around until the puck is in front
+					//Case where the puck is in in front
+					if (half_range == 0)
+					{
+						int max_pt = 0;
+						if (PT1_left_outside >= PT4_right_outside)
+							max_pt = PT1_left_outside;
+						else
+							max_pt = PT4_right_outside;
+						
+						if (abs(PT1_left_outside-PT4_right_outside) <= THRESHOLD_PUCK_CENTER_OUTSIDE*max_pt && max_pt >= THRESHOLD_PUCK_NOT_FIND)
+						{
+							if ((PT2_left_inside+PT3_right_inside)/2.0 < THRESHOLD_SWITCH_EXTERIOR)
+								go_fwd();
+							else							
+							{
+								status_go_to_goal = 1;
+								turnOnBlueLED();
+								//m_wait(4000);
+								//turnOffBlueLED();
+							}	
+							
+						}else if (abs(PT1_left_outside-PT4_right_outside) <= THRESHOLD_PUCK_CENTER_OUTSIDE*max_pt && max_pt < THRESHOLD_PUCK_NOT_FIND)
+							turn_left();
+						else
+						{
+							if (PT1_left_outside > PT4_right_outside)
+								turn_left();
+							else
+								turn_right();
+						}
+					//Case where the puck is in the back
+					}else
+					{
+						if (PT6_back_left >= PT5_back_right)
+							turn_left();
+						else 
+							turn_right();
+					}					
+				}
+				else if (status_go_to_goal == 1)
+				{
+					//Internal PTs direction
+					if ((PT2_left_inside+PT3_right_inside)/2.0 < THRESHOLD_SWITCH_EXTERIOR)
+						status_go_to_goal = 0;
+					else
+					{
+						int max_pt = 0;
+						if (PT2_left_inside >= PT3_right_inside)
+							max_pt = PT2_left_inside;
+						else
+							max_pt = PT3_right_inside;
+						
+						if (abs(PT2_left_inside-PT3_right_inside) < THRESHOLD_PUCK_CENTER_INSIDE*max_pt)
+							go_fwd();
+						else
+						{
+							if (PT2_left_inside>=PT3_right_inside)
+								turn_left();
+							else
+								turn_right();
+						}
+					}
+				}				
 				
 				break;
              
@@ -881,11 +987,10 @@ void init_analog(void)
     set(DIDR0,ADC6D);
     set(DIDR0,ADC7D);
     set(DIDR2,ADC8D);
-    set(DIDR2,ADC9D);
     
     //Set the triggering to free-running
     set(ADCSRA,ADATE);
-    
+	
 }
 
 void get_analog_val(int id)
@@ -995,7 +1100,7 @@ void stop_motor(void)
 void turn_left(void)
 {
     clear(PORTB,3);
-   set(PORTD,3);
+	set(PORTD,3);
 	OCR1B = PWM_SPEED_TURN_RGHT;
     OCR1C = PWM_SPEED_TURN_LFT;
 	//m_green(ON);
