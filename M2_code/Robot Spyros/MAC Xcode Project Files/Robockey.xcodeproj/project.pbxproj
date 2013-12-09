@@ -10,6 +10,7 @@
 		DF723875185485BF005AC49A /* M2_TX_ROBOT2v2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = M2_TX_ROBOT2v2.c; path = ../M2_TX_ROBOT2v2.c; sourceTree = "<group>"; };
 		DF7238761855121F005AC49A /* Init_functions.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Init_functions.c; path = ../Init_functions.c; sourceTree = "<group>"; };
 		DF7238771855121F005AC49A /* Init_functions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Init_functions.h; path = ../Init_functions.h; sourceTree = "<group>"; };
+		DFA5B374185559D300207F7A /* M2_RX.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = M2_RX.c; path = ../../M2_RX.c; sourceTree = "<group>"; };
 		DFAADF3B1853FD69004F8E56 /* Localize.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = Localize.c; path = ../Localize.c; sourceTree = "<group>"; };
 		DFAADF3C1853FD69004F8E56 /* M2_TX_ROBOT2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = M2_TX_ROBOT2.c; path = ../M2_TX_ROBOT2.c; sourceTree = "<group>"; };
 		DFAADF3D1853FD69004F8E56 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = main.c; path = ../main.c; sourceTree = "<group>"; };
@@ -19,6 +20,7 @@
 		DF17E3F217F4A97400131969 = {
 			isa = PBXGroup;
 			children = (
+				DFA5B374185559D300207F7A /* M2_RX.c */,
 				DF7238761855121F005AC49A /* Init_functions.c */,
 				DF7238771855121F005AC49A /* Init_functions.h */,
 				DF723875185485BF005AC49A /* M2_TX_ROBOT2v2.c */,

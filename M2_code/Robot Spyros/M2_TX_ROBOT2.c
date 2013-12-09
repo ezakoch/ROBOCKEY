@@ -40,28 +40,30 @@
 //#define GOAL_B_POS_Y 0
 #define THRESHOLD_ANGLE_GOAL 15
 #define THRESHOLD_DIST_GOAL 5
-#define PWM_SPEED_TURN_LFT 2000 //RIGHT NOT TURNING WITH LESS THAN 380
-#define PWM_SPEED_TURN_RGHT 2000
+#define PWM_SPEED_TURN_LFT 2200 //RIGHT NOT TURNING WITH LESS THAN 380
+#define PWM_SPEED_TURN_RGHT 2200
 //#define PWM_SPEED_FWD_LFT 393
 //#define PWM_SPEED_FWD_RGHT 380
 #define PWM_SPEED_FWD_LFT 2800//3300
 #define PWM_SPEED_FWD_RGHT 2800//3300
 
-#define PWM_MIN_LEFT 1500
-#define PWM_MIN_RGHT 1500
+#define PWM_MIN_LEFT 1800
+#define PWM_MIN_RGHT 1800
 #define WEIGHT_TURN 5
 #define WEIGTH_FWD 1
 #define TIME_STOP 1000
 #define TURNING_ANGLE 180.0
 #define THRESHOLD_PUCK_CENTER_OUTSIDE 0.25
-#define THRESHOLD_PUCK_CENTER_INSIDE 0.15
+#define THRESHOLD_PUCK_CENTER_INSIDE 0.35
+#define THRESHOLD_PUCK_CENTER_INSIDE2 0.5
 #define THRESHOLD_SWITCH_EXTERIOR 40
-#define	THRESHOLD_PUCK_NOT_FIND 20
+#define	THRESHOLD_PUCK_NOT_FIND 50
 
 
 
 #define Kp 8
 #define Kp_move 10
+#define Kp_turn 0.1
 #define Kd 500
 #define time 0.002
 
@@ -89,6 +91,8 @@ void get_analog_val (int id);
 void stop_motor(void);
 void turn_right(void);
 void turn_left(void);
+void turn_right_puck(int scale_turn);
+void turn_left_puck(int scale_turn);
 void go_fwd(void);
 void go_bwd(void);
 //void move_robot(float theta, float dist, int dir);
@@ -395,6 +399,8 @@ int main(void)
                         
                         int max_lr = 0;
                         int half_range = 0;
+                        int diff_PT_outside = 0;
+                        
                         
                         //Check at which quadrant we are
                         //Check if the puck is in the left or in the right
@@ -429,26 +435,50 @@ int main(void)
                             else
                                 max_pt = PT4_right_outside;
                             
+                            
+                            /*
+                             if (you see the puck )
+                             if centered
+                             status 1
+                             if not centered
+                             do what PT say
+                             
+                             if (you dont see the puck )
+                             if centered
+                             fwd
+                             if not centered
+                             turn crazy
+                             */
+                            
+                            
+                            
+                            
+                            
+                            
                             if (abs(PT1_left_outside-PT4_right_outside) <= THRESHOLD_PUCK_CENTER_OUTSIDE*max_pt && max_pt >= THRESHOLD_PUCK_NOT_FIND)
                             {
-                                if ((PT2_left_inside+PT3_right_inside)/2.0 < THRESHOLD_SWITCH_EXTERIOR)
-                                    go_fwd();
-                                else
-                                {
-                                    status_go_to_goal = 1;
-                                    turnOnBlueLED();
-                                    //m_wait(4000);
-                                    //turnOffBlueLED();
-                                }
+                                status_go_to_goal = 1;
+                                turnOnBlueLED();
+                                //m_wait(4000);
+                                //turnOffBlueLED();
+                                
                                 
                             }else if (abs(PT1_left_outside-PT4_right_outside) <= THRESHOLD_PUCK_CENTER_OUTSIDE*max_pt && max_pt < THRESHOLD_PUCK_NOT_FIND)
+                                turn_right();
+                            else if (abs(PT1_left_outside-PT4_right_outside) > THRESHOLD_PUCK_CENTER_OUTSIDE*max_pt && max_pt < THRESHOLD_PUCK_NOT_FIND)
                                 turn_left();
                             else
                             {
-                                if (PT1_left_outside > PT4_right_outside)
+                                if (PT1_left_outside > PT4_right_outside){
+                                    diff_PT_outside = PT1_left_outside - PT4_right_outside;
+                                    //turn_left_puck(diff_PT_outside);
                                     turn_left();
-                                else
+                                }
+                                else {
+                                    diff_PT_outside = PT4_right_outside - PT1_left_outside;
+                                    //turn_right_puck(diff_PT_outside);
                                     turn_right();
+                                }
                             }
                             //Case where the puck is in the back
                         }else
@@ -461,27 +491,54 @@ int main(void)
                     }
                     else if (status_go_to_goal == 1)
                     {
+                        int diff_PT_inside = 0;
                         //Internal PTs direction
-                        if ((PT2_left_inside+PT3_right_inside)/2.0 < THRESHOLD_SWITCH_EXTERIOR)
-                            status_go_to_goal = 0;
+                        
+                        int max_pt = 0;
+                        if (PT2_left_inside >= PT3_right_inside)
+                            max_pt = PT2_left_inside;
                         else
-                        {
-                            int max_pt = 0;
-                            if (PT2_left_inside >= PT3_right_inside)
-                                max_pt = PT2_left_inside;
-                            else
-                                max_pt = PT3_right_inside;
-                            
-                            if (abs(PT2_left_inside-PT3_right_inside) < THRESHOLD_PUCK_CENTER_INSIDE*max_pt)
-                                go_fwd();
-                            else
-                            {
-                                if (PT2_left_inside>=PT3_right_inside)
-                                    turn_left();
-                                else
-                                    turn_right();
-                            }
+                            max_pt = PT3_right_inside;
+                        
+                        
+                        
+                        if (abs(PT2_left_inside-PT3_right_inside) < THRESHOLD_PUCK_CENTER_INSIDE*max_pt) {
+                            go_fwd();
                         }
+                        /*
+                         else if (abs(PT2_left_inside-PT3_right_inside) < THRESHOLD_PUCK_CENTER_INSIDE2*max_pt) {
+                         
+                         }*/
+                        else {
+                            status_go_to_goal = 0;
+                        }
+                        
+                        /*
+                         if ((PT2_left_inside+PT3_right_inside)/2.0 < THRESHOLD_SWITCH_EXTERIOR)
+                         status_go_to_goal = 0;
+                         else
+                         {
+                         int max_pt = 0;
+                         if (PT2_left_inside >= PT3_right_inside)
+                         max_pt = PT2_left_inside;
+                         else
+                         max_pt = PT3_right_inside;
+                         
+                         if (abs(PT2_left_inside-PT3_right_inside) < THRESHOLD_PUCK_CENTER_INSIDE*max_pt)
+                         go_fwd();
+                         else
+                         {
+                         if (PT2_left_inside>=PT3_right_inside){
+                         diff_PT_inside = PT2_left_inside - PT3_right_inside;
+                         turn_left_puck(diff_PT_inside);
+                         }
+                         else {
+                         diff_PT_inside = PT3_right_inside - PT2_left_inside;
+                         turn_right_puck(diff_PT_inside);
+                         }
+                         }
+                         }
+                         */
                     }
                     
                     break;
@@ -897,6 +954,31 @@ void turn_left(void)
     OCR1B = PWM_SPEED_TURN_RGHT;
 }
 // --------------------------------------------------------------
+
+// --------------------------------------------------------------
+// TURN LEFT FOR PUCK
+// --------------------------------------------------------------
+void turn_left_puck(int scale_turn)
+{
+    clear(PORTB,3);
+    set(PORTD,3);
+	OCR1C = (int)(PWM_MIN_LEFT+scale_turn*Kp_turn);
+    OCR1B = (int)(PWM_MIN_RGHT+scale_turn*Kp_turn);
+}
+// --------------------------------------------------------------
+
+// --------------------------------------------------------------
+// TURN RIGHT PUCK
+// --------------------------------------------------------------
+void turn_right_puck(int scale_turn)
+{
+    set(PORTB,3);
+    clear(PORTD,3);
+    OCR1C = (int)(PWM_MIN_LEFT+scale_turn*Kp_turn);
+    OCR1B = (int)(PWM_MIN_RGHT+scale_turn*Kp_turn);
+}
+// --------------------------------------------------------------
+
 
 
 

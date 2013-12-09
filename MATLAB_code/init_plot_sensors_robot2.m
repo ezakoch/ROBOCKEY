@@ -3,8 +3,8 @@ function init_plot_sensors_robot2( src,evnt )
 global userdata
     
         % Initialiaze figures
-        fig4 = figure(4);
-        set(fig4,'Position',[0 0 1200 800])
+        fig5 = figure(5);
+        set(fig5,'Position',[0 0 1200 800])
 
         subplot(2,3,1)
         hold on
@@ -92,7 +92,7 @@ global userdata
         text_x = 100;
         text_y = 40;
         
-        h.robot_num = uicontrol('Style', 'text', 'String', 'Robot 1','Fontsize',18,...
+        h.robot_num = uicontrol('Style', 'text', 'String', 'Robot 2','Fontsize',18,...
             'Position', [300 8*text_y 150 20],'BackgroundColor',userdata.defaultBackground);
         
         h.PT_LO = uicontrol('Style', 'text', 'String', 'LO','Fontsize',18,...
