@@ -6,7 +6,7 @@
 
 ..\..\Robot Alex\Localize_Alex.c
 
-..\..\Robot Alex\M2_TX_ROBOT2.c
+..\..\Robot Alex\M2_TX_ROBOT1.c
 
 ..\..\Robot Alex\m_bus.c
 

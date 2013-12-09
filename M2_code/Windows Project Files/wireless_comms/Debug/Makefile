@@ -38,7 +38,7 @@ SUBDIRS :=
 C_SRCS +=  \
 ../../../Robot\ Alex/Init_functions.c \
 ../../../Robot\ Alex/Localize_Alex.c \
-../../../Robot\ Alex/M2_TX_ROBOT2.c \
+../../../Robot\ Alex/M2_TX_ROBOT1.c \
 ../../../Robot\ Alex/m_bus.c \
 ../../../Robot\ Alex/m_imu.c \
 ../../../Robot\ Alex/m_rf.c \
@@ -55,7 +55,7 @@ ASM_SRCS +=
 OBJS +=  \
 Init_functions.o \
 Localize_Alex.o \
-M2_TX_ROBOT2.o \
+M2_TX_ROBOT1.o \
 m_bus.o \
 m_imu.o \
 m_rf.o \
@@ -65,7 +65,7 @@ m_wii.o
 OBJS_AS_ARGS +=  \
 Init_functions.o \
 Localize_Alex.o \
-M2_TX_ROBOT2.o \
+M2_TX_ROBOT1.o \
 m_bus.o \
 m_imu.o \
 m_rf.o \
@@ -75,7 +75,7 @@ m_wii.o
 C_DEPS +=  \
 Init_functions.d \
 Localize_Alex.d \
-M2_TX_ROBOT2.d \
+M2_TX_ROBOT1.d \
 m_bus.d \
 m_imu.d \
 m_rf.d \
@@ -85,7 +85,7 @@ m_wii.d
 C_DEPS_AS_ARGS +=  \
 Init_functions.d \
 Localize_Alex.d \
-M2_TX_ROBOT2.d \
+M2_TX_ROBOT1.d \
 m_bus.d \
 m_imu.d \
 m_rf.d \
@@ -117,7 +117,7 @@ LIB_DEP+=
 	@echo Finished building: $<
 	
 
-./M2_TX_ROBOT2.o: ../../../Robot\ Alex/M2_TX_ROBOT2.c
+./M2_TX_ROBOT1.o: ../../../Robot\ Alex/M2_TX_ROBOT1.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 3.4.2
 	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DDEBUG  -I"../../.."  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32u4 -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"

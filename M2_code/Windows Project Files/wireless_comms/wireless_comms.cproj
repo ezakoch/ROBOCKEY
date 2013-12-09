@@ -106,9 +106,9 @@
       <SubType>compile</SubType>
       <Link>Localize_Alex.c</Link>
     </Compile>
-    <Compile Include="..\..\Robot Alex\M2_TX_ROBOT2.c">
+    <Compile Include="..\..\Robot Alex\M2_TX_ROBOT1.c">
       <SubType>compile</SubType>
-      <Link>M2_TX_ROBOT2.c</Link>
+      <Link>M2_TX_ROBOT1.c</Link>
     </Compile>
     <Compile Include="..\..\Robot Alex\m_bus.c">
       <SubType>compile</SubType>
