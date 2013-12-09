@@ -397,106 +397,103 @@ int main(void)
                     //
                     
                     /*
-                     //Check if we have the puck
-                     if (PT2_left_inside > 1000 &&  PT3_right_inside > 1000)
-                     {
-                     state = GO_TO_GOAL_WITH_PUCK;
-                     turnOnBlueLED();
-                     
-                     status_go_to_goal = 0;
-                     break;
-                     }
+                    //Check if we have the puck
+                    if (PT2_left_inside > 1000 &&  PT3_right_inside > 1000)
+                    {
+                        state = GO_TO_GOAL_WITH_PUCK;
+                        status_go_to_goal = 0;
+                        break;
+                    }
                      */
-                    
                     
                     //if (status_go_to_goal == 0)
                     //{
-                    //turnOffBlueLED();
-                    
-                    int max_lr = 0;
-                    int half_range = 0;
-                    int diff_PT_outside = 0;
-                    
-                    
-                    //Check at which quadrant we are
-                    //Check if the puck is in the left or in the right
-                    if (PT1_left_outside > PT4_right_outside)
-                        max_lr = 0;
-                    else
-                        max_lr = 1;
-                    
-                    //Check if the puck is up or down
-                    if (max_lr == 0)
-                    {
-                        if (PT1_left_outside >= PT6_back_left)
-                            half_range = 0;
-                        else
-                            half_range = 1;
-                    }
-                    else
-                    {
-                        if (PT4_right_outside >= PT5_back_right)
-                            half_range = 0;
-                        else
-                            half_range = 1;
-                    }
-                    
-                    
-                    int max_pt_inside = 0;
-                    if (PT2_left_inside >= PT3_right_inside)
-                        max_pt_inside = PT2_left_inside;
-                    else
-                        max_pt_inside = PT3_right_inside;
-                    
-                    int max_pt_outside = 0;
-                    if (PT1_left_outside >= PT4_right_outside)
-                        max_pt_outside = PT1_left_outside;
-                    else
-                        max_pt_outside = PT4_right_outside;
-                    
-                    int max_pt_backs = 0;
-                    if (PT5_back_right >= PT6_back_left)
-                        max_pt_backs = PT5_back_right;
-                    else
-                        max_pt_backs = PT6_back_left;
-                    
-                    
-                    
-                    // If Insides see the puck
-                    if (((((PT2_left_inside+PT3_right_inside)/2.0) >= 250)) && ((PT1_left_outside <= 700) && (PT4_right_outside <= 700))) {
-                        //turnOnBlueLED();
-                        status_go_to_goal = 1;
-                        int diff_PT_inside = abs(PT2_left_inside-PT3_right_inside);
-                        if (PT2_left_inside >= PT3_right_inside) {
-                            move_robot_to_puck(1,diff_PT_inside);
-                            
-                        }
-                        else{
-                            move_robot_to_puck(0,diff_PT_inside);
-                        }
-                    }
-                    // If Insides do not see the puck
-                    else {
                         //turnOffBlueLED();
-                        status_go_to_goal = 0;
-                        //Case where the puck is in front
-                        if (half_range == 0)
+                        
+                        int max_lr = 0;
+                        int half_range = 0;
+                        int diff_PT_outside = 0;
+                        
+                        
+                        //Check at which quadrant we are
+                        //Check if the puck is in the left or in the right
+                        if (PT1_left_outside > PT4_right_outside)
+                            max_lr = 0;
+                        else
+                            max_lr = 1;
+                        
+                        //Check if the puck is up or down
+                        if (max_lr == 0)
                         {
-                            if (PT1_left_outside >= PT4_right_outside) {
-                                turn_left();
-                            }
+                            if (PT1_left_outside >= PT6_back_left)
+                                half_range = 0;
                             else
-                                turn_right();
+                                half_range = 1;
                         }
-                        else{
-                            if (PT6_back_left >= PT5_back_right) {
-                                turn_left();
-                            }
+                        else
+                        {
+                            if (PT4_right_outside >= PT5_back_right)
+                                half_range = 0;
                             else
-                                turn_right();
-                            
+                                half_range = 1;
                         }
-                    }
+                        
+                        
+                        int max_pt_inside = 0;
+                        if (PT2_left_inside >= PT3_right_inside)
+                            max_pt_inside = PT2_left_inside;
+                        else
+                            max_pt_inside = PT3_right_inside;
+                        
+                        int max_pt_outside = 0;
+                        if (PT1_left_outside >= PT4_right_outside)
+                            max_pt_outside = PT1_left_outside;
+                        else
+                            max_pt_outside = PT4_right_outside;
+                        
+                        int max_pt_backs = 0;
+                        if (PT5_back_right >= PT6_back_left)
+                            max_pt_backs = PT5_back_right;
+                        else
+                            max_pt_backs = PT6_back_left;
+                        
+                        
+                        
+                        // If Insides see the puck
+                        if (((((PT2_left_inside+PT3_right_inside)/2.0) >= 250)) && ((PT1_left_outside <= 700) && (PT4_right_outside <= 700))) {
+                            turnOnBlueLED();
+                            status_go_to_goal = 1;
+                             int diff_PT_inside = abs(PT2_left_inside-PT3_right_inside);
+                            if (PT2_left_inside >= PT3_right_inside) {
+                                move_robot_to_puck(1,diff_PT_inside);
+                                
+                            }
+                            else{
+                                move_robot_to_puck(0,diff_PT_inside);
+                            }
+                        }
+                        // If Insides do not see the puck
+                        else {
+                            turnOffBlueLED();
+                            status_go_to_goal = 0;
+                            //Case where the puck is in front
+                            if (half_range == 0)
+                            {
+                                if (PT1_left_outside >= PT4_right_outside) {
+                                    turn_left();
+                                }
+                                else
+                                    turn_right();
+                            }
+                            else{
+                                if (PT6_back_left >= PT5_back_right) {
+                                    turn_left();
+                                }
+                                else
+                                    turn_right();
+                                
+                            }
+                        }
                     break;
                     // --------------------------------------------------------------
                     
@@ -508,18 +505,6 @@ int main(void)
                 case GO_TO_GOAL_WITH_PUCK:
                     if (status_go_to_goal == 0)
                     {
-                        /*
-                         if (PT2_left_inside < 800 || PT3_right_inside < 800)
-                         {
-                         state = FIND_PUCK;
-                         turnOffBlueLED();
-                         
-                         status_go_to_goal = 0;
-                         break;
-                         }
-                         */
-                        
-                        
                         dist_goal = sqrt((x_robot-goal_pos_x)*(x_robot-goal_pos_x)+(y_robot-goal_pos_y)*(y_robot-goal_pos_y));
                         //if (dist_goal < THRESHOLD_DIST_GOAL)
                         //    status_go_to_goal = 1;
@@ -563,7 +548,7 @@ int main(void)
                             else if (add_360 == 1 && (theta_robot > dir_angle && theta_robot < angle_dir_aux))
                             {
                                 diff_theta = theta_robot - dir_angle;
-                            }else
+                            }else 
                             {
                                 diff_theta = 0;
                             }
@@ -585,9 +570,9 @@ int main(void)
                                 else if (y_robot > 0 && circle_started_before == 0)
                                 {
                                     circle_right();
-                                    circle_started_before = 1;
+                                    circle_started_before = 1;							
                                 }
-                            }
+                            }	
                             
                         }
                         

@@ -220,8 +220,8 @@ void set_timer1(void)
     set(DDRB,7);
     
     OCR1A = PWM_MAXIMUM;
-    OCR1B = 0;
-    OCR1C = 0;
+    OCR1B = 4000;
+    OCR1C = 4000;
     
     //Set to UP to OCR1A
     set(TCCR1B,WGM13);
