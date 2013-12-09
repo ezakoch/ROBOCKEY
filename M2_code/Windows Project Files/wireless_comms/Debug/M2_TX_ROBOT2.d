@@ -1,4 +1,4 @@
-M2_TX_ROBOT1v4.d M2_TX_ROBOT1v4.o: ../../../Robot\ Alex/M2_TX_ROBOT1v4.c \
+M2_TX_ROBOT2.d M2_TX_ROBOT2.o: ../../../Robot\ Alex/M2_TX_ROBOT2.c \
  ../../../Robot\ Alex/m_general.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr8\ gcc\native\3.4.2.1002\avr8-gnu-toolchain\bin\../lib/gcc/avr/4.7.2/include/stdint.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr8\ gcc\native\3.4.2.1002\avr8-gnu-toolchain\bin\../lib/gcc/avr/4.7.2/../../../../avr/include/stdint.h \
@@ -21,7 +21,7 @@ M2_TX_ROBOT1v4.d M2_TX_ROBOT1v4.o: ../../../Robot\ Alex/M2_TX_ROBOT1v4.c \
  ../../../Robot\ Alex/m_bus.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr8\ gcc\native\3.4.2.1002\avr8-gnu-toolchain\bin\../lib/gcc/avr/4.7.2/../../../../avr/include/util/twi.h \
  ../../../Robot\ Alex/m_rf.h ../../../Robot\ Alex/m_wii.h \
- ../../../Robot\ Alex/Localize.h \
+ ../../../Robot\ Alex/Localize.h ../../../Robot\ Alex/Init_functions.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr8\ gcc\native\3.4.2.1002\avr8-gnu-toolchain\bin\../lib/gcc/avr/4.7.2/../../../../avr/include/stdio.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr8\ gcc\native\3.4.2.1002\avr8-gnu-toolchain\bin\../lib/gcc/avr/4.7.2/include/stdarg.h \
  c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr8\ gcc\native\3.4.2.1002\avr8-gnu-toolchain\bin\../lib/gcc/avr/4.7.2/../../../../avr/include/string.h \
@@ -74,6 +74,8 @@ c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr8\ gcc\native\3.4.2.1002\avr8
 ../../../Robot\ Alex/m_wii.h:
 
 ../../../Robot\ Alex/Localize.h:
+
+../../../Robot\ Alex/Init_functions.h:
 
 c:\program\ files\ (x86)\atmel\atmel\ toolchain\avr8\ gcc\native\3.4.2.1002\avr8-gnu-toolchain\bin\../lib/gcc/avr/4.7.2/../../../../avr/include/stdio.h:
 

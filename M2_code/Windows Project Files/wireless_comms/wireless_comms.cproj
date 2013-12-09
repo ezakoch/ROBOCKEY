@@ -98,13 +98,17 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\..\Robot Alex\Init_functions.c">
+      <SubType>compile</SubType>
+      <Link>Init_functions.c</Link>
+    </Compile>
     <Compile Include="..\..\Robot Alex\Localize_Alex.c">
       <SubType>compile</SubType>
       <Link>Localize_Alex.c</Link>
     </Compile>
-    <Compile Include="..\..\Robot Alex\M2_TX_ROBOT1v4.c">
+    <Compile Include="..\..\Robot Alex\M2_TX_ROBOT2.c">
       <SubType>compile</SubType>
-      <Link>M2_TX_ROBOT1v4.c</Link>
+      <Link>M2_TX_ROBOT2.c</Link>
     </Compile>
     <Compile Include="..\..\Robot Alex\m_bus.c">
       <SubType>compile</SubType>
