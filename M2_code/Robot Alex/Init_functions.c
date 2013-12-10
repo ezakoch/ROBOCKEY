@@ -7,9 +7,6 @@
 
 
 
-
-
-
 void turnOnBlueLED(void)
 {
 	set(PORTD,5);
@@ -166,50 +163,6 @@ void init_analog(void)
     set(ADCSRA,ADATE);
     
 }
-
-
-
-void set_timer0(void)
-{
-    OCR0A = TIME_TO_TURN;
-    
-    //Set to UP to FF
-    clear(TCCR0B,WGM02);
-    clear(TCCR0A,WGM01);
-    clear(TCCR0A,WGM00);
-    
-    //Set timer prescaler to /0
-    clear(TCCR0B,CS02);
-    clear(TCCR0B,CS01);
-    clear(TCCR0B,CS00);
-    
-    //Demask OCR3A interrupt
-    set(TIMSK0,TOIE0);
-}
-
-void start_timer0(void)
-{
-    //Set timer prescaler to /256
-    clear(TCCR0B,CS02);
-    clear(TCCR0B,CS01);
-    set(TCCR0B,CS00);
-    
-    
-}
-
-void stop_timer0(void)
-{
-    //Set timer prescaler to /0
-    clear(TCCR0B,CS02);
-    clear(TCCR0B,CS01);
-    clear(TCCR0B,CS00);
-    
-    TCNT0 = 0;
-    
-}
-
-
-
 
 
 
