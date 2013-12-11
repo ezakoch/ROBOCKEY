@@ -98,17 +98,13 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\..\Debug_code.c">
+      <SubType>compile</SubType>
+      <Link>Debug_code.c</Link>
+    </Compile>
     <Compile Include="..\..\Robot Alex\Init_functions.c">
       <SubType>compile</SubType>
       <Link>Init_functions.c</Link>
-    </Compile>
-    <Compile Include="..\..\Robot Alex\Localize_Alex.c">
-      <SubType>compile</SubType>
-      <Link>Localize_Alex.c</Link>
-    </Compile>
-    <Compile Include="..\..\Robot Alex\M2_TX_ROBOT1.c">
-      <SubType>compile</SubType>
-      <Link>M2_TX_ROBOT1.c</Link>
     </Compile>
     <Compile Include="..\..\Robot Alex\m_bus.c">
       <SubType>compile</SubType>
@@ -129,6 +125,10 @@
     <Compile Include="..\..\Robot Alex\m_wii.c">
       <SubType>compile</SubType>
       <Link>m_wii.c</Link>
+    </Compile>
+    <Compile Include="..\..\Robot Spyros\Localize.c">
+      <SubType>compile</SubType>
+      <Link>Localize.c</Link>
     </Compile>
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />

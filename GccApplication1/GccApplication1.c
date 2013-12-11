@@ -2,11 +2,10 @@
  * GccApplication1.c
  *
  * Created: 09/12/2013 17:21:23
- *  Author: Alex Miranda Añon
+ * 
  */ 
 
 
-#include <avr/io.h>
 #include "m_general.h"
 #include "m_rf.h"
 #include "m_bus.h"
@@ -18,9 +17,8 @@
 #define STOP_STATE 21
 #define BLUE_LED_STATE 22
 #define SEN_ADDRESS_SYSTEM 0xDA
-#define ALEX_ADDRESS_SYSTEM 0x42
+#define ALEX_ADDRESS_SYSTEM 0x40
 #define PACKET_LENGTH_SYSTEM 10
-#define TIME_STOP 1000
 
 void turnOnBlueLED(void);
 void turnOffBlueLED(void);
@@ -42,13 +40,15 @@ int main(void)
 	int scoreA = 0,scoreB = 0;
 	long stop_counter = 0;
 	
+	m_bus_init();
 	m_rf_open(CHANNEL_SYSTEM,ALEX_ADDRESS_SYSTEM,PACKET_LENGTH_SYSTEM);
+	m_red(ON);
 	sei();
 	 
     while(1)
     {
 		if (flag_system == 1)
-		{
+		{            
 			m_red(TOGGLE);
 			m_rf_read(buffer_rec,PACKET_LENGTH_SYSTEM);
 			state = SYSTEM_STATE;
@@ -163,7 +163,7 @@ int main(void)
 			// STOP STATE
 			// --------------------------------------------------------------
 			case STOP_STATE:
-			//m_green(ON);
+			m_green(ON);
 			turnOffBlueLED();
 			stop_motor();
 			break;
@@ -175,7 +175,7 @@ int main(void)
 			// DEFAULT STATE
 			// --------------------------------------------------------------
 			default:
-			stop_motor();
+			stop_motor();36
 			break;
 			//while(1)
 			//{
