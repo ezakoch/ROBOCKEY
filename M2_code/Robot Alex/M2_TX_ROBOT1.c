@@ -717,7 +717,7 @@ int main(void)
                     
                 case GO_TO_GOAL_WITH_PUCK:
 				 
-					/*if ( PT2_left_inside < 900 || PT3_right_inside < 900 )
+					if ( PT2_left_inside < 900 || PT3_right_inside < 900 )
 					{
 						state = FIND_PUCK;
 						status_go_to_goal = 0;
@@ -730,7 +730,7 @@ int main(void)
 						status_go_to_goal = 0;
 						state  = FIND_PUCK;
 						break;
-					}*/
+					}
 					
 					if (status_go_to_goal == 0)
 					{
