@@ -28,7 +28,6 @@
 #define GO_TO_GOAL_CURVED 2
 #define FIND_PUCK 3
 #define GO_TO_GOAL_WITH_PUCK 5
-#define GO_TO_WPT 80
 #define INITIAL_STATE 0
 #define SYSTEM_STATE 99
 #define STOP_STATE 21
@@ -44,7 +43,7 @@
 #define THRESHOLD_ANGLE_GOAL 15
 #define THRESHOLD_DIST_GOAL 5
 #define PWM_SPEED_TURN_LFT 2300     // 2300 spyros          2800 Alex
-#define PWM_SPEED_TURN_RGHT 2200    // 2200 spyros          2800 Alex
+#define PWM_SPEED_TURN_RGHT 229*-00    // 2200 spyros          2800 Alex
 //#define PWM_SPEED_FWD_LFT 393
 //#define PWM_SPEED_FWD_RGHT 380
 #define PWM_SPEED_FWD_LFT 3000      //3000 fast spyros 2600 slow spyros     Alex 3000
@@ -73,7 +72,6 @@
 #define Kp_turn 0.1
 #define Kd 500
 #define time 0.002
-#define NOT_SEE_PUCK 300
 
 
 
@@ -148,6 +146,7 @@ int main(void)
 	
 	int circle_started_before = 0;
     
+    int speed = 0;
 	
 	//System packet
 	signed char send_buffer[PACKET_LENGTH_SYSTEM] = {0};
@@ -178,31 +177,39 @@ int main(void)
     set_timer4();                       // Set timer 4 to every 0.1 s (10 Hz) to send data
     init_analog();                      // Set the ADC System
     
-    char aux = 0;                       // Initialize wii camera
-	while(!aux)                         // ^
-    {                                   // ^
-        aux = m_wii_open();             // ^
-    };                                  // ^
+    
+    // NO CAMERA RIGHT NOW FOR THE GOALIE
+    /*
+     char aux = 0;                       // Initialize wii camera
+     while(!aux)                         // ^
+     {                                   // ^
+     aux = m_wii_open();             // ^
+     };                                  // ^
+     */
+    
     
     //m_rf_open(CHANNEL_SYSTEM,ALEX_ADDRESS_SYSTEM,PACKET_LENGTH_SYSTEM);       // Open the RF channel
 	m_rf_open(CHANNEL_DEBUG,REC_ADDRESS_DEBUG,PACKET_LENGTH_DEBUG);
     
+    
     sei();                              // Enable interruptions
     m_red(OFF);                         // Turn off RED light initialize finished indicator
     
-    // Initialize Target Waypoints
-    //
-    //    TARGETS_X[0] = GOAL_A_POS_X;
-    //    TARGETS_Y[0] = GOAL_A_POS_Y;
-    //    TARGETS_X[1] = GOAL_B_POS_X;
-    //    TARGETS_Y[1] = GOAL_B_POS_Y;
-    //
-    TARGETS_X[0] = 0;
-    TARGETS_Y[0] = 0;
-    TARGETS_X[1] = 0;
-    TARGETS_Y[1] = 0;
-    
-    int TARGET_NUM = 0;
+    /*
+     // Initialize Target Waypoints
+     //
+     //    TARGETS_X[0] = GOAL_A_POS_X;
+     //    TARGETS_Y[0] = GOAL_A_POS_Y;
+     //    TARGETS_X[1] = GOAL_B_POS_X;
+     //    TARGETS_Y[1] = GOAL_B_POS_Y;
+     //
+     TARGETS_X[0] = 0;
+     TARGETS_Y[0] = 0;
+     TARGETS_X[1] = 0;
+     TARGETS_Y[1] = 0;
+     
+     int TARGET_NUM = 0;
+     */
     // --------------------------------------------------------------
     
     
@@ -285,7 +292,7 @@ int main(void)
             ////Open the channel
             //m_rf_open(CHANNEL_DEBUG,REC_ADDRESS_DEBUG,PACKET_LENGTH_DEBUG);
             
-            output_buffer[0] = 2;
+            output_buffer[0] = 1;
             output_buffer[1] = state;
             output_buffer[2] = x_robot;
             output_buffer[3] = y_robot;
@@ -358,23 +365,23 @@ int main(void)
 			// m_green(OFF);
 		}
         
-        
-        // --------------------------------------------------------------
-        // LOCALIZATION CODE
-        // --------------------------------------------------------------
-        cli();                                          // Clear Interupts to not interfere with the mWii
-        wii_OK = m_wii_read(blobs_wii);                 // Get the blobs
-        sei();                                          // Enable back the interupts
-        
-        // If data received correctly
-        if (wii_OK)
-        {
-            // Get the position and orientation of the robot from the constellation
-            localize_OK = localize(blobs_wii[0],blobs_wii[3],blobs_wii[6],blobs_wii[9],blobs_wii[1],blobs_wii[4],blobs_wii[7],blobs_wii[10],&x_robot,&y_robot,&theta_robot,&cam_X,&cam_Y);
-            
-        }
-        // --------------------------------------------------------------
-        
+        /*
+         // --------------------------------------------------------------
+         // LOCALIZATION CODE
+         // --------------------------------------------------------------
+         cli();                                          // Clear Interupts to not interfere with the mWii
+         wii_OK = m_wii_read(blobs_wii);                 // Get the blobs
+         sei();                                          // Enable back the interupts
+         
+         // If data received correctly
+         if (wii_OK)
+         {
+         // Get the position and orientation of the robot from the constellation
+         localize_OK = localize(blobs_wii[0],blobs_wii[3],blobs_wii[6],blobs_wii[9],blobs_wii[1],blobs_wii[4],blobs_wii[7],blobs_wii[10],&x_robot,&y_robot,&theta_robot,&cam_X,&cam_Y);
+         
+         }
+         // --------------------------------------------------------------
+         */
         
         
         
@@ -421,118 +428,53 @@ int main(void)
         switch (state)
         {
                 long stop_counter = 0;
-            case GO_TO_WPT:
-
-                //m_green(ON);
+                
+            case TRACK_PUCK:
+                int max_pt_inside = 0;
+                if (PT2_left_inside >= PT3_right_inside)
+                    max_pt_inside = PT2_left_inside;
+                else
+                    max_pt_inside = PT3_right_inside;
+                
+                int max_pt_outside = 0;
+                if (PT1_left_outside >= PT4_right_outside)
+                    max_pt_outside = PT1_left_outside;
+                else
+                    max_pt_outside = PT4_right_outside;
+                
+                int max_pt_sides = 0;
+                if (PT5_back_right >= PT6_back_left)
+                    max_pt_sides = PT5_back_right;
+                else
+                    max_pt_sides = PT6_back_left;
                 
                 
-                if (PT1_left_outside > NOT_SEE_PUCK || PT2_left_inside > NOT_SEE_PUCK || PT3_right_inside > NOT_SEE_PUCK || PT4_right_outside > NOT_SEE_PUCK || PT5_back_right > NOT_SEE_PUCK || PT6_back_left > NOT_SEE_PUCK) {
-                    state = FIND_PUCK;
-                    break;
-                }
-                
-                dir_x = TARGETS_X[0]-x_robot;
-                dir_y = TARGETS_Y[0]-y_robot;
-                dir_angle = atan2(-dir_x,dir_y)*180/M_PI;
-                
-                calculate_diff_theta(dir_angle,&diff_theta, &bank);
-                
-                
-                cur_error = diff_theta;
-                diff_error = cur_error - prev_error;
-                prev_error = cur_error;
-                
-                if (status_go_to_goal == 0)
-                {
-                    {
-                        dist_goal = sqrt((x_robot-TARGETS_X[0])*(x_robot-TARGETS_X[0])+(y_robot-TARGETS_Y[0])*(y_robot-TARGETS_Y[0]));
-                        if (dist_goal < THRESHOLD_DIST_GOAL){
-                            status_go_to_goal = 2;
-                        }
-                        
-                        
-                        //move_robot(diff_theta,dist_goal,bank);
-                        else if (diff_theta < THRESHOLD_ANGLE_GOAL) {
-                            status_go_to_goal = 1;
-                        }
-                        else
-                            turn_robot(diff_theta,bank,diff_error);
-                        
-                    }
-                    
-                }
-                
-                else if (status_go_to_goal == 1){
-                    dist_goal = sqrt((x_robot-TARGETS_X[0])*(x_robot-TARGETS_X[0])+(y_robot-TARGETS_Y[0])*(y_robot-TARGETS_Y[0]));
-                    if (dist_goal < THRESHOLD_DIST_GOAL){
-                        status_go_to_goal = 2;
-                        set(PORTD,5);
-                        
-                        //                            stop_motor();
-                        //                            stop_counter = 0;
-                        //                            go_bwd();
-                        //
-                        //                            while(stop_counter<TIME_STOP)
-                        //                            {
-                        //                                stop_counter++;
-                        //                            }
-                        //stop_motor();
-                        //m_wait(1000);
-                    }
-                    else if (diff_theta > 2.0*THRESHOLD_ANGLE_GOAL)
-                    {
-                        status_go_to_goal = 0;
-                        set(PORTD,5);
-                    }
-                    else {
-                        clear(PORTD,5);
-                        move_robot(diff_theta,bank);
-                    }
-                    
-                }
-                else if (status_go_to_goal == 2){
-                    
-                    calculate_diff_theta(0,&diff_theta, &bank);
-                    
-                    
-                    if (diff_theta < THRESHOLD_ANGLE_GOAL)
-                    {
-                        status_go_to_goal = 3;
-                        //stop_motor();
-                        //m_wait(1000);
-                        //set(PORTD,5);
-                    }
-                    else {
-                        turn_robot(diff_theta,bank,diff_error);
-                    }
-                    
-                }
-                else if (status_go_to_goal == 3)
-                {
-                    
+                if ( PT2_left_inside >= 800 || PT3_right_inside >= 800 ) {
                     stop_motor();
-                    
-                    
-//                    //m_wait(1000);
-//                    //clear(PORTD,5);
-//                    if (TARGET_NUM == 0) {
-//                        TARGET_NUM = 1;
-//                        
-//                    }
-//                    else {
-//                        TARGET_NUM = 0;
-//                        //                            clear(PORTD,5);
-//                    }
-//                    goal_pos_x = TARGETS_X[TARGET_NUM];
-//                    goal_pos_y = TARGETS_Y[TARGET_NUM];
-                    status_go_to_goal = 0;
-                    state = FIND_PUCK;
-                    
-                    
-                    //state = STOP_STATE;
-                    
-                    //state = STOP_STATE;
-                    
+                }
+                //else if ( PT2_left_inside < 800 && PT3_right_inside < 800 ) {
+                //    stop_motor();
+                //}
+                else{
+                    if ( PT6_back_left > 800){
+                        speed = 0.9;
+                        move_left(speed);
+                    }
+                    else if ( PT5_back_right > 800){
+                        move_right_high_speed();
+                    }
+                    else if ( (PT2_left_inside >= PT3_right_inside) && ( (PT2_left_inside > 500)&&(PT3_right_inside > 500) ) ){
+                        move_left_low_speed();
+                    }
+                    else if ( (PT1_left_outside >= PT4_right_outside) && ( (PT1_left_outside > 150)&&(PT4_right_outside > 150) ) ){
+                        move_left_high_speed();
+                    }
+                    else if ( (PT2_left_inside < PT3_right_inside) && ( (PT2_left_inside > 500)&&(PT3_right_inside > 500) ) ){
+                        move_right_low_speed();
+                    }
+                    else if ( (PT1_left_outside < PT4_right_outside) && ( (PT1_left_outside > 150)&&(PT4_right_outside > 150) ) ){
+                        move_right_high_speed();
+                    }
                 }
                 break;
                 // --------------------------------------------------------------
@@ -616,13 +558,8 @@ int main(void)
                 
                 
                 
-//                // If Insides see the puck
-                if (PT1_left_outside < NOT_SEE_PUCK && PT2_left_inside < NOT_SEE_PUCK && PT3_right_inside < NOT_SEE_PUCK && PT4_right_outside < NOT_SEE_PUCK && PT5_back_right < NOT_SEE_PUCK && PT6_back_left < NOT_SEE_PUCK) {
-                    state = GO_TO_WPT;
-                    break;
-                }
-                
-                if (((((PT2_left_inside+PT3_right_inside)/2.0) >= 200)) && ((PT1_left_outside <= 700) && (PT4_right_outside <= 700))) {
+                // If Insides see the puck
+                if (((((PT2_left_inside+PT3_right_inside)/2.0) >= 250)) && ((PT1_left_outside <= 700) && (PT4_right_outside <= 700))) {
                     //turnOnBlueLED();
                     status_go_to_goal = 1;
                     int diff_PT_inside = abs(PT2_left_inside-PT3_right_inside);
@@ -635,7 +572,7 @@ int main(void)
                     }
                 }
                 // If Insides do not see the puck
-                else if ( (( (PT2_left_inside+PT3_right_inside)/2.0) < 200) && ((PT1_left_outside > 100) || (PT4_right_outside > 100) || (PT6_back_left > 100) || (PT5_back_right > 100)) ){
+                else {
                     //turnOffBlueLED();
                     status_go_to_goal = 0;
                     //Case where the puck is in front
@@ -656,10 +593,6 @@ int main(void)
                         
                     }
                 }
-                else{
-                    state = GO_TO_WPT;
-                }
-                
                 break;
                 // --------------------------------------------------------------
                 // --------------------------------------------------------------
@@ -685,7 +618,6 @@ int main(void)
                 status_go_to_goal = 0;
                 //                    state = GO_TO_GOAL_CURVED;
                 state = FIND_PUCK;
-//                state = GO_TO_WPT;
                 break;
                 // --------------------------------------------------------------
                 

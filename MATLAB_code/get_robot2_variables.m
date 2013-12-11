@@ -43,11 +43,12 @@ data = fgetl(userdata.handle);
 userdata.team.robot2.diff_theta(i) = str2double(data);
 set(userdata.h.robot2.var8_value, 'String',userdata.team.robot2.diff_theta(i))
 
-% 
+% % 
 % mean_camera_y = mean(userdata.team.robot2.camera_x)
 % mean_camera_x = mean(userdata.team.robot2.camera_y)
 % temp_x = userdata.team.robot2.x(i)
 % temp_y = userdata.team.robot2.y(i)
+
 
 
 end

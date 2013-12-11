@@ -16,7 +16,7 @@
 #define N_CLOCK 0
 #define NUM_LEDS 7
 #define SIZE_ARRAY_BLOBS 12
-#define PACKET_LENGTH_DEBUG 32
+#define PACKET_LENGTH_DEBUG 17
 #define PACKET_LENGTH_SYSTEM 10
 #define SEN_ADDRESS_SYSTEM 0xDA
 #define ALEX_ADDRESS_SYSTEM 0x42
@@ -28,7 +28,6 @@
 #define GO_TO_GOAL_CURVED 2
 #define FIND_PUCK 3
 #define GO_TO_GOAL_WITH_PUCK 5
-#define GO_TO_WPT 80
 #define INITIAL_STATE 0
 #define SYSTEM_STATE 99
 #define STOP_STATE 21
@@ -44,7 +43,7 @@
 #define THRESHOLD_ANGLE_GOAL 15
 #define THRESHOLD_DIST_GOAL 5
 #define PWM_SPEED_TURN_LFT 2300     // 2300 spyros          2800 Alex
-#define PWM_SPEED_TURN_RGHT 2200    // 2200 spyros          2800 Alex
+#define PWM_SPEED_TURN_RGHT 229*-00    // 2200 spyros          2800 Alex
 //#define PWM_SPEED_FWD_LFT 393
 //#define PWM_SPEED_FWD_RGHT 380
 #define PWM_SPEED_FWD_LFT 3000      //3000 fast spyros 2600 slow spyros     Alex 3000
@@ -73,7 +72,6 @@
 #define Kp_turn 0.1
 #define Kd 500
 #define time 0.002
-#define NOT_SEE_PUCK 300
 
 
 
@@ -285,69 +283,107 @@ int main(void)
             ////Open the channel
             //m_rf_open(CHANNEL_DEBUG,REC_ADDRESS_DEBUG,PACKET_LENGTH_DEBUG);
             
-            output_buffer[0] = 2;
-            output_buffer[1] = state;
-            output_buffer[2] = x_robot;
-            output_buffer[3] = y_robot;
+            output_buffer[0] = 4;
             
-            aux_conversion = div(theta_robot,128);
-            output_buffer[4] = (signed char)aux_conversion.quot;
-            output_buffer[5] = (signed char)aux_conversion.rem;
+            aux_conversion = div(blobs_wii[0],128);
+            output_buffer[1] = (signed char)aux_conversion.quot;
+            output_buffer[2] = (signed char)aux_conversion.rem;
             
-            output_buffer[6] = (signed char)status_go_to_goal;
+            aux_conversion = div(blobs_wii[3],128);
+            output_buffer[3] = (signed char)aux_conversion.quot;
+            output_buffer[4] = (signed char)aux_conversion.rem;
             
-            aux_conversion = div((int)dir_angle,128);
+            aux_conversion = div(blobs_wii[6],128);
+            output_buffer[5] = (signed char)aux_conversion.quot;
+            output_buffer[6] = (signed char)aux_conversion.rem;
+            
+            aux_conversion = div(blobs_wii[9],128);
             output_buffer[7] = (signed char)aux_conversion.quot;
             output_buffer[8] = (signed char)aux_conversion.rem;
             
-            aux_conversion = div((int)dist_goal,128);
+            aux_conversion = div(blobs_wii[1],128);
             output_buffer[9] = (signed char)aux_conversion.quot;
             output_buffer[10] = (signed char)aux_conversion.rem;
             
-            aux_conversion = div(cam_X,128);
+            aux_conversion = div(blobs_wii[4],128);
             output_buffer[11] = (signed char)aux_conversion.quot;
             output_buffer[12] = (signed char)aux_conversion.rem;
             
-            aux_conversion = div(cam_Y,128);
+            aux_conversion = div(blobs_wii[7],128);
             output_buffer[13] = (signed char)aux_conversion.quot;
             output_buffer[14] = (signed char)aux_conversion.rem;
             
-            output_buffer[15] = (signed char)commands_var;
-            
-            aux_conversion = div((int)diff_theta,128);
-            output_buffer[16] = (signed char)aux_conversion.quot;
-            output_buffer[17] = (signed char)aux_conversion.rem;
-            
-            aux_conversion = div(PT1_left_outside,128);
-            output_buffer[18] = (signed char)aux_conversion.quot;
-            output_buffer[19] = (signed char)aux_conversion.rem;
-            
-            aux_conversion = div(PT2_left_inside,128);
-            output_buffer[20] = (signed char)aux_conversion.quot;
-            output_buffer[21] = (signed char)aux_conversion.rem;
-            
-            aux_conversion = div(PT3_right_inside,128);
-            output_buffer[22] = (signed char)aux_conversion.quot;
-            output_buffer[23] = (signed char)aux_conversion.rem;
-            
-            aux_conversion = div(PT4_right_outside,128);
-            output_buffer[24] = (signed char)aux_conversion.quot;
-            output_buffer[25] = (signed char)aux_conversion.rem;
-            
-            aux_conversion = div(PT5_back_right,128);
-            output_buffer[26] = (signed char)aux_conversion.quot;
-            output_buffer[27] = (signed char)aux_conversion.rem;
-            
-            aux_conversion = div(PT6_back_left,128);
-            output_buffer[28] = (signed char)aux_conversion.quot;
-            output_buffer[29] = (signed char)aux_conversion.rem;
-            
-            aux_conversion = div(PT7_have_puck,128);
-            output_buffer[30] = (signed char)aux_conversion.quot;
-            output_buffer[31] = (signed char)aux_conversion.rem;
+            aux_conversion = div(blobs_wii[10],128);
+            output_buffer[15] = (signed char)aux_conversion.quot;
+            output_buffer[16] = (signed char)aux_conversion.rem;
             
             m_rf_send(SEN_ADDRESS_DEBUG,output_buffer,PACKET_LENGTH_DEBUG);
             m_red(TOGGLE);
+            
+            /*
+             output_buffer[1] = state;
+             output_buffer[2] = x_robot;
+             output_buffer[3] = y_robot;
+             
+             aux_conversion = div(theta_robot,128);
+             output_buffer[4] = (signed char)aux_conversion.quot;
+             output_buffer[5] = (signed char)aux_conversion.rem;
+             
+             output_buffer[6] = (signed char)status_go_to_goal;
+             
+             aux_conversion = div((int)dir_angle,128);
+             output_buffer[7] = (signed char)aux_conversion.quot;
+             output_buffer[8] = (signed char)aux_conversion.rem;
+             
+             aux_conversion = div((int)dist_goal,128);
+             output_buffer[9] = (signed char)aux_conversion.quot;
+             output_buffer[10] = (signed char)aux_conversion.rem;
+             
+             aux_conversion = div(cam_X,128);
+             output_buffer[11] = (signed char)aux_conversion.quot;
+             output_buffer[12] = (signed char)aux_conversion.rem;
+             
+             aux_conversion = div(cam_Y,128);
+             output_buffer[13] = (signed char)aux_conversion.quot;
+             output_buffer[14] = (signed char)aux_conversion.rem;
+             
+             output_buffer[15] = (signed char)commands_var;
+             
+             aux_conversion = div((int)diff_theta,128);
+             output_buffer[16] = (signed char)aux_conversion.quot;
+             output_buffer[17] = (signed char)aux_conversion.rem;
+             
+             aux_conversion = div(PT1_left_outside,128);
+             output_buffer[18] = (signed char)aux_conversion.quot;
+             output_buffer[19] = (signed char)aux_conversion.rem;
+             
+             aux_conversion = div(PT2_left_inside,128);
+             output_buffer[20] = (signed char)aux_conversion.quot;
+             output_buffer[21] = (signed char)aux_conversion.rem;
+             
+             aux_conversion = div(PT3_right_inside,128);
+             output_buffer[22] = (signed char)aux_conversion.quot;
+             output_buffer[23] = (signed char)aux_conversion.rem;
+             
+             aux_conversion = div(PT4_right_outside,128);
+             output_buffer[24] = (signed char)aux_conversion.quot;
+             output_buffer[25] = (signed char)aux_conversion.rem;
+             
+             aux_conversion = div(PT5_back_right,128);
+             output_buffer[26] = (signed char)aux_conversion.quot;
+             output_buffer[27] = (signed char)aux_conversion.rem;
+             
+             aux_conversion = div(PT6_back_left,128);
+             output_buffer[28] = (signed char)aux_conversion.quot;
+             output_buffer[29] = (signed char)aux_conversion.rem;
+             
+             aux_conversion = div(PT7_have_puck,128);
+             output_buffer[30] = (signed char)aux_conversion.quot;
+             output_buffer[31] = (signed char)aux_conversion.rem;
+             
+             m_rf_send(SEN_ADDRESS_DEBUG,output_buffer,PACKET_LENGTH_DEBUG);
+             m_red(TOGGLE);
+             */
             
             ////Open again the system channel
             //m_rf_open(CHANNEL_SYSTEM,ALEX_ADDRESS_SYSTEM,PACKET_LENGTH_SYSTEM);
@@ -421,120 +457,7 @@ int main(void)
         switch (state)
         {
                 long stop_counter = 0;
-            case GO_TO_WPT:
-
-                //m_green(ON);
                 
-                
-                if (PT1_left_outside > NOT_SEE_PUCK || PT2_left_inside > NOT_SEE_PUCK || PT3_right_inside > NOT_SEE_PUCK || PT4_right_outside > NOT_SEE_PUCK || PT5_back_right > NOT_SEE_PUCK || PT6_back_left > NOT_SEE_PUCK) {
-                    state = FIND_PUCK;
-                    break;
-                }
-                
-                dir_x = TARGETS_X[0]-x_robot;
-                dir_y = TARGETS_Y[0]-y_robot;
-                dir_angle = atan2(-dir_x,dir_y)*180/M_PI;
-                
-                calculate_diff_theta(dir_angle,&diff_theta, &bank);
-                
-                
-                cur_error = diff_theta;
-                diff_error = cur_error - prev_error;
-                prev_error = cur_error;
-                
-                if (status_go_to_goal == 0)
-                {
-                    {
-                        dist_goal = sqrt((x_robot-TARGETS_X[0])*(x_robot-TARGETS_X[0])+(y_robot-TARGETS_Y[0])*(y_robot-TARGETS_Y[0]));
-                        if (dist_goal < THRESHOLD_DIST_GOAL){
-                            status_go_to_goal = 2;
-                        }
-                        
-                        
-                        //move_robot(diff_theta,dist_goal,bank);
-                        else if (diff_theta < THRESHOLD_ANGLE_GOAL) {
-                            status_go_to_goal = 1;
-                        }
-                        else
-                            turn_robot(diff_theta,bank,diff_error);
-                        
-                    }
-                    
-                }
-                
-                else if (status_go_to_goal == 1){
-                    dist_goal = sqrt((x_robot-TARGETS_X[0])*(x_robot-TARGETS_X[0])+(y_robot-TARGETS_Y[0])*(y_robot-TARGETS_Y[0]));
-                    if (dist_goal < THRESHOLD_DIST_GOAL){
-                        status_go_to_goal = 2;
-                        set(PORTD,5);
-                        
-                        //                            stop_motor();
-                        //                            stop_counter = 0;
-                        //                            go_bwd();
-                        //
-                        //                            while(stop_counter<TIME_STOP)
-                        //                            {
-                        //                                stop_counter++;
-                        //                            }
-                        //stop_motor();
-                        //m_wait(1000);
-                    }
-                    else if (diff_theta > 2.0*THRESHOLD_ANGLE_GOAL)
-                    {
-                        status_go_to_goal = 0;
-                        set(PORTD,5);
-                    }
-                    else {
-                        clear(PORTD,5);
-                        move_robot(diff_theta,bank);
-                    }
-                    
-                }
-                else if (status_go_to_goal == 2){
-                    
-                    calculate_diff_theta(0,&diff_theta, &bank);
-                    
-                    
-                    if (diff_theta < THRESHOLD_ANGLE_GOAL)
-                    {
-                        status_go_to_goal = 3;
-                        //stop_motor();
-                        //m_wait(1000);
-                        //set(PORTD,5);
-                    }
-                    else {
-                        turn_robot(diff_theta,bank,diff_error);
-                    }
-                    
-                }
-                else if (status_go_to_goal == 3)
-                {
-                    
-                    stop_motor();
-                    
-                    
-//                    //m_wait(1000);
-//                    //clear(PORTD,5);
-//                    if (TARGET_NUM == 0) {
-//                        TARGET_NUM = 1;
-//                        
-//                    }
-//                    else {
-//                        TARGET_NUM = 0;
-//                        //                            clear(PORTD,5);
-//                    }
-//                    goal_pos_x = TARGETS_X[TARGET_NUM];
-//                    goal_pos_y = TARGETS_Y[TARGET_NUM];
-                    status_go_to_goal = 0;
-                    state = FIND_PUCK;
-                    
-                    
-                    //state = STOP_STATE;
-                    
-                    //state = STOP_STATE;
-                    
-                }
-                break;
                 // --------------------------------------------------------------
                 // FIND PUCK STATE
                 // --------------------------------------------------------------
@@ -616,13 +539,8 @@ int main(void)
                 
                 
                 
-//                // If Insides see the puck
-                if (PT1_left_outside < NOT_SEE_PUCK && PT2_left_inside < NOT_SEE_PUCK && PT3_right_inside < NOT_SEE_PUCK && PT4_right_outside < NOT_SEE_PUCK && PT5_back_right < NOT_SEE_PUCK && PT6_back_left < NOT_SEE_PUCK) {
-                    state = GO_TO_WPT;
-                    break;
-                }
-                
-                if (((((PT2_left_inside+PT3_right_inside)/2.0) >= 200)) && ((PT1_left_outside <= 700) && (PT4_right_outside <= 700))) {
+                // If Insides see the puck
+                if (((((PT2_left_inside+PT3_right_inside)/2.0) >= 250)) && ((PT1_left_outside <= 700) && (PT4_right_outside <= 700))) {
                     //turnOnBlueLED();
                     status_go_to_goal = 1;
                     int diff_PT_inside = abs(PT2_left_inside-PT3_right_inside);
@@ -635,7 +553,7 @@ int main(void)
                     }
                 }
                 // If Insides do not see the puck
-                else if ( (( (PT2_left_inside+PT3_right_inside)/2.0) < 200) && ((PT1_left_outside > 100) || (PT4_right_outside > 100) || (PT6_back_left > 100) || (PT5_back_right > 100)) ){
+                else {
                     //turnOffBlueLED();
                     status_go_to_goal = 0;
                     //Case where the puck is in front
@@ -656,10 +574,6 @@ int main(void)
                         
                     }
                 }
-                else{
-                    state = GO_TO_WPT;
-                }
-                
                 break;
                 // --------------------------------------------------------------
                 // --------------------------------------------------------------
@@ -685,7 +599,6 @@ int main(void)
                 status_go_to_goal = 0;
                 //                    state = GO_TO_GOAL_CURVED;
                 state = FIND_PUCK;
-//                state = GO_TO_WPT;
                 break;
                 // --------------------------------------------------------------
                 
