@@ -43,8 +43,8 @@
 //#define GOAL_B_POS_Y 0
 #define THRESHOLD_ANGLE_GOAL 15
 #define THRESHOLD_DIST_GOAL 0
-#define PWM_SPEED_TURN_LFT 2300     // 2300 spyros          2800 Alex
-#define PWM_SPEED_TURN_RGHT 2900    // 2200 spyros          2800 Alex
+#define PWM_SPEED_TURN_LFT 2400     // 2300 spyros          2800 Alex
+#define PWM_SPEED_TURN_RGHT 2400    // 2200 spyros          2800 Alex
 //#define PWM_SPEED_FWD_LFT 393
 //#define PWM_SPEED_FWD_RGHT 380
 #define PWM_SPEED_FWD_LFT 3000      //3000 fast spyros 2600 slow spyros     Alex 3000
@@ -76,7 +76,7 @@
 
 #define Kp 8
 #define Kp_move 10
-#define Kp_move_puck 0.1      // 0.5 when fast spyros, 1 for slow
+#define Kp_move_puck 0.01      // 0.5 when fast spyros, 1 for slow
 #define Kp_turn 0.1
 #define Kd 500
 #define time 0.002
@@ -266,6 +266,7 @@ int main(void)
 		// --------------------------------------------------------------
 		if (flag_system == 1)
 		{
+			m_rf_read(buffer_rec,PACKET_LENGTH_SYSTEM);
 			state = SYSTEM_STATE;
 			flag_system = 0;
 			
@@ -751,13 +752,13 @@ int main(void)
 							
 							if (bank == 0)
 							{
-								turnOnBlueLED();
+								//turnOnBlueLED();
 								circle_left();
 								circle_started_before = 1;
 							}
 							else if (bank == 1)
 							{
-								turnOffBlueLED();
+								//turnOffBlueLED();
 								circle_right();
 								circle_started_before = 1;
 							}								
@@ -1213,7 +1214,6 @@ ISR(TIMER4_OVF_vect)
 ISR(INT2_vect)
 {
 	//Read
-	m_rf_read(buffer_rec,PACKET_LENGTH_SYSTEM);
 	//past_state = state;
 	//state = SYSTEM_STATE;
 	flag_system = 1;
