@@ -49,6 +49,8 @@ int main(void)
     {
 		if (flag_system == 1)
 		{
+			m_red(TOGGLE);
+			m_rf_read(buffer_rec,PACKET_LENGTH_SYSTEM);
 			state = SYSTEM_STATE;
 			flag_system = 0;
 			
@@ -211,7 +213,6 @@ void turnOffBlueLED(void)
 ISR(INT2_vect)
 {
 	//Read
-	m_rf_read(buffer_rec,PACKET_LENGTH_SYSTEM);
 	//past_state = state;
 	//state = SYSTEM_STATE;
 	flag_system = 1;

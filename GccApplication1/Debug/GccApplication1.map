@@ -190,7 +190,7 @@ LOAD c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000      0x462
+.text           0x00000000      0x41a
  *(.vectors)
  .vectors       0x00000000       0xac c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.7.2/../../../../avr/lib/avr5/crtm32u4.o
                 0x00000000                __vector_default
@@ -299,25 +299,25 @@ LOAD c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr
  .text.turnOffBlueLED
                 0x00000100        0x4 GccApplication1.o
                 0x00000100                turnOffBlueLED
- .text.main     0x00000104      0x166 GccApplication1.o
+ .text.main     0x00000104      0x150 GccApplication1.o
                 0x00000104                main
  .text.__vector_3
-                0x0000026a       0x64 GccApplication1.o
-                0x0000026a                __vector_3
+                0x00000254       0x32 GccApplication1.o
+                0x00000254                __vector_3
  .text.m_bus_init
-                0x000002ce       0x22 m_bus.o
-                0x000002ce                m_bus_init
+                0x00000286       0x22 m_bus.o
+                0x00000286                m_bus_init
  .text.m_rf_open
-                0x000002f0       0xac m_rf.o
-                0x000002f0                m_rf_open
+                0x000002a8       0xac m_rf.o
+                0x000002a8                m_rf_open
  .text.m_rf_read
-                0x0000039c       0xc2 m_rf.o
-                0x0000039c                m_rf_read
-                0x0000045e                . = ALIGN (0x2)
+                0x00000354       0xc2 m_rf.o
+                0x00000354                m_rf_read
+                0x00000416                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x0000045e        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.7.2/avr5\libgcc.a(_exit.o)
-                0x0000045e                _exit
-                0x0000045e                exit
+ .fini9         0x00000416        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.7.2/avr5\libgcc.a(_exit.o)
+                0x00000416                _exit
+                0x00000416                exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -336,11 +336,11 @@ LOAD c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x0000045e        0x4 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.7.2/avr5\libgcc.a(_exit.o)
+ .fini0         0x00000416        0x4 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.7.2/avr5\libgcc.a(_exit.o)
  *(.fini0)
-                0x00000462                _etext = .
+                0x0000041a                _etext = .
 
-.data           0x00800100        0x2 load address 0x00000462
+.data           0x00800100        0x2 load address 0x0000041a
                 0x00800100                PROVIDE (__data_start, .)
  *(.data)
  .data          0x00800100        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.7.2/../../../../avr/lib/avr5/crtm32u4.o
@@ -372,8 +372,8 @@ LOAD c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr
                 0x0080010c                flag_system
  *(COMMON)
                 0x0080010e                PROVIDE (__bss_end, .)
-                0x00000462                __data_load_start = LOADADDR (.data)
-                0x00000464                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x0000041a                __data_load_start = LOADADDR (.data)
+                0x0000041c                __data_load_end = (__data_load_start + SIZEOF (.data))
 
 .noinit         0x0080010e        0x0
                 0x0080010e                PROVIDE (__noinit_start, .)
@@ -452,45 +452,45 @@ LOAD c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.2.1002/avr
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000      0x7f3
+.debug_info     0x00000000      0x7f2
  *(.debug_info)
- .debug_info    0x00000000      0x387 GccApplication1.o
- .debug_info    0x00000387      0x2de m_bus.o
- .debug_info    0x00000665      0x18e m_rf.o
+ .debug_info    0x00000000      0x386 GccApplication1.o
+ .debug_info    0x00000386      0x2de m_bus.o
+ .debug_info    0x00000664      0x18e m_rf.o
  *(.gnu.linkonce.wi.*)
 
-.debug_abbrev   0x00000000      0x356
+.debug_abbrev   0x00000000      0x349
  *(.debug_abbrev)
- .debug_abbrev  0x00000000      0x192 GccApplication1.o
- .debug_abbrev  0x00000192      0x10e m_bus.o
- .debug_abbrev  0x000002a0       0xb6 m_rf.o
+ .debug_abbrev  0x00000000      0x185 GccApplication1.o
+ .debug_abbrev  0x00000185      0x10e m_bus.o
+ .debug_abbrev  0x00000293       0xb6 m_rf.o
 
-.debug_line     0x00000000      0x579
+.debug_line     0x00000000      0x57a
  *(.debug_line)
- .debug_line    0x00000000      0x22a GccApplication1.o
- .debug_line    0x0000022a      0x18e m_bus.o
- .debug_line    0x000003b8      0x1c1 m_rf.o
+ .debug_line    0x00000000      0x22b GccApplication1.o
+ .debug_line    0x0000022b      0x18e m_bus.o
+ .debug_line    0x000003b9      0x1c1 m_rf.o
 
-.debug_frame    0x00000000      0x1e0
+.debug_frame    0x00000000      0x1ac
  *(.debug_frame)
- .debug_frame   0x00000000       0xbc GccApplication1.o
- .debug_frame   0x000000bc       0xb8 m_bus.o
- .debug_frame   0x00000174       0x6c m_rf.o
+ .debug_frame   0x00000000       0x88 GccApplication1.o
+ .debug_frame   0x00000088       0xb8 m_bus.o
+ .debug_frame   0x00000140       0x6c m_rf.o
 
-.debug_str      0x00000000      0x2af
+.debug_str      0x00000000      0x2db
  *(.debug_str)
- .debug_str     0x00000000      0x1c8 GccApplication1.o
-                                0x201 (size before relaxing)
- .debug_str     0x000001c8       0x9a m_bus.o
+ .debug_str     0x00000000      0x1cb GccApplication1.o
+                                0x204 (size before relaxing)
+ .debug_str     0x000001cb       0xc3 m_bus.o
                                 0x14b (size before relaxing)
- .debug_str     0x00000262       0x4d m_rf.o
+ .debug_str     0x0000028e       0x4d m_rf.o
                                 0x115 (size before relaxing)
 
-.debug_loc      0x00000000      0x6bc
+.debug_loc      0x00000000      0x63a
  *(.debug_loc)
- .debug_loc     0x00000000      0x1d7 GccApplication1.o
- .debug_loc     0x000001d7      0x23b m_bus.o
- .debug_loc     0x00000412      0x2aa m_rf.o
+ .debug_loc     0x00000000      0x155 GccApplication1.o
+ .debug_loc     0x00000155      0x23b m_bus.o
+ .debug_loc     0x00000390      0x2aa m_rf.o
 
 .debug_macinfo
  *(.debug_macinfo)

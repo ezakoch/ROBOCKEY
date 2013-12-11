@@ -3,33 +3,33 @@ GccApplication1.elf:     file format elf32-avr
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
-  0 .data         00000002  00800100  00000462  000004f6  2**0
+  0 .data         00000002  00800100  0000041a  000004ae  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  1 .text         00000462  00000000  00000000  00000094  2**1
+  1 .text         0000041a  00000000  00000000  00000094  2**1
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  2 .bss          0000000c  00800102  00800102  000004f8  2**0
+  2 .bss          0000000c  00800102  00800102  000004b0  2**0
                   ALLOC
-  3 .stab         000006cc  00000000  00000000  000004f8  2**2
+  3 .stab         000006cc  00000000  00000000  000004b0  2**2
                   CONTENTS, READONLY, DEBUGGING
-  4 .stabstr      00000097  00000000  00000000  00000bc4  2**0
+  4 .stabstr      00000097  00000000  00000000  00000b7c  2**0
                   CONTENTS, READONLY, DEBUGGING
-  5 .comment      0000002f  00000000  00000000  00000c5b  2**0
+  5 .comment      0000002f  00000000  00000000  00000c13  2**0
                   CONTENTS, READONLY
-  6 .debug_aranges 000000d0  00000000  00000000  00000c8a  2**0
+  6 .debug_aranges 000000d0  00000000  00000000  00000c42  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_info   000007f3  00000000  00000000  00000d5a  2**0
+  7 .debug_info   000007f2  00000000  00000000  00000d12  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_abbrev 00000356  00000000  00000000  0000154d  2**0
+  8 .debug_abbrev 00000349  00000000  00000000  00001504  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_line   00000579  00000000  00000000  000018a3  2**0
+  9 .debug_line   0000057a  00000000  00000000  0000184d  2**0
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_frame  000001e0  00000000  00000000  00001e1c  2**2
+ 10 .debug_frame  000001ac  00000000  00000000  00001dc8  2**2
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_str    000002af  00000000  00000000  00001ffc  2**0
+ 11 .debug_str    000002db  00000000  00000000  00001f74  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_loc    000006bc  00000000  00000000  000022ab  2**0
+ 12 .debug_loc    0000063a  00000000  00000000  0000224f  2**0
                   CONTENTS, READONLY, DEBUGGING
- 13 .debug_ranges 000000a0  00000000  00000000  00002967  2**0
+ 13 .debug_ranges 000000a0  00000000  00000000  00002889  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -38,7 +38,7 @@ Disassembly of section .text:
    0:	0c 94 56 00 	jmp	0xac	; 0xac <__ctors_end>
    4:	0c 94 73 00 	jmp	0xe6	; 0xe6 <__bad_interrupt>
    8:	0c 94 73 00 	jmp	0xe6	; 0xe6 <__bad_interrupt>
-   c:	0c 94 35 01 	jmp	0x26a	; 0x26a <__vector_3>
+   c:	0c 94 2a 01 	jmp	0x254	; 0x254 <__vector_3>
   10:	0c 94 73 00 	jmp	0xe6	; 0xe6 <__bad_interrupt>
   14:	0c 94 73 00 	jmp	0xe6	; 0xe6 <__bad_interrupt>
   18:	0c 94 73 00 	jmp	0xe6	; 0xe6 <__bad_interrupt>
@@ -91,7 +91,7 @@ Disassembly of section .text:
   b8:	11 e0       	ldi	r17, 0x01	; 1
   ba:	a0 e0       	ldi	r26, 0x00	; 0
   bc:	b1 e0       	ldi	r27, 0x01	; 1
-  be:	e2 e6       	ldi	r30, 0x62	; 98
+  be:	ea e1       	ldi	r30, 0x1A	; 26
   c0:	f4 e0       	ldi	r31, 0x04	; 4
   c2:	02 c0       	rjmp	.+4      	; 0xc8 <__do_copy_data+0x10>
   c4:	05 90       	lpm	r0, Z+
@@ -114,7 +114,7 @@ Disassembly of section .text:
   da:	b2 07       	cpc	r27, r18
   dc:	e1 f7       	brne	.-8      	; 0xd6 <.do_clear_bss_loop>
   de:	0e 94 82 00 	call	0x104	; 0x104 <main>
-  e2:	0c 94 2f 02 	jmp	0x45e	; 0x45e <_exit>
+  e2:	0c 94 0b 02 	jmp	0x416	; 0x416 <_exit>
 
 000000e6 <__bad_interrupt>:
   e6:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
@@ -162,101 +162,90 @@ void turnOffBlueLED(void)
  104:	4a e0       	ldi	r20, 0x0A	; 10
  106:	62 e4       	ldi	r22, 0x42	; 66
  108:	81 e0       	ldi	r24, 0x01	; 1
- 10a:	0e 94 78 01 	call	0x2f0	; 0x2f0 <m_rf_open>
+ 10a:	0e 94 54 01 	call	0x2a8	; 0x2a8 <m_rf_open>
 	sei();
  10e:	78 94       	sei
-			case INITIAL_STATE:
-				;
-				break;
-			case SYSTEM_STATE:
-				m_wait(500);
-				m_red(TOGGLE);
+	 
+    while(1)
+    {
+		if (flag_system == 1)
+		{
+			m_red(TOGGLE);
  110:	68 94       	set
- 112:	bb 24       	eor	r11, r11
- 114:	b6 f8       	bld	r11, 6
-				switch (buffer_rec[0])
- 116:	0f 2e       	mov	r0, r31
- 118:	f2 e0       	ldi	r31, 0x02	; 2
- 11a:	ef 2e       	mov	r14, r31
- 11c:	f1 e0       	ldi	r31, 0x01	; 1
- 11e:	ff 2e       	mov	r15, r31
- 120:	f0 2d       	mov	r31, r0
-					if (!check(PINB,2))
-					celebrate();
-					stop_motor();
-					scoreA = buffer_rec[1];
-					scoreB = buffer_rec[2];
-					state = STOP_STATE;
- 122:	c5 e1       	ldi	r28, 0x15	; 21
- 124:	d0 e0       	ldi	r29, 0x00	; 0
+ 112:	dd 24       	eor	r13, r13
+ 114:	d6 f8       	bld	r13, 6
+			m_rf_read(buffer_rec,PACKET_LENGTH_SYSTEM);
+			state = SYSTEM_STATE;
+ 116:	03 e6       	ldi	r16, 0x63	; 99
+ 118:	10 e0       	ldi	r17, 0x00	; 0
+			case BLUE_LED_STATE:
+			stop_motor();
+			turnOnBlueLED();
+			m_wait(3000);
+			turnOffBlueLED();
+			state = STOP_STATE;
+ 11a:	c5 e1       	ldi	r28, 0x15	; 21
+ 11c:	d0 e0       	ldi	r29, 0x00	; 0
 				m_red(TOGGLE);
 				switch (buffer_rec[0])
 				{
 					//Comm test
 					case 0xA0:
 					state = BLUE_LED_STATE;
- 126:	0f 2e       	mov	r0, r31
- 128:	f6 e1       	ldi	r31, 0x16	; 22
- 12a:	cf 2e       	mov	r12, r31
- 12c:	d1 2c       	mov	r13, r1
- 12e:	f0 2d       	mov	r31, r0
-	 
-    while(1)
-    {
-		if (flag_system == 1)
-		{
-			state = SYSTEM_STATE;
- 130:	03 e6       	ldi	r16, 0x63	; 99
- 132:	10 e0       	ldi	r17, 0x00	; 0
- 134:	80 91 00 01 	lds	r24, 0x0100
- 138:	90 91 01 01 	lds	r25, 0x0101
+ 11e:	0f 2e       	mov	r0, r31
+ 120:	f6 e1       	ldi	r31, 0x16	; 22
+ 122:	ef 2e       	mov	r14, r31
+ 124:	f1 2c       	mov	r15, r1
+ 126:	f0 2d       	mov	r31, r0
 	m_rf_open(CHANNEL_SYSTEM,ALEX_ADDRESS_SYSTEM,PACKET_LENGTH_SYSTEM);
 	sei();
 	 
     while(1)
     {
 		if (flag_system == 1)
- 13c:	20 91 0c 01 	lds	r18, 0x010C
- 140:	30 91 0d 01 	lds	r19, 0x010D
- 144:	21 30       	cpi	r18, 0x01	; 1
- 146:	31 05       	cpc	r19, r1
- 148:	31 f4       	brne	.+12     	; 0x156 <main+0x52>
+ 128:	80 91 0c 01 	lds	r24, 0x010C
+ 12c:	90 91 0d 01 	lds	r25, 0x010D
+ 130:	01 97       	sbiw	r24, 0x01	; 1
+ 132:	89 f4       	brne	.+34     	; 0x156 <main+0x52>
 		{
+			m_red(TOGGLE);
+ 134:	6e 9a       	sbi	0x0d, 6	; 13
+ 136:	8e b1       	in	r24, 0x0e	; 14
+ 138:	8d 25       	eor	r24, r13
+ 13a:	8e b9       	out	0x0e, r24	; 14
+			m_rf_read(buffer_rec,PACKET_LENGTH_SYSTEM);
+ 13c:	6a e0       	ldi	r22, 0x0A	; 10
+ 13e:	82 e0       	ldi	r24, 0x02	; 2
+ 140:	91 e0       	ldi	r25, 0x01	; 1
+ 142:	0e 94 aa 01 	call	0x354	; 0x354 <m_rf_read>
 			state = SYSTEM_STATE;
+ 146:	10 93 01 01 	sts	0x0101, r17
+ 14a:	00 93 00 01 	sts	0x0100, r16
 			flag_system = 0;
- 14a:	10 92 0d 01 	sts	0x010D, r1
- 14e:	10 92 0c 01 	sts	0x010C, r1
-	 
-    while(1)
-    {
-		if (flag_system == 1)
-		{
-			state = SYSTEM_STATE;
- 152:	c8 01       	movw	r24, r16
- 154:	10 c0       	rjmp	.+32     	; 0x176 <main+0x72>
-			flag_system = 0;
+ 14e:	10 92 0d 01 	sts	0x010D, r1
+ 152:	10 92 0c 01 	sts	0x010C, r1
 			
 		}
 		
         switch (state)
- 156:	85 31       	cpi	r24, 0x15	; 21
- 158:	91 05       	cpc	r25, r1
- 15a:	09 f4       	brne	.+2      	; 0x15e <main+0x5a>
- 15c:	76 c0       	rjmp	.+236    	; 0x24a <main+0x146>
- 15e:	1c f4       	brge	.+6      	; 0x166 <main+0x62>
- 160:	00 97       	sbiw	r24, 0x00	; 0
- 162:	61 f3       	breq	.-40     	; 0x13c <main+0x38>
- 164:	7b c0       	rjmp	.+246    	; 0x25c <main+0x158>
- 166:	86 31       	cpi	r24, 0x16	; 22
- 168:	91 05       	cpc	r25, r1
- 16a:	09 f4       	brne	.+2      	; 0x16e <main+0x6a>
- 16c:	56 c0       	rjmp	.+172    	; 0x21a <main+0x116>
- 16e:	83 36       	cpi	r24, 0x63	; 99
+ 156:	80 91 00 01 	lds	r24, 0x0100
+ 15a:	90 91 01 01 	lds	r25, 0x0101
+ 15e:	85 31       	cpi	r24, 0x15	; 21
+ 160:	91 05       	cpc	r25, r1
+ 162:	09 f4       	brne	.+2      	; 0x166 <main+0x62>
+ 164:	6f c0       	rjmp	.+222    	; 0x244 <main+0x140>
+ 166:	1c f4       	brge	.+6      	; 0x16e <main+0x6a>
+ 168:	89 2b       	or	r24, r25
+ 16a:	f1 f2       	breq	.-68     	; 0x128 <main+0x24>
+ 16c:	70 c0       	rjmp	.+224    	; 0x24e <main+0x14a>
+ 16e:	86 31       	cpi	r24, 0x16	; 22
  170:	91 05       	cpc	r25, r1
- 172:	09 f0       	breq	.+2      	; 0x176 <main+0x72>
- 174:	73 c0       	rjmp	.+230    	; 0x25c <main+0x158>
- 176:	90 93 01 01 	sts	0x0101, r25
- 17a:	80 93 00 01 	sts	0x0100, r24
+ 172:	09 f4       	brne	.+2      	; 0x176 <main+0x72>
+ 174:	53 c0       	rjmp	.+166    	; 0x21c <main+0x118>
+ 176:	83 36       	cpi	r24, 0x63	; 99
+ 178:	91 05       	cpc	r25, r1
+ 17a:	09 f0       	breq	.+2      	; 0x17e <main+0x7a>
+ 17c:	68 c0       	rjmp	.+208    	; 0x24e <main+0x14a>
 	#else
 		//round up by default
 		__ticks_dc = (uint32_t)(ceil(fabs(__tmp)));
@@ -280,544 +269,376 @@ void turnOffBlueLED(void)
 				m_red(TOGGLE);
  190:	6e 9a       	sbi	0x0d, 6	; 13
  192:	8e b1       	in	r24, 0x0e	; 14
- 194:	8b 25       	eor	r24, r11
+ 194:	8d 25       	eor	r24, r13
  196:	8e b9       	out	0x0e, r24	; 14
 				switch (buffer_rec[0])
- 198:	f7 01       	movw	r30, r14
- 19a:	80 81       	ld	r24, Z
+ 198:	80 91 02 01 	lds	r24, 0x0102
  19c:	83 3a       	cpi	r24, 0xA3	; 163
- 19e:	19 f1       	breq	.+70     	; 0x1e6 <main+0xe2>
- 1a0:	30 f4       	brcc	.+12     	; 0x1ae <main+0xaa>
+ 19e:	21 f1       	breq	.+72     	; 0x1e8 <main+0xe4>
+ 1a0:	38 f4       	brcc	.+14     	; 0x1b0 <main+0xac>
  1a2:	81 3a       	cpi	r24, 0xA1	; 161
- 1a4:	89 f0       	breq	.+34     	; 0x1c8 <main+0xc4>
- 1a6:	b8 f4       	brcc	.+46     	; 0x1d6 <main+0xd2>
+ 1a4:	91 f0       	breq	.+36     	; 0x1ca <main+0xc6>
+ 1a6:	c0 f4       	brcc	.+48     	; 0x1d8 <main+0xd4>
  1a8:	80 3a       	cpi	r24, 0xA0	; 160
- 1aa:	21 f6       	brne	.-120    	; 0x134 <main+0x30>
- 1ac:	08 c0       	rjmp	.+16     	; 0x1be <main+0xba>
- 1ae:	86 3a       	cpi	r24, 0xA6	; 166
- 1b0:	39 f1       	breq	.+78     	; 0x200 <main+0xfc>
- 1b2:	87 3a       	cpi	r24, 0xA7	; 167
- 1b4:	51 f1       	breq	.+84     	; 0x20a <main+0x106>
- 1b6:	84 3a       	cpi	r24, 0xA4	; 164
- 1b8:	09 f0       	breq	.+2      	; 0x1bc <main+0xb8>
- 1ba:	bc cf       	rjmp	.-136    	; 0x134 <main+0x30>
- 1bc:	1c c0       	rjmp	.+56     	; 0x1f6 <main+0xf2>
+ 1aa:	09 f0       	breq	.+2      	; 0x1ae <main+0xaa>
+ 1ac:	bd cf       	rjmp	.-134    	; 0x128 <main+0x24>
+ 1ae:	08 c0       	rjmp	.+16     	; 0x1c0 <main+0xbc>
+ 1b0:	86 3a       	cpi	r24, 0xA6	; 166
+ 1b2:	39 f1       	breq	.+78     	; 0x202 <main+0xfe>
+ 1b4:	87 3a       	cpi	r24, 0xA7	; 167
+ 1b6:	51 f1       	breq	.+84     	; 0x20c <main+0x108>
+ 1b8:	84 3a       	cpi	r24, 0xA4	; 164
+ 1ba:	09 f0       	breq	.+2      	; 0x1be <main+0xba>
+ 1bc:	b5 cf       	rjmp	.-150    	; 0x128 <main+0x24>
+ 1be:	1c c0       	rjmp	.+56     	; 0x1f8 <main+0xf4>
 				{
 					//Comm test
 					case 0xA0:
 					state = BLUE_LED_STATE;
- 1be:	d0 92 01 01 	sts	0x0101, r13
- 1c2:	c0 92 00 01 	sts	0x0100, r12
+ 1c0:	f0 92 01 01 	sts	0x0101, r15
+ 1c4:	e0 92 00 01 	sts	0x0100, r14
 					break;
- 1c6:	b6 cf       	rjmp	.-148    	; 0x134 <main+0x30>
+ 1c8:	af cf       	rjmp	.-162    	; 0x128 <main+0x24>
 					//pause_bool = 0;
 					//}else
 					//{
 					//state = INITIAL_STATE;
 					//}
 					state = INITIAL_STATE;
- 1c8:	10 92 01 01 	sts	0x0101, r1
- 1cc:	10 92 00 01 	sts	0x0100, r1
+ 1ca:	10 92 01 01 	sts	0x0101, r1
+ 1ce:	10 92 00 01 	sts	0x0100, r1
 					turnOnBlueLED();
- 1d0:	0e 94 7e 00 	call	0xfc	; 0xfc <turnOnBlueLED>
+ 1d2:	0e 94 7e 00 	call	0xfc	; 0xfc <turnOnBlueLED>
 					break;
- 1d4:	af cf       	rjmp	.-162    	; 0x134 <main+0x30>
+ 1d6:	a8 cf       	rjmp	.-176    	; 0x128 <main+0x24>
 				
 					//Goal A
 					case 0xA2:
 					if (check(PINB,2))
- 1d6:	83 b1       	in	r24, 0x03	; 3
+ 1d8:	83 b1       	in	r24, 0x03	; 3
 					celebrate();
 					stop_motor();
- 1d8:	0e 94 75 00 	call	0xea	; 0xea <stop_motor>
+ 1da:	0e 94 75 00 	call	0xea	; 0xea <stop_motor>
 					scoreA = buffer_rec[1];
 					scoreB = buffer_rec[2];
 					state = STOP_STATE;
- 1dc:	d0 93 01 01 	sts	0x0101, r29
- 1e0:	c0 93 00 01 	sts	0x0100, r28
+ 1de:	d0 93 01 01 	sts	0x0101, r29
+ 1e2:	c0 93 00 01 	sts	0x0100, r28
 					break;
- 1e4:	a7 cf       	rjmp	.-178    	; 0x134 <main+0x30>
+ 1e6:	a0 cf       	rjmp	.-192    	; 0x128 <main+0x24>
 				
 					//Goal B
 					case 0xA3:
 					if (!check(PINB,2))
- 1e6:	83 b1       	in	r24, 0x03	; 3
+ 1e8:	83 b1       	in	r24, 0x03	; 3
 					celebrate();
 					stop_motor();
- 1e8:	0e 94 75 00 	call	0xea	; 0xea <stop_motor>
+ 1ea:	0e 94 75 00 	call	0xea	; 0xea <stop_motor>
 					scoreA = buffer_rec[1];
 					scoreB = buffer_rec[2];
 					state = STOP_STATE;
- 1ec:	d0 93 01 01 	sts	0x0101, r29
- 1f0:	c0 93 00 01 	sts	0x0100, r28
+ 1ee:	d0 93 01 01 	sts	0x0101, r29
+ 1f2:	c0 93 00 01 	sts	0x0100, r28
 					break;
- 1f4:	9f cf       	rjmp	.-194    	; 0x134 <main+0x30>
+ 1f6:	98 cf       	rjmp	.-208    	; 0x128 <main+0x24>
 				
 					//Pause
 					case 0xA4:
 					state = STOP_STATE;
- 1f6:	d0 93 01 01 	sts	0x0101, r29
- 1fa:	c0 93 00 01 	sts	0x0100, r28
+ 1f8:	d0 93 01 01 	sts	0x0101, r29
+ 1fc:	c0 93 00 01 	sts	0x0100, r28
 					break;
- 1fe:	9a cf       	rjmp	.-204    	; 0x134 <main+0x30>
+ 200:	93 cf       	rjmp	.-218    	; 0x128 <main+0x24>
 				
 					//Halftime
 					case 0xA6:
 					stop_counter = 0;
 					state = STOP_STATE;
- 200:	d0 93 01 01 	sts	0x0101, r29
- 204:	c0 93 00 01 	sts	0x0100, r28
+ 202:	d0 93 01 01 	sts	0x0101, r29
+ 206:	c0 93 00 01 	sts	0x0100, r28
 					break;
- 208:	95 cf       	rjmp	.-214    	; 0x134 <main+0x30>
+ 20a:	8e cf       	rjmp	.-228    	; 0x128 <main+0x24>
 				
 							//Game over
 					case 0xA7:
 					if (check(PINB,2))
- 20a:	83 b1       	in	r24, 0x03	; 3
+ 20c:	83 b1       	in	r24, 0x03	; 3
 					}else
 					{
 						if (scoreA < scoreB)
 						celebrate();
 					}
 					stop_motor();
- 20c:	0e 94 75 00 	call	0xea	; 0xea <stop_motor>
+ 20e:	0e 94 75 00 	call	0xea	; 0xea <stop_motor>
 					state = STOP_STATE;
- 210:	d0 93 01 01 	sts	0x0101, r29
- 214:	c0 93 00 01 	sts	0x0100, r28
+ 212:	d0 93 01 01 	sts	0x0101, r29
+ 216:	c0 93 00 01 	sts	0x0100, r28
 					break;
- 218:	8d cf       	rjmp	.-230    	; 0x134 <main+0x30>
- 21a:	90 93 01 01 	sts	0x0101, r25
- 21e:	80 93 00 01 	sts	0x0100, r24
+ 21a:	86 cf       	rjmp	.-244    	; 0x128 <main+0x24>
 			
 			// --------------------------------------------------------------
 			// BLUE LED STATE
 			// --------------------------------------------------------------
 			case BLUE_LED_STATE:
 			stop_motor();
- 222:	0e 94 75 00 	call	0xea	; 0xea <stop_motor>
+ 21c:	0e 94 75 00 	call	0xea	; 0xea <stop_motor>
 			turnOnBlueLED();
- 226:	0e 94 7e 00 	call	0xfc	; 0xfc <turnOnBlueLED>
- 22a:	ff eb       	ldi	r31, 0xBF	; 191
- 22c:	27 e2       	ldi	r18, 0x27	; 39
- 22e:	89 e0       	ldi	r24, 0x09	; 9
- 230:	f1 50       	subi	r31, 0x01	; 1
- 232:	20 40       	sbci	r18, 0x00	; 0
- 234:	80 40       	sbci	r24, 0x00	; 0
- 236:	e1 f7       	brne	.-8      	; 0x230 <main+0x12c>
- 238:	00 c0       	rjmp	.+0      	; 0x23a <main+0x136>
- 23a:	00 00       	nop
+ 220:	0e 94 7e 00 	call	0xfc	; 0xfc <turnOnBlueLED>
+ 224:	2f eb       	ldi	r18, 0xBF	; 191
+ 226:	87 e2       	ldi	r24, 0x27	; 39
+ 228:	99 e0       	ldi	r25, 0x09	; 9
+ 22a:	21 50       	subi	r18, 0x01	; 1
+ 22c:	80 40       	sbci	r24, 0x00	; 0
+ 22e:	90 40       	sbci	r25, 0x00	; 0
+ 230:	e1 f7       	brne	.-8      	; 0x22a <main+0x126>
+ 232:	00 c0       	rjmp	.+0      	; 0x234 <main+0x130>
+ 234:	00 00       	nop
 			m_wait(3000);
 			turnOffBlueLED();
- 23c:	0e 94 80 00 	call	0x100	; 0x100 <turnOffBlueLED>
+ 236:	0e 94 80 00 	call	0x100	; 0x100 <turnOffBlueLED>
 			state = STOP_STATE;
- 240:	d0 93 01 01 	sts	0x0101, r29
- 244:	c0 93 00 01 	sts	0x0100, r28
+ 23a:	d0 93 01 01 	sts	0x0101, r29
+ 23e:	c0 93 00 01 	sts	0x0100, r28
 			break;
- 248:	75 cf       	rjmp	.-278    	; 0x134 <main+0x30>
- 24a:	90 93 01 01 	sts	0x0101, r25
- 24e:	80 93 00 01 	sts	0x0100, r24
+ 242:	72 cf       	rjmp	.-284    	; 0x128 <main+0x24>
 			// --------------------------------------------------------------
 			// STOP STATE
 			// --------------------------------------------------------------
 			case STOP_STATE:
 			//m_green(ON);
 			turnOffBlueLED();
- 252:	0e 94 80 00 	call	0x100	; 0x100 <turnOffBlueLED>
+ 244:	0e 94 80 00 	call	0x100	; 0x100 <turnOffBlueLED>
 			stop_motor();
- 256:	0e 94 75 00 	call	0xea	; 0xea <stop_motor>
+ 248:	0e 94 75 00 	call	0xea	; 0xea <stop_motor>
 			break;
- 25a:	6c cf       	rjmp	.-296    	; 0x134 <main+0x30>
- 25c:	90 93 01 01 	sts	0x0101, r25
- 260:	80 93 00 01 	sts	0x0100, r24
+ 24c:	6d cf       	rjmp	.-294    	; 0x128 <main+0x24>
 			
 			// --------------------------------------------------------------
 			// DEFAULT STATE
 			// --------------------------------------------------------------
 			default:
 			stop_motor();
- 264:	0e 94 75 00 	call	0xea	; 0xea <stop_motor>
+ 24e:	0e 94 75 00 	call	0xea	; 0xea <stop_motor>
 			break;
- 268:	65 cf       	rjmp	.-310    	; 0x134 <main+0x30>
+ 252:	6a cf       	rjmp	.-300    	; 0x128 <main+0x24>
 
-0000026a <__vector_3>:
+00000254 <__vector_3>:
 {
 	clear(PORTD,5);
 }
 
 ISR(INT2_vect)
 {
- 26a:	1f 92       	push	r1
- 26c:	0f 92       	push	r0
- 26e:	0f b6       	in	r0, 0x3f	; 63
- 270:	0f 92       	push	r0
- 272:	11 24       	eor	r1, r1
- 274:	2f 93       	push	r18
- 276:	3f 93       	push	r19
- 278:	4f 93       	push	r20
- 27a:	5f 93       	push	r21
- 27c:	6f 93       	push	r22
- 27e:	7f 93       	push	r23
- 280:	8f 93       	push	r24
- 282:	9f 93       	push	r25
- 284:	af 93       	push	r26
- 286:	bf 93       	push	r27
- 288:	ef 93       	push	r30
- 28a:	ff 93       	push	r31
+ 254:	1f 92       	push	r1
+ 256:	0f 92       	push	r0
+ 258:	0f b6       	in	r0, 0x3f	; 63
+ 25a:	0f 92       	push	r0
+ 25c:	11 24       	eor	r1, r1
+ 25e:	8f 93       	push	r24
+ 260:	9f 93       	push	r25
 	//Read
-	m_rf_read(buffer_rec,PACKET_LENGTH_SYSTEM);
- 28c:	6a e0       	ldi	r22, 0x0A	; 10
- 28e:	82 e0       	ldi	r24, 0x02	; 2
- 290:	91 e0       	ldi	r25, 0x01	; 1
- 292:	0e 94 ce 01 	call	0x39c	; 0x39c <m_rf_read>
 	//past_state = state;
 	//state = SYSTEM_STATE;
 	flag_system = 1;
- 296:	81 e0       	ldi	r24, 0x01	; 1
- 298:	90 e0       	ldi	r25, 0x00	; 0
- 29a:	90 93 0d 01 	sts	0x010D, r25
- 29e:	80 93 0c 01 	sts	0x010C, r24
+ 262:	81 e0       	ldi	r24, 0x01	; 1
+ 264:	90 e0       	ldi	r25, 0x00	; 0
+ 266:	90 93 0d 01 	sts	0x010D, r25
+ 26a:	80 93 0c 01 	sts	0x010C, r24
 	m_green(TOGGLE); // Indicator receiving from RF
- 2a2:	6a 9a       	sbi	0x0d, 2	; 13
- 2a4:	9e b1       	in	r25, 0x0e	; 14
- 2a6:	84 e0       	ldi	r24, 0x04	; 4
- 2a8:	89 27       	eor	r24, r25
- 2aa:	8e b9       	out	0x0e, r24	; 14
- 2ac:	ff 91       	pop	r31
- 2ae:	ef 91       	pop	r30
- 2b0:	bf 91       	pop	r27
- 2b2:	af 91       	pop	r26
- 2b4:	9f 91       	pop	r25
- 2b6:	8f 91       	pop	r24
- 2b8:	7f 91       	pop	r23
- 2ba:	6f 91       	pop	r22
- 2bc:	5f 91       	pop	r21
- 2be:	4f 91       	pop	r20
- 2c0:	3f 91       	pop	r19
- 2c2:	2f 91       	pop	r18
- 2c4:	0f 90       	pop	r0
- 2c6:	0f be       	out	0x3f, r0	; 63
- 2c8:	0f 90       	pop	r0
- 2ca:	1f 90       	pop	r1
- 2cc:	18 95       	reti
+ 26e:	6a 9a       	sbi	0x0d, 2	; 13
+ 270:	9e b1       	in	r25, 0x0e	; 14
+ 272:	84 e0       	ldi	r24, 0x04	; 4
+ 274:	89 27       	eor	r24, r25
+ 276:	8e b9       	out	0x0e, r24	; 14
+ 278:	9f 91       	pop	r25
+ 27a:	8f 91       	pop	r24
+ 27c:	0f 90       	pop	r0
+ 27e:	0f be       	out	0x3f, r0	; 63
+ 280:	0f 90       	pop	r0
+ 282:	1f 90       	pop	r1
+ 284:	18 95       	reti
 
-000002ce <m_bus_init>:
+00000286 <m_bus_init>:
+ 286:	58 9a       	sbi	0x0b, 0	; 11
+ 288:	59 9a       	sbi	0x0b, 1	; 11
+ 28a:	5a 9a       	sbi	0x0b, 2	; 11
+ 28c:	8c e0       	ldi	r24, 0x0C	; 12
+ 28e:	80 93 b8 00 	sts	0x00B8, r24
+ 292:	e9 e6       	ldi	r30, 0x69	; 105
+ 294:	f0 e0       	ldi	r31, 0x00	; 0
+ 296:	80 81       	ld	r24, Z
+ 298:	80 62       	ori	r24, 0x20	; 32
+ 29a:	80 83       	st	Z, r24
+ 29c:	80 81       	ld	r24, Z
+ 29e:	8f 7e       	andi	r24, 0xEF	; 239
+ 2a0:	80 83       	st	Z, r24
+ 2a2:	ea 9a       	sbi	0x1d, 2	; 29
+ 2a4:	78 94       	sei
+ 2a6:	08 95       	ret
 
-// PUBLIC FUNCTIONS
-void m_bus_init(void)
-{
-	// ENABLE PULLUPS
-	set(PORTD,0);
- 2ce:	58 9a       	sbi	0x0b, 0	; 11
-	set(PORTD,1);
- 2d0:	59 9a       	sbi	0x0b, 1	; 11
-	set(PORTD,2);
- 2d2:	5a 9a       	sbi	0x0b, 2	; 11
-	
-	// CONFIGURE THE CLOCK
-	TWBR = 12;	// CLK freq = CPU clock / (16 + 2*TWBR*(4^TWPS)), 16MHz clock, TWBR=12, TWPS=00 -> 400kHz
- 2d4:	8c e0       	ldi	r24, 0x0C	; 12
- 2d6:	80 93 b8 00 	sts	0x00B8, r24
+000002a8 <m_rf_open>:
+ 2a8:	1f 93       	push	r17
+ 2aa:	cf 93       	push	r28
+ 2ac:	df 93       	push	r29
+ 2ae:	18 2f       	mov	r17, r24
+ 2b0:	d6 2f       	mov	r29, r22
+ 2b2:	c4 2f       	mov	r28, r20
+ 2b4:	0e 94 43 01 	call	0x286	; 0x286 <m_bus_init>
+ 2b8:	94 ea       	ldi	r25, 0xA4	; 164
+ 2ba:	90 93 bc 00 	sts	0x00BC, r25
+ 2be:	ec eb       	ldi	r30, 0xBC	; 188
+ 2c0:	f0 e0       	ldi	r31, 0x00	; 0
+ 2c2:	90 81       	ld	r25, Z
+ 2c4:	99 23       	and	r25, r25
+ 2c6:	ec f7       	brge	.-6      	; 0x2c2 <m_rf_open+0x1a>
+ 2c8:	90 e5       	ldi	r25, 0x50	; 80
+ 2ca:	90 93 bb 00 	sts	0x00BB, r25
+ 2ce:	94 e8       	ldi	r25, 0x84	; 132
+ 2d0:	90 93 bc 00 	sts	0x00BC, r25
+ 2d4:	ec eb       	ldi	r30, 0xBC	; 188
+ 2d6:	f0 e0       	ldi	r31, 0x00	; 0
+ 2d8:	90 81       	ld	r25, Z
+ 2da:	99 23       	and	r25, r25
+ 2dc:	ec f7       	brge	.-6      	; 0x2d8 <m_rf_open+0x30>
+ 2de:	90 91 b9 00 	lds	r25, 0x00B9
+ 2e2:	98 7f       	andi	r25, 0xF8	; 248
+ 2e4:	90 32       	cpi	r25, 0x20	; 32
+ 2e6:	29 f4       	brne	.+10     	; 0x2f2 <m_rf_open+0x4a>
+ 2e8:	84 e9       	ldi	r24, 0x94	; 148
+ 2ea:	80 93 bc 00 	sts	0x00BC, r24
+ 2ee:	80 e0       	ldi	r24, 0x00	; 0
+ 2f0:	2d c0       	rjmp	.+90     	; 0x34c <m_rf_open+0xa4>
+ 2f2:	81 e0       	ldi	r24, 0x01	; 1
+ 2f4:	80 93 bb 00 	sts	0x00BB, r24
+ 2f8:	84 e8       	ldi	r24, 0x84	; 132
+ 2fa:	80 93 bc 00 	sts	0x00BC, r24
+ 2fe:	ec eb       	ldi	r30, 0xBC	; 188
+ 300:	f0 e0       	ldi	r31, 0x00	; 0
+ 302:	90 81       	ld	r25, Z
+ 304:	99 23       	and	r25, r25
+ 306:	ec f7       	brge	.-6      	; 0x302 <m_rf_open+0x5a>
+ 308:	10 93 bb 00 	sts	0x00BB, r17
+ 30c:	84 e8       	ldi	r24, 0x84	; 132
+ 30e:	80 93 bc 00 	sts	0x00BC, r24
+ 312:	ec eb       	ldi	r30, 0xBC	; 188
+ 314:	f0 e0       	ldi	r31, 0x00	; 0
+ 316:	80 81       	ld	r24, Z
+ 318:	88 23       	and	r24, r24
+ 31a:	ec f7       	brge	.-6      	; 0x316 <m_rf_open+0x6e>
+ 31c:	d0 93 bb 00 	sts	0x00BB, r29
+ 320:	84 e8       	ldi	r24, 0x84	; 132
+ 322:	80 93 bc 00 	sts	0x00BC, r24
+ 326:	ec eb       	ldi	r30, 0xBC	; 188
+ 328:	f0 e0       	ldi	r31, 0x00	; 0
+ 32a:	80 81       	ld	r24, Z
+ 32c:	88 23       	and	r24, r24
+ 32e:	ec f7       	brge	.-6      	; 0x32a <m_rf_open+0x82>
+ 330:	c0 93 bb 00 	sts	0x00BB, r28
+ 334:	84 e8       	ldi	r24, 0x84	; 132
+ 336:	80 93 bc 00 	sts	0x00BC, r24
+ 33a:	ec eb       	ldi	r30, 0xBC	; 188
+ 33c:	f0 e0       	ldi	r31, 0x00	; 0
+ 33e:	80 81       	ld	r24, Z
+ 340:	88 23       	and	r24, r24
+ 342:	ec f7       	brge	.-6      	; 0x33e <m_rf_open+0x96>
+ 344:	84 e9       	ldi	r24, 0x94	; 148
+ 346:	80 93 bc 00 	sts	0x00BC, r24
+ 34a:	81 e0       	ldi	r24, 0x01	; 1
+ 34c:	df 91       	pop	r29
+ 34e:	cf 91       	pop	r28
+ 350:	1f 91       	pop	r17
+ 352:	08 95       	ret
 
-	// ENABLE interrupts in INT2 (D2)
-	set(EICRA,ISC21); clear(EICRA,ISC20); // trigger on falling edge
- 2da:	e9 e6       	ldi	r30, 0x69	; 105
- 2dc:	f0 e0       	ldi	r31, 0x00	; 0
- 2de:	80 81       	ld	r24, Z
- 2e0:	80 62       	ori	r24, 0x20	; 32
- 2e2:	80 83       	st	Z, r24
- 2e4:	80 81       	ld	r24, Z
- 2e6:	8f 7e       	andi	r24, 0xEF	; 239
- 2e8:	80 83       	st	Z, r24
-	set(EIMSK,INT2); // demask the interrupt
- 2ea:	ea 9a       	sbi	0x1d, 2	; 29
-	sei(); // enable global interrupts
- 2ec:	78 94       	sei
- 2ee:	08 95       	ret
+00000354 <m_rf_read>:
+ 354:	cf 93       	push	r28
+ 356:	df 93       	push	r29
+ 358:	24 ea       	ldi	r18, 0xA4	; 164
+ 35a:	20 93 bc 00 	sts	0x00BC, r18
+ 35e:	ec eb       	ldi	r30, 0xBC	; 188
+ 360:	f0 e0       	ldi	r31, 0x00	; 0
+ 362:	20 81       	ld	r18, Z
+ 364:	22 23       	and	r18, r18
+ 366:	ec f7       	brge	.-6      	; 0x362 <m_rf_read+0xe>
+ 368:	21 e5       	ldi	r18, 0x51	; 81
+ 36a:	20 93 bb 00 	sts	0x00BB, r18
+ 36e:	24 e8       	ldi	r18, 0x84	; 132
+ 370:	20 93 bc 00 	sts	0x00BC, r18
+ 374:	ec eb       	ldi	r30, 0xBC	; 188
+ 376:	f0 e0       	ldi	r31, 0x00	; 0
+ 378:	20 81       	ld	r18, Z
+ 37a:	22 23       	and	r18, r18
+ 37c:	ec f7       	brge	.-6      	; 0x378 <m_rf_read+0x24>
+ 37e:	20 91 b9 00 	lds	r18, 0x00B9
+ 382:	28 7f       	andi	r18, 0xF8	; 248
+ 384:	28 34       	cpi	r18, 0x48	; 72
+ 386:	29 f4       	brne	.+10     	; 0x392 <m_rf_read+0x3e>
+ 388:	84 e9       	ldi	r24, 0x94	; 148
+ 38a:	80 93 bc 00 	sts	0x00BC, r24
+ 38e:	80 e0       	ldi	r24, 0x00	; 0
+ 390:	3f c0       	rjmp	.+126    	; 0x410 <m_rf_read+0xbc>
+ 392:	24 ec       	ldi	r18, 0xC4	; 196
+ 394:	20 93 bc 00 	sts	0x00BC, r18
+ 398:	ec eb       	ldi	r30, 0xBC	; 188
+ 39a:	f0 e0       	ldi	r31, 0x00	; 0
+ 39c:	20 81       	ld	r18, Z
+ 39e:	22 23       	and	r18, r18
+ 3a0:	ec f7       	brge	.-6      	; 0x39c <m_rf_read+0x48>
+ 3a2:	40 91 bb 00 	lds	r20, 0x00BB
+ 3a6:	46 13       	cpse	r20, r22
+ 3a8:	09 c0       	rjmp	.+18     	; 0x3bc <m_rf_read+0x68>
+ 3aa:	50 e0       	ldi	r21, 0x00	; 0
+ 3ac:	41 50       	subi	r20, 0x01	; 1
+ 3ae:	51 09       	sbc	r21, r1
+ 3b0:	14 16       	cp	r1, r20
+ 3b2:	15 06       	cpc	r1, r21
+ 3b4:	44 f0       	brlt	.+16     	; 0x3c6 <m_rf_read+0x72>
+ 3b6:	40 e0       	ldi	r20, 0x00	; 0
+ 3b8:	50 e0       	ldi	r21, 0x00	; 0
+ 3ba:	18 c0       	rjmp	.+48     	; 0x3ec <m_rf_read+0x98>
+ 3bc:	84 e9       	ldi	r24, 0x94	; 148
+ 3be:	80 93 bc 00 	sts	0x00BC, r24
+ 3c2:	80 e0       	ldi	r24, 0x00	; 0
+ 3c4:	25 c0       	rjmp	.+74     	; 0x410 <m_rf_read+0xbc>
+ 3c6:	dc 01       	movw	r26, r24
+ 3c8:	20 e0       	ldi	r18, 0x00	; 0
+ 3ca:	30 e0       	ldi	r19, 0x00	; 0
+ 3cc:	ec eb       	ldi	r30, 0xBC	; 188
+ 3ce:	f0 e0       	ldi	r31, 0x00	; 0
+ 3d0:	74 ec       	ldi	r23, 0xC4	; 196
+ 3d2:	cb eb       	ldi	r28, 0xBB	; 187
+ 3d4:	d0 e0       	ldi	r29, 0x00	; 0
+ 3d6:	70 83       	st	Z, r23
+ 3d8:	60 81       	ld	r22, Z
+ 3da:	66 23       	and	r22, r22
+ 3dc:	ec f7       	brge	.-6      	; 0x3d8 <m_rf_read+0x84>
+ 3de:	68 81       	ld	r22, Y
+ 3e0:	6d 93       	st	X+, r22
+ 3e2:	2f 5f       	subi	r18, 0xFF	; 255
+ 3e4:	3f 4f       	sbci	r19, 0xFF	; 255
+ 3e6:	24 17       	cp	r18, r20
+ 3e8:	35 07       	cpc	r19, r21
+ 3ea:	ac f3       	brlt	.-22     	; 0x3d6 <m_rf_read+0x82>
+ 3ec:	24 e8       	ldi	r18, 0x84	; 132
+ 3ee:	20 93 bc 00 	sts	0x00BC, r18
+ 3f2:	ec eb       	ldi	r30, 0xBC	; 188
+ 3f4:	f0 e0       	ldi	r31, 0x00	; 0
+ 3f6:	20 81       	ld	r18, Z
+ 3f8:	22 23       	and	r18, r18
+ 3fa:	ec f7       	brge	.-6      	; 0x3f6 <m_rf_read+0xa2>
+ 3fc:	20 91 bb 00 	lds	r18, 0x00BB
+ 400:	fc 01       	movw	r30, r24
+ 402:	e4 0f       	add	r30, r20
+ 404:	f5 1f       	adc	r31, r21
+ 406:	20 83       	st	Z, r18
+ 408:	84 e9       	ldi	r24, 0x94	; 148
+ 40a:	80 93 bc 00 	sts	0x00BC, r24
+ 40e:	81 e0       	ldi	r24, 0x01	; 1
+ 410:	df 91       	pop	r29
+ 412:	cf 91       	pop	r28
+ 414:	08 95       	ret
 
-000002f0 <m_rf_open>:
-#define MRFINIT			0x01
-#define	MRFREAD			0x02
-#define MRFSEND			0x03
+00000416 <_exit>:
+ 416:	f8 94       	cli
 
-char m_rf_open(char channel, char RXaddress, char packet_length)
-{	
- 2f0:	1f 93       	push	r17
- 2f2:	cf 93       	push	r28
- 2f4:	df 93       	push	r29
- 2f6:	18 2f       	mov	r17, r24
- 2f8:	d6 2f       	mov	r29, r22
- 2fa:	c4 2f       	mov	r28, r20
-	// START | MRFTWIADDR | MRFINIT | channel | RXaddress | packet_length | STOP
-	
-	m_bus_init();
- 2fc:	0e 94 67 01 	call	0x2ce	; 0x2ce <m_bus_init>
-	
-	// START
-	TWCR = (1<<TWEN)|(1<<TWSTA)|(1<<TWINT);
- 300:	94 ea       	ldi	r25, 0xA4	; 164
- 302:	90 93 bc 00 	sts	0x00BC, r25
-	while(!(TWCR & (1<<TWINT))){};
- 306:	ec eb       	ldi	r30, 0xBC	; 188
- 308:	f0 e0       	ldi	r31, 0x00	; 0
- 30a:	90 81       	ld	r25, Z
- 30c:	99 23       	and	r25, r25
- 30e:	ec f7       	brge	.-6      	; 0x30a <m_rf_open+0x1a>
-	
-	// ADDRESS
-	TWDR = MRFTWIADDR<<1;
- 310:	90 e5       	ldi	r25, 0x50	; 80
- 312:	90 93 bb 00 	sts	0x00BB, r25
-	TWCR = (1<<TWINT) | (1<<TWEN);
- 316:	94 e8       	ldi	r25, 0x84	; 132
- 318:	90 93 bc 00 	sts	0x00BC, r25
-	while(!(TWCR & (1<<TWINT))){};
- 31c:	ec eb       	ldi	r30, 0xBC	; 188
- 31e:	f0 e0       	ldi	r31, 0x00	; 0
- 320:	90 81       	ld	r25, Z
- 322:	99 23       	and	r25, r25
- 324:	ec f7       	brge	.-6      	; 0x320 <m_rf_open+0x30>
-	if((TWSR & 0xF8)== 0x20){ // ACK was not received - may not be connected/listening
- 326:	90 91 b9 00 	lds	r25, 0x00B9
- 32a:	98 7f       	andi	r25, 0xF8	; 248
- 32c:	90 32       	cpi	r25, 0x20	; 32
- 32e:	29 f4       	brne	.+10     	; 0x33a <m_rf_open+0x4a>
-		TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO); // let go of the line (STOP)
- 330:	84 e9       	ldi	r24, 0x94	; 148
- 332:	80 93 bc 00 	sts	0x00BC, r24
-		return 0;
- 336:	80 e0       	ldi	r24, 0x00	; 0
- 338:	2d c0       	rjmp	.+90     	; 0x394 <m_rf_open+0xa4>
-	}
-	
-	// SEND THE DESIRED MRF MODE
-	TWDR = MRFINIT;
- 33a:	81 e0       	ldi	r24, 0x01	; 1
- 33c:	80 93 bb 00 	sts	0x00BB, r24
-	TWCR = (1<<TWINT) | (1<<TWEN);
- 340:	84 e8       	ldi	r24, 0x84	; 132
- 342:	80 93 bc 00 	sts	0x00BC, r24
-	while(!(TWCR & (1<<TWINT))){};
- 346:	ec eb       	ldi	r30, 0xBC	; 188
- 348:	f0 e0       	ldi	r31, 0x00	; 0
- 34a:	90 81       	ld	r25, Z
- 34c:	99 23       	and	r25, r25
- 34e:	ec f7       	brge	.-6      	; 0x34a <m_rf_open+0x5a>
-	
-	// SEND DATA
-	TWDR = channel;
- 350:	10 93 bb 00 	sts	0x00BB, r17
-	TWCR = (1<<TWINT) | (1<<TWEN);
- 354:	84 e8       	ldi	r24, 0x84	; 132
- 356:	80 93 bc 00 	sts	0x00BC, r24
-	while(!(TWCR & (1<<TWINT))){};
- 35a:	ec eb       	ldi	r30, 0xBC	; 188
- 35c:	f0 e0       	ldi	r31, 0x00	; 0
- 35e:	80 81       	ld	r24, Z
- 360:	88 23       	and	r24, r24
- 362:	ec f7       	brge	.-6      	; 0x35e <m_rf_open+0x6e>
-	
-	TWDR = RXaddress;
- 364:	d0 93 bb 00 	sts	0x00BB, r29
-	TWCR = (1<<TWINT) | (1<<TWEN);
- 368:	84 e8       	ldi	r24, 0x84	; 132
- 36a:	80 93 bc 00 	sts	0x00BC, r24
-	while(!(TWCR & (1<<TWINT))){};
- 36e:	ec eb       	ldi	r30, 0xBC	; 188
- 370:	f0 e0       	ldi	r31, 0x00	; 0
- 372:	80 81       	ld	r24, Z
- 374:	88 23       	and	r24, r24
- 376:	ec f7       	brge	.-6      	; 0x372 <m_rf_open+0x82>
-	
-	TWDR = packet_length;
- 378:	c0 93 bb 00 	sts	0x00BB, r28
-	TWCR = (1<<TWINT) | (1<<TWEN);
- 37c:	84 e8       	ldi	r24, 0x84	; 132
- 37e:	80 93 bc 00 	sts	0x00BC, r24
-	while(!(TWCR & (1<<TWINT))){};
- 382:	ec eb       	ldi	r30, 0xBC	; 188
- 384:	f0 e0       	ldi	r31, 0x00	; 0
- 386:	80 81       	ld	r24, Z
- 388:	88 23       	and	r24, r24
- 38a:	ec f7       	brge	.-6      	; 0x386 <m_rf_open+0x96>
-	
-	// STOP
-	TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO);
- 38c:	84 e9       	ldi	r24, 0x94	; 148
- 38e:	80 93 bc 00 	sts	0x00BC, r24
-	
-	return 1;
- 392:	81 e0       	ldi	r24, 0x01	; 1
-}
- 394:	df 91       	pop	r29
- 396:	cf 91       	pop	r28
- 398:	1f 91       	pop	r17
- 39a:	08 95       	ret
-
-0000039c <m_rf_read>:
-
-char m_rf_read(char* buffer, char packet_length)
-{
- 39c:	cf 93       	push	r28
- 39e:	df 93       	push	r29
-
-	char bytes;
-	int i;
-
-	// START
-	TWCR = (1<<TWEN)|(1<<TWSTA)|(1<<TWINT);
- 3a0:	24 ea       	ldi	r18, 0xA4	; 164
- 3a2:	20 93 bc 00 	sts	0x00BC, r18
-	while(!(TWCR & (1<<TWINT))){};
- 3a6:	ec eb       	ldi	r30, 0xBC	; 188
- 3a8:	f0 e0       	ldi	r31, 0x00	; 0
- 3aa:	20 81       	ld	r18, Z
- 3ac:	22 23       	and	r18, r18
- 3ae:	ec f7       	brge	.-6      	; 0x3aa <m_rf_read+0xe>
-	
-	// ADDRESS (in Master-Receiver Mode)
-	TWDR = ((MRFTWIADDR<<1)|1);
- 3b0:	21 e5       	ldi	r18, 0x51	; 81
- 3b2:	20 93 bb 00 	sts	0x00BB, r18
-	TWCR = (1<<TWINT) | (1<<TWEN);
- 3b6:	24 e8       	ldi	r18, 0x84	; 132
- 3b8:	20 93 bc 00 	sts	0x00BC, r18
-	while(!(TWCR & (1<<TWINT))){}; // wait until finished sending address
- 3bc:	ec eb       	ldi	r30, 0xBC	; 188
- 3be:	f0 e0       	ldi	r31, 0x00	; 0
- 3c0:	20 81       	ld	r18, Z
- 3c2:	22 23       	and	r18, r18
- 3c4:	ec f7       	brge	.-6      	; 0x3c0 <m_rf_read+0x24>
-	if((TWSR & 0xF8)== 0x48){ // ACK was not received
- 3c6:	20 91 b9 00 	lds	r18, 0x00B9
- 3ca:	28 7f       	andi	r18, 0xF8	; 248
- 3cc:	28 34       	cpi	r18, 0x48	; 72
- 3ce:	29 f4       	brne	.+10     	; 0x3da <m_rf_read+0x3e>
-		TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO); // let go of the line (STOP)
- 3d0:	84 e9       	ldi	r24, 0x94	; 148
- 3d2:	80 93 bc 00 	sts	0x00BC, r24
-		return 0; // not connected/listening
- 3d6:	80 e0       	ldi	r24, 0x00	; 0
- 3d8:	3f c0       	rjmp	.+126    	; 0x458 <m_rf_read+0xbc>
-	}
-	
-
-	// (BYTES)
-	TWCR = (1<<TWINT) | (1<<TWEA) | (1<<TWEN);	// clear the flag, enable ACKs, and wait for another byte
- 3da:	24 ec       	ldi	r18, 0xC4	; 196
- 3dc:	20 93 bc 00 	sts	0x00BC, r18
-	while(!(TWCR & (1<<TWINT))){}; // wait for an interrupt to signal that a new byte is available
- 3e0:	ec eb       	ldi	r30, 0xBC	; 188
- 3e2:	f0 e0       	ldi	r31, 0x00	; 0
- 3e4:	20 81       	ld	r18, Z
- 3e6:	22 23       	and	r18, r18
- 3e8:	ec f7       	brge	.-6      	; 0x3e4 <m_rf_read+0x48>
-	bytes = TWDR;
- 3ea:	40 91 bb 00 	lds	r20, 0x00BB
-	if(bytes != packet_length){
- 3ee:	46 13       	cpse	r20, r22
- 3f0:	09 c0       	rjmp	.+18     	; 0x404 <m_rf_read+0x68>
-		TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO); // let go of the line (STOP)
-		return 0; // indicate length mismatch
-	}		
-	
-	// (DATA_0 ... DATA_N)
-	for(i=0;i<(bytes-1);i++)
- 3f2:	50 e0       	ldi	r21, 0x00	; 0
- 3f4:	41 50       	subi	r20, 0x01	; 1
- 3f6:	51 09       	sbc	r21, r1
- 3f8:	14 16       	cp	r1, r20
- 3fa:	15 06       	cpc	r1, r21
- 3fc:	44 f0       	brlt	.+16     	; 0x40e <m_rf_read+0x72>
- 3fe:	40 e0       	ldi	r20, 0x00	; 0
- 400:	50 e0       	ldi	r21, 0x00	; 0
- 402:	18 c0       	rjmp	.+48     	; 0x434 <m_rf_read+0x98>
-	// (BYTES)
-	TWCR = (1<<TWINT) | (1<<TWEA) | (1<<TWEN);	// clear the flag, enable ACKs, and wait for another byte
-	while(!(TWCR & (1<<TWINT))){}; // wait for an interrupt to signal that a new byte is available
-	bytes = TWDR;
-	if(bytes != packet_length){
-		TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO); // let go of the line (STOP)
- 404:	84 e9       	ldi	r24, 0x94	; 148
- 406:	80 93 bc 00 	sts	0x00BC, r24
-		return 0; // indicate length mismatch
- 40a:	80 e0       	ldi	r24, 0x00	; 0
- 40c:	25 c0       	rjmp	.+74     	; 0x458 <m_rf_read+0xbc>
- 40e:	dc 01       	movw	r26, r24
-	}		
-	
-	// (DATA_0 ... DATA_N)
-	for(i=0;i<(bytes-1);i++)
- 410:	20 e0       	ldi	r18, 0x00	; 0
- 412:	30 e0       	ldi	r19, 0x00	; 0
-	{
-		TWCR = (1<<TWINT) | (1<<TWEA) | (1<<TWEN);	// clear the flag, enable ACKs, and wait for another byte
- 414:	ec eb       	ldi	r30, 0xBC	; 188
- 416:	f0 e0       	ldi	r31, 0x00	; 0
- 418:	74 ec       	ldi	r23, 0xC4	; 196
-		while(!(TWCR & (1<<TWINT))){}; // wait for an interrupt to signal that a new byte is available
-		buffer[i] = TWDR;
- 41a:	cb eb       	ldi	r28, 0xBB	; 187
- 41c:	d0 e0       	ldi	r29, 0x00	; 0
-	}		
-	
-	// (DATA_0 ... DATA_N)
-	for(i=0;i<(bytes-1);i++)
-	{
-		TWCR = (1<<TWINT) | (1<<TWEA) | (1<<TWEN);	// clear the flag, enable ACKs, and wait for another byte
- 41e:	70 83       	st	Z, r23
-		while(!(TWCR & (1<<TWINT))){}; // wait for an interrupt to signal that a new byte is available
- 420:	60 81       	ld	r22, Z
- 422:	66 23       	and	r22, r22
- 424:	ec f7       	brge	.-6      	; 0x420 <m_rf_read+0x84>
-		buffer[i] = TWDR;
- 426:	68 81       	ld	r22, Y
- 428:	6d 93       	st	X+, r22
-		TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO); // let go of the line (STOP)
-		return 0; // indicate length mismatch
-	}		
-	
-	// (DATA_0 ... DATA_N)
-	for(i=0;i<(bytes-1);i++)
- 42a:	2f 5f       	subi	r18, 0xFF	; 255
- 42c:	3f 4f       	sbci	r19, 0xFF	; 255
- 42e:	24 17       	cp	r18, r20
- 430:	35 07       	cpc	r19, r21
- 432:	ac f3       	brlt	.-22     	; 0x41e <m_rf_read+0x82>
-	{
-		TWCR = (1<<TWINT) | (1<<TWEA) | (1<<TWEN);	// clear the flag, enable ACKs, and wait for another byte
-		while(!(TWCR & (1<<TWINT))){}; // wait for an interrupt to signal that a new byte is available
-		buffer[i] = TWDR;
-	}
-	TWCR = (1<<TWINT) | (1<<TWEN);	// clear the flag, no ACK, and wait for another byte
- 434:	24 e8       	ldi	r18, 0x84	; 132
- 436:	20 93 bc 00 	sts	0x00BC, r18
-	while(!(TWCR & (1<<TWINT))){}; // wait for an interrupt to signal that a new byte is available
- 43a:	ec eb       	ldi	r30, 0xBC	; 188
- 43c:	f0 e0       	ldi	r31, 0x00	; 0
- 43e:	20 81       	ld	r18, Z
- 440:	22 23       	and	r18, r18
- 442:	ec f7       	brge	.-6      	; 0x43e <m_rf_read+0xa2>
-	buffer[i++] = TWDR;
- 444:	20 91 bb 00 	lds	r18, 0x00BB
- 448:	fc 01       	movw	r30, r24
- 44a:	e4 0f       	add	r30, r20
- 44c:	f5 1f       	adc	r31, r21
- 44e:	20 83       	st	Z, r18
-	
-	// STOP
-	TWCR = (1<<TWINT)|(1<<TWEN)| (1<<TWSTO);
- 450:	84 e9       	ldi	r24, 0x94	; 148
- 452:	80 93 bc 00 	sts	0x00BC, r24
-
-	return 1;
- 456:	81 e0       	ldi	r24, 0x01	; 1
-}
- 458:	df 91       	pop	r29
- 45a:	cf 91       	pop	r28
- 45c:	08 95       	ret
-
-0000045e <_exit>:
- 45e:	f8 94       	cli
-
-00000460 <__stop_program>:
- 460:	ff cf       	rjmp	.-2      	; 0x460 <__stop_program>
+00000418 <__stop_program>:
+ 418:	ff cf       	rjmp	.-2      	; 0x418 <__stop_program>
