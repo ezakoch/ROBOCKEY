@@ -190,6 +190,8 @@ hold on
         
         init_plot_sensors_robot1();
         init_plot_sensors_robot2();
+        init_plot_sensors_robot3();
+        
         
         tic
         while (userdata.flag_plot_sensors)
@@ -227,15 +229,21 @@ hold on
             get_robot2_ADC(i);
 %             
 %             
-%             
-%             % ASK ROBOT 3 FOR EACH VARIABLES
-%             fwrite(userdata.handle, 3);
-%             nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
-%             while(nBytes==0)
-%                 nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
-%             end
-%             get_robot3_variables(i); 
             
+            % ASK ROBOT 3 FOR EACH VARIABLES
+            fwrite(userdata.handle, 3);
+            nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
+            while(nBytes==0)
+                nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
+            end
+            get_robot3_variables(i); 
+            
+            fwrite(userdata.handle, 6);
+            nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
+            while(nBytes==0)
+                nBytes = userdata.handle.BytesAvailable;    % Check if we have available bytes from M2
+            end
+            get_robot3_ADC(i);
             
 %                 if (userdata.enemies.flag)
 %                 % Grab data from M2 until line terminator
