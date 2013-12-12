@@ -98,9 +98,9 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\Debug_code.c">
+    <Compile Include="..\..\..\Awesome\M2_TX_ROBOT1_COMMS.c">
       <SubType>compile</SubType>
-      <Link>Debug_code.c</Link>
+      <Link>M2_TX_ROBOT1_COMMS.c</Link>
     </Compile>
     <Compile Include="..\..\Robot Alex\Init_functions.c">
       <SubType>compile</SubType>

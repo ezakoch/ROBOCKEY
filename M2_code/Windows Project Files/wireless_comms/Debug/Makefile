@@ -36,7 +36,7 @@ SUBDIRS :=
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
-../../../Debug_code.c \
+../../../../Awesome/M2_TX_ROBOT1_COMMS.c \
 ../../../Robot\ Alex/Init_functions.c \
 ../../../Robot\ Alex/m_bus.c \
 ../../../Robot\ Alex/m_imu.c \
@@ -53,7 +53,7 @@ ASM_SRCS +=
 
 
 OBJS +=  \
-Debug_code.o \
+M2_TX_ROBOT1_COMMS.o \
 Init_functions.o \
 m_bus.o \
 m_imu.o \
@@ -63,7 +63,7 @@ m_wii.o \
 Localize.o
 
 OBJS_AS_ARGS +=  \
-Debug_code.o \
+M2_TX_ROBOT1_COMMS.o \
 Init_functions.o \
 m_bus.o \
 m_imu.o \
@@ -73,7 +73,7 @@ m_wii.o \
 Localize.o
 
 C_DEPS +=  \
-Debug_code.d \
+M2_TX_ROBOT1_COMMS.d \
 Init_functions.d \
 m_bus.d \
 m_imu.d \
@@ -83,7 +83,7 @@ m_wii.d \
 Localize.d
 
 C_DEPS_AS_ARGS +=  \
-Debug_code.d \
+M2_TX_ROBOT1_COMMS.d \
 Init_functions.d \
 m_bus.d \
 m_imu.d \
@@ -155,7 +155,7 @@ LIB_DEP+=
 	
 
 
-./%.o: ../../../%.c
+./%.o: ../../../../Awesome/%.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 3.4.2
 	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DDEBUG  -I"../../.."  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32u4 -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"

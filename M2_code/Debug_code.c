@@ -172,6 +172,7 @@ int main(void)
     
     m_bus_init();                       // Initialize bus
     init_ports();                       // Initialize ports
+	
     set_timer1();                       // Set timer 1 for motor
     //set_timer3();                     // Set timer 3 for solenoid
     set_timer4();                       // Set timer 4 to every 0.1 s (10 Hz) to send data
@@ -182,7 +183,7 @@ int main(void)
     {                                   // ^
         aux = m_wii_open();             // ^
     };                                  // ^
-    
+    m_red(OFF);
 	m_rf_open(CHANNEL_DEBUG,REC_ADDRESS_DEBUG,PACKET_LENGTH_DEBUG);
     
     sei();                              // Enable interruptions

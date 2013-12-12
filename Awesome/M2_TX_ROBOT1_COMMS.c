@@ -18,7 +18,7 @@
 #define SIZE_ARRAY_BLOBS 12
 #define PACKET_LENGTH_SYSTEM 10
 #define SEN_ADDRESS_SYSTEM 0xDA
-#define ALEX_ADDRESS_SYSTEM 0x42
+#define ALEX_ADDRESS_SYSTEM 0x41
 #define CHANNEL_SYSTEM 1
 #define GO_TO_GOAL 1
 #define GO_TO_GOAL_CURVED 2
@@ -39,13 +39,13 @@
 //#define GOAL_B_POS_Y 0
 #define THRESHOLD_ANGLE_GOAL 35
 #define THRESHOLD_DIST_GOAL 0
-#define PWM_SPEED_TURN_LFT 2300     // 2300 spyros          2800 Alex
+#define PWM_SPEED_TURN_LFT 2600     // 2300 spyros          2800 Alex
 #define PWM_SPEED_TURN_RGHT 2400    // 2200 spyros          2800 Alex
 //#define PWM_SPEED_FWD_LFT 393
 //#define PWM_SPEED_FWD_RGHT 380
-#define PWM_SPEED_FWD_LFT 3000      //3000 fast spyros 2600 slow spyros     Alex 3000
-#define PWM_SPEED_FWD_RGHT 3100    //2900 fast spyros 2500 slow spyros     Alex 3000
-#define PWM_MIN_LEFT 2200
+#define PWM_SPEED_FWD_LFT 3200      //3000 fast spyros 2600 slow spyros     Alex 3000
+#define PWM_SPEED_FWD_RGHT 3000    //2900 fast spyros 2500 slow spyros     Alex 3000
+#define PWM_MIN_LEFT 2400
 #define PWM_MIN_RGHT 2200
 #define TURNING_ANGLE 180.0
 
@@ -62,11 +62,11 @@
 //#define PWM_SPEED_CIRCLE_RGHT 2300
 //#define RATIO_TURNING_RGHT 0.80
 
-#define PWM_SPEED_CIRCLE_LFT 2300
+#define PWM_SPEED_CIRCLE_LFT 2500
 #define RATIO_TURNING_LFT 0.83
 #define PWM_SPEED_CIRCLE_RGHT 2300
 #define RATIO_TURNING_RGHT 0.83
-#define PWM_SPEED_AFTER_GET_PUCK_LEFT 3800
+#define PWM_SPEED_AFTER_GET_PUCK_LEFT 4000
 #define PWM_SPEED_AFTER_GET_PUCK_RIGHT 3800
 
 
@@ -121,7 +121,7 @@ volatile int flag_timer = 0;
 volatile int flag_system  = 0;
 
 //Variable for states
-int state = INITIAL_STATE; //CHANGE TO SYSTEM STATE?????????????????????????????
+int state = STOP_STATE; //CHANGE TO SYSTEM STATE?????????????????????????????
 //int past_state = INITIAL_STATE;
 
 //Main function
@@ -169,6 +169,7 @@ int main(void)
 	
 	m_red(ON);                          // Initialize RED light indicator
     
+	stop_motor();
     m_bus_init();                       // Initialize bus
     init_ports();                       // Initialize ports
     set_timer1();                       // Set timer 1 for motor
@@ -200,7 +201,7 @@ int main(void)
     TARGETS_Y[1] = GOAL_A_POS_Y;
     
     int TARGET_NUM = 0;
-    // --------------------------------------------------------------
+	// --------------------------------------------------------------
        
     
     // --------------------------------------------------------------

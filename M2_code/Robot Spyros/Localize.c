@@ -7,11 +7,11 @@
 //For 0 and 180 compute the mean of the camera pixels given and make the mean between them and added to the x0/y0 offset. Do it once, 
 //get the mean and flip signs. The do it again and add values.
 //Then for the offset in cm, after applying the offset explained before, we check the mean in cm of the position given in Matlab and subtract those values
-#define x0_offset -18  // ROBOT SPYROS 115   ----   ALEX 64
-#define y0_offset -35  // ROBOT SPYROS -31   ----   ALEX 16
+#define x0_offset 40  // ROBOT SPYROS 115   ----   ALEX 64
+#define y0_offset -24  // ROBOT SPYROS -31   ----   ALEX 16
 #define P_vertical 29
 #define x0_offset_cm 0 	// ROBOT SPYROS -9  ---- ALEX -8
-#define y0_offset_cm 9		// ROBOT SPYROS 5 -----  ALEX 7
+#define y0_offset_cm 10		// ROBOT SPYROS 5 -----  ALEX 7
 
 
 // Variables for Localization
