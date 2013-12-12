@@ -480,14 +480,14 @@ int main(void)
 				//                // If Insides see the puck
 				if (PT1_left_outside < NOT_SEE_PUCK && PT2_left_inside < NOT_SEE_PUCK && PT3_right_inside < NOT_SEE_PUCK && PT4_right_outside < NOT_SEE_PUCK && PT5_back_right < NOT_SEE_PUCK && PT6_back_left < NOT_SEE_PUCK)
 				{
-					turnOffBlueLED();
+					//turnOffBlueLED();
 					state = GO_TO_WPT;
 					break;
 				}
 	
 				if (((((PT2_left_inside+PT3_right_inside)/2.0) >= 200)) && ((PT1_left_outside <= 700) && (PT4_right_outside <= 700)))
 				{
-					turnOnBlueLED();
+					//turnOnBlueLED();
 					status_go_to_goal = 1;
 					int diff_PT_inside = abs(PT2_left_inside-PT3_right_inside);
 					if (PT2_left_inside >= PT3_right_inside)
@@ -503,7 +503,7 @@ int main(void)
 				// If Insides do not see the puck
 				else if ( (( (PT2_left_inside+PT3_right_inside)/2.0) < 200) && ((PT1_left_outside > 100) || (PT4_right_outside > 100) || (PT6_back_left > 100) || (PT5_back_right > 100)) )
 				{
-					turnOffBlueLED();
+					//turnOffBlueLED();
 					status_go_to_goal = 0;
 					//Case where the puck is in front
 					if (half_range == 0)
@@ -528,7 +528,7 @@ int main(void)
 				}
 				else{
 					state = GO_TO_WPT;
-					turnOffBlueLED();
+					//turnOffBlueLED();
 				}
 	
 				break;
