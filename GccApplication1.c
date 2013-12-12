@@ -37,14 +37,14 @@
 //#define GOAL_A_POS_Y 0
 //#define GOAL_B_POS_X 0
 //#define GOAL_B_POS_Y 0
-#define THRESHOLD_ANGLE_GOAL 35
+#define THRESHOLD_ANGLE_GOAL 15
 #define THRESHOLD_DIST_GOAL 0
-#define PWM_SPEED_TURN_LFT 2300     // 2300 spyros          2800 Alex
-#define PWM_SPEED_TURN_RGHT 2400    // 2200 spyros          2800 Alex
+#define PWM_SPEED_TURN_LFT 2200     // 2300 spyros          2800 Alex
+#define PWM_SPEED_TURN_RGHT 2300    // 2200 spyros          2800 Alex
 //#define PWM_SPEED_FWD_LFT 393
 //#define PWM_SPEED_FWD_RGHT 380
-#define PWM_SPEED_FWD_LFT 3000      //3000 fast spyros 2600 slow spyros     Alex 3000
-#define PWM_SPEED_FWD_RGHT 3100    //2900 fast spyros 2500 slow spyros     Alex 3000
+#define PWM_SPEED_FWD_LFT 2600      //3000 fast spyros 2600 slow spyros     Alex 3000
+#define PWM_SPEED_FWD_RGHT 2800    //2900 fast spyros 2500 slow spyros     Alex 3000
 #define PWM_MIN_LEFT 2200
 #define PWM_MIN_RGHT 2200
 #define TURNING_ANGLE 180.0
@@ -62,20 +62,21 @@
 //#define PWM_SPEED_CIRCLE_RGHT 2300
 //#define RATIO_TURNING_RGHT 0.80
 
-#define PWM_SPEED_CIRCLE_LFT 2300
+#define PWM_SPEED_CIRCLE_LFT 2200
 #define RATIO_TURNING_LFT 0.83
-#define PWM_SPEED_CIRCLE_RGHT 2300
+#define PWM_SPEED_CIRCLE_RGHT 2400
 #define RATIO_TURNING_RGHT 0.83
-#define PWM_SPEED_AFTER_GET_PUCK_LEFT 3800
-#define PWM_SPEED_AFTER_GET_PUCK_RIGHT 3800
+#define PWM_SPEED_AFTER_GET_PUCK_LEFT 3000
+#define PWM_SPEED_AFTER_GET_PUCK_RIGHT 3300
 
 
-#define Kp_move_puck 5     // Kp for moving around or towards puck
-#define Kp_move_with_puck 0.01    //Kp after getting the puck (less aggressive) 
-#define Kp_move 4
-#define Kp_turn 8 //Kp for turning
-//#define Kd 500
-//#define time 0.002
+#define Kp 8
+#define Kp_move 10
+#define Kp_move_puck 0.01      // 0.5 when fast spyros, 1 for slow
+#define Kp_move_with_puck 0.01    // 0.5 when fast spyros, 1 for slow
+#define Kp_turn 0.1
+#define Kd 500
+#define time 0.002
 #define NOT_SEE_PUCK 300
 
 
@@ -146,7 +147,6 @@ int main(void)
     int bank = 22;
 	int cam_X = 0, cam_Y = 0, commands_var = 0;
 	int timer_switch = 0;
-	int send_debug = 1;
 	
 	int circle_started_before = 0;
     
@@ -197,8 +197,8 @@ int main(void)
     //
     TARGETS_X[0] = 0;
     TARGETS_Y[0] = 0;
-    TARGETS_X[1] = GOAL_A_POS_X - 15;
-    TARGETS_Y[1] = GOAL_A_POS_Y;
+    TARGETS_X[1] = 0;
+    TARGETS_Y[1] = 0;
     
     int TARGET_NUM = 0;
     // --------------------------------------------------------------
@@ -209,81 +209,76 @@ int main(void)
     // --------------------------------------------------------------
     while (1)
     {
-	
 		 //--------------------------------------------------------------
          //SEND COMMANDS
          //--------------------------------------------------------------
         if (flag_timer == 1)
 		{
-				send_debug ++;
-				if (send_debug == 10)
-				{
-			  		output_buffer[0] = 1;
-					output_buffer[1] = state;
-					output_buffer[2] = x_robot;
-					output_buffer[3] = y_robot;
+			turnOnBlueLED();
+             	output_buffer[0] = 1;
+				output_buffer[1] = state;
+				output_buffer[2] = x_robot;
+				output_buffer[3] = y_robot;
                 
-					aux_conversion = div(theta_robot,128);
-					output_buffer[4] = (signed char)aux_conversion.quot;
-					output_buffer[5] = (signed char)aux_conversion.rem;
+				aux_conversion = div(theta_robot,128);
+				output_buffer[4] = (signed char)aux_conversion.quot;
+				output_buffer[5] = (signed char)aux_conversion.rem;
                 
-					output_buffer[6] = (signed char)status_go_to_goal;
+				output_buffer[6] = (signed char)status_go_to_goal;
                 
-					aux_conversion = div((int)dir_angle,128);
-					output_buffer[7] = (signed char)aux_conversion.quot;
-					output_buffer[8] = (signed char)aux_conversion.rem;
+				aux_conversion = div((int)dir_angle,128);
+				output_buffer[7] = (signed char)aux_conversion.quot;
+				output_buffer[8] = (signed char)aux_conversion.rem;
                 
-					aux_conversion = div((int)dist_goal,128);
-					output_buffer[9] = (signed char)aux_conversion.quot;
-					output_buffer[10] = (signed char)aux_conversion.rem;
+				aux_conversion = div((int)dist_goal,128);
+				output_buffer[9] = (signed char)aux_conversion.quot;
+				output_buffer[10] = (signed char)aux_conversion.rem;
                 
-					aux_conversion = div(cam_X,128);
-					output_buffer[11] = (signed char)aux_conversion.quot;
-					output_buffer[12] = (signed char)aux_conversion.rem;
+				aux_conversion = div(cam_X,128);
+				output_buffer[11] = (signed char)aux_conversion.quot;
+				output_buffer[12] = (signed char)aux_conversion.rem;
                 
-					aux_conversion = div(cam_Y,128);
-					output_buffer[13] = (signed char)aux_conversion.quot;
-					output_buffer[14] = (signed char)aux_conversion.rem;
+				aux_conversion = div(cam_Y,128);
+				output_buffer[13] = (signed char)aux_conversion.quot;
+				output_buffer[14] = (signed char)aux_conversion.rem;
                 
-					//output_buffer[15] = (signed char)commands_var;
-					output_buffer[15] = (signed char)bank;
+				//output_buffer[15] = (signed char)commands_var;
+				output_buffer[15] = (signed char)bank;
                 
-					aux_conversion = div((int)diff_theta,128);
-					output_buffer[16] = (signed char)aux_conversion.quot;
-					output_buffer[17] = (signed char)aux_conversion.rem;
+				aux_conversion = div((int)diff_theta,128);
+				output_buffer[16] = (signed char)aux_conversion.quot;
+				output_buffer[17] = (signed char)aux_conversion.rem;
                 
-					aux_conversion = div(PT1_left_outside,128);
-					output_buffer[18] = (signed char)aux_conversion.quot;
-					output_buffer[19] = (signed char)aux_conversion.rem;
+				aux_conversion = div(PT1_left_outside,128);
+				output_buffer[18] = (signed char)aux_conversion.quot;
+				output_buffer[19] = (signed char)aux_conversion.rem;
                 
-					aux_conversion = div(PT2_left_inside,128);
-					output_buffer[20] = (signed char)aux_conversion.quot;
-					output_buffer[21] = (signed char)aux_conversion.rem;
+				aux_conversion = div(PT2_left_inside,128);
+				output_buffer[20] = (signed char)aux_conversion.quot;
+				output_buffer[21] = (signed char)aux_conversion.rem;
                 
-					aux_conversion = div(PT3_right_inside,128);
-					output_buffer[22] = (signed char)aux_conversion.quot;
-					output_buffer[23] = (signed char)aux_conversion.rem;
+				aux_conversion = div(PT3_right_inside,128);
+				output_buffer[22] = (signed char)aux_conversion.quot;
+				output_buffer[23] = (signed char)aux_conversion.rem;
                 
-					aux_conversion = div(PT4_right_outside,128);
-					output_buffer[24] = (signed char)aux_conversion.quot;
-					output_buffer[25] = (signed char)aux_conversion.rem;
+				aux_conversion = div(PT4_right_outside,128);
+				output_buffer[24] = (signed char)aux_conversion.quot;
+				output_buffer[25] = (signed char)aux_conversion.rem;
                 
-					aux_conversion = div(PT5_back_right,128);
-					output_buffer[26] = (signed char)aux_conversion.quot;
-					output_buffer[27] = (signed char)aux_conversion.rem;
+				aux_conversion = div(PT5_back_right,128);
+				output_buffer[26] = (signed char)aux_conversion.quot;
+				output_buffer[27] = (signed char)aux_conversion.rem;
                 
-					aux_conversion = div(PT6_back_left,128);
-					output_buffer[28] = (signed char)aux_conversion.quot;
-					output_buffer[29] = (signed char)aux_conversion.rem;
+				aux_conversion = div(PT6_back_left,128);
+				output_buffer[28] = (signed char)aux_conversion.quot;
+				output_buffer[29] = (signed char)aux_conversion.rem;
                 
-					aux_conversion = div(PT7_have_puck,128);
-					output_buffer[30] = (signed char)aux_conversion.quot;
-					output_buffer[31] = (signed char)aux_conversion.rem;
+				aux_conversion = div(PT7_have_puck,128);
+				output_buffer[30] = (signed char)aux_conversion.quot;
+				output_buffer[31] = (signed char)aux_conversion.rem;
                 
-					m_rf_send(SEN_ADDRESS_DEBUG,output_buffer,PACKET_LENGTH_DEBUG);
-					m_green(TOGGLE);
-					send_debug = 1;	
-				}
+				m_rf_send(SEN_ADDRESS_DEBUG,output_buffer,PACKET_LENGTH_DEBUG);
+				m_red(TOGGLE);
                
 			flag_timer = 0;        
 		}
@@ -363,8 +358,8 @@ int main(void)
 					break;
 				}
 			
-				dir_x = TARGETS_X[TARGET_NUM]-x_robot;
-				dir_y = TARGETS_Y[TARGET_NUM]-y_robot;
+				dir_x = TARGETS_X[0]-x_robot;
+				dir_y = TARGETS_Y[0]-y_robot;
 				dir_angle = atan2(-dir_x,dir_y)*180/M_PI;
 			
 				calculate_diff_theta(dir_angle,&diff_theta, &bank);
@@ -376,7 +371,7 @@ int main(void)
 			
 				if (status_go_to_goal == 0)
 				{
-					dist_goal = sqrt((x_robot-TARGETS_X[TARGET_NUM])*(x_robot-TARGETS_X[TARGET_NUM])+(y_robot-TARGETS_Y[TARGET_NUM])*(y_robot-TARGETS_Y[TARGET_NUM]));
+					dist_goal = sqrt((x_robot-TARGETS_X[0])*(x_robot-TARGETS_X[0])+(y_robot-TARGETS_Y[0])*(y_robot-TARGETS_Y[0]));
 					if (dist_goal < THRESHOLD_DIST_GOAL)
 					{
 						status_go_to_goal = 2;
@@ -388,15 +383,13 @@ int main(void)
 						status_go_to_goal = 1;
 					}
 					else
-						if (bank == 0)
-							turn_left_puck(diff_theta);
-						else
-							turn_right_puck(diff_theta);
+					turn_robot(diff_theta,bank,diff_error);
+					
 				}
 			
 				else if (status_go_to_goal == 1)
 				{
-					dist_goal = sqrt((x_robot-TARGETS_X[TARGET_NUM])*(x_robot-TARGETS_X[TARGET_NUM])+(y_robot-TARGETS_Y[TARGET_NUM])*(y_robot-TARGETS_Y[TARGET_NUM]));
+					dist_goal = sqrt((x_robot-TARGETS_X[0])*(x_robot-TARGETS_X[0])+(y_robot-TARGETS_Y[0])*(y_robot-TARGETS_Y[0]));
 					if (dist_goal < THRESHOLD_DIST_GOAL)
 					{
 						status_go_to_goal = 2;
@@ -428,8 +421,7 @@ int main(void)
 				else if (status_go_to_goal == 2){
 				
 					calculate_diff_theta(0,&diff_theta, &bank);
-					
-					status_go_to_goal = 3;
+				
 				
 					if (diff_theta < THRESHOLD_ANGLE_GOAL)
 					{
@@ -440,24 +432,36 @@ int main(void)
 					}
 					else 
 					{
-						if (bank == 0)
-							turn_left_puck(diff_theta);
-						else
-							turn_right_puck(diff_theta);
+						turn_robot(diff_theta,bank,diff_error);
 					}
 				
 				}
 				else if (status_go_to_goal == 3)
 				{
-					//stop_motor();
-					if (TARGET_NUM == 0) {
-					    TARGET_NUM = 1;
-					}
-					else {
-					    TARGET_NUM = 0;
-					}
+				
+					stop_motor();
+				
+				
+					//                    //m_wait(1000);
+					//                    //clear(PORTD,5);
+					//                    if (TARGET_NUM == 0) {
+					//                        TARGET_NUM = 1;
+					//
+					//                    }
+					//                    else {
+					//                        TARGET_NUM = 0;
+					//                        //                            clear(PORTD,5);
+					//                    }
+					//                    goal_pos_x = TARGETS_X[TARGET_NUM];
+					//                    goal_pos_y = TARGETS_Y[TARGET_NUM];
 					status_go_to_goal = 0;
 					state = FIND_PUCK;
+				
+				
+					//state = STOP_STATE;
+				
+					//state = STOP_STATE;
+				
 				}
 				break;
                     
@@ -622,7 +626,6 @@ int main(void)
                 status_go_to_goal = 0;
                 //                    state = GO_TO_GOAL_CURVED;
                 state = FIND_PUCK;
-				//state = GO_TO_WPT;
                 break;
                 // --------------------------------------------------------------
                     
@@ -789,42 +792,48 @@ void calculate_diff_theta(float theta_des, float* err_theta, int* dir_to_turn){
 // --------------------------------------------------------------
 // ORIENTATION CONTROLLER TO TURN ROBOT
 // --------------------------------------------------------------
-//void turn_robot(float theta, int dir, float diff){
-	//if (dir == 1) {             // Move with a right curve
-		////OCR1C = PWM_SPEED_FWD_LFT;
-		//OCR1B = (int)(PWM_MIN_RGHT+theta*Kp);// + diff*Kd);
-		//OCR1C = (int)(PWM_MIN_RGHT+theta*Kp);// + diff*Kd);
-		//
-		//set(PORTB,3);
-		//clear(PORTD,3);
-	//}
-	//else
-	//{                      // Move with a left curve
-		////OCR1B = PWM_SPEED_FWD_RGHT;
-		//OCR1C = (int)(PWM_MIN_LEFT+theta*Kp);// + diff*Kd);;
-		//OCR1B = (int)(PWM_MIN_LEFT+theta*Kp);// + diff*Kd);
-		//
-		//clear(PORTB,3);
-		//set(PORTD,3);
-		//
-	//}
-//}
+void turn_robot(float theta, int dir, float diff){
+	if (dir == 1) {             // Move with a right curve
+		//OCR1C = PWM_SPEED_FWD_LFT;
+		OCR1B = (int)(PWM_MIN_RGHT+theta*Kp);// + diff*Kd);
+		OCR1C = (int)(PWM_MIN_RGHT+theta*Kp);// + diff*Kd);
+		
+		set(PORTB,3);
+		clear(PORTD,3);
+	}
+	else
+	{                      // Move with a left curve
+		//OCR1B = PWM_SPEED_FWD_RGHT;
+		OCR1C = (int)(PWM_MIN_LEFT+theta*Kp);// + diff*Kd);;
+		OCR1B = (int)(PWM_MIN_LEFT+theta*Kp);// + diff*Kd);
+		
+		clear(PORTB,3);
+		set(PORTD,3);
+		
+	}
+}
 // --------------------------------------------------------------
 
 // --------------------------------------------------------------
 // ORIENTATION CONTROLLER TO MOVE ROBOT FORWARD
 // --------------------------------------------------------------
 void move_robot(float theta, int dir){
-	if (dir == 0) {             // Move with a left curve
-		//OCR1C = PWM_SPEED_FWD_LFT;
-		OCR1B = (int)(PWM_SPEED_FWD_LFT);
-		OCR1C = (int)(PWM_SPEED_FWD_RGHT+theta*Kp_move);
-		
+	if (dir == 1) {             // Move with a right curve
+		OCR1C = PWM_SPEED_FWD_LFT;
+		if (theta> TURNING_ANGLE)
+		OCR1B = PWM_MIN_RGHT;
+		else
+		OCR1B = PWM_MIN_RGHT+((TURNING_ANGLE - theta)/TURNING_ANGLE)*(PWM_SPEED_FWD_RGHT-PWM_MIN_RGHT);
 	}
 	else
-	{                      // Move with a right curve
-		OCR1B = (int)(PWM_SPEED_FWD_LFT+theta*Kp_move);
-		OCR1C = (int)(PWM_SPEED_FWD_RGHT);
+	{
+		// Move with a left curve
+		OCR1B = PWM_SPEED_FWD_RGHT;
+		if (theta> TURNING_ANGLE)
+		OCR1C = PWM_MIN_LEFT;
+		else
+		OCR1C = PWM_MIN_LEFT+((TURNING_ANGLE - theta)/TURNING_ANGLE)*(PWM_SPEED_FWD_LFT-PWM_MIN_LEFT);
+		
 	}
 	
 	clear(PORTB,3);

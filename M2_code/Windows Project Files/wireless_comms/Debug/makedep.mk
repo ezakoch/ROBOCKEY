@@ -2,9 +2,11 @@
 # Automatically-generated file. Do not edit or delete the file
 ################################################################################
 
-..\..\Debug_code.c
-
 ..\..\Robot Alex\Init_functions.c
+
+..\..\Robot Alex\Localize_Alex.c
+
+..\..\Robot Alex\M2_TX_ROBOT1_COMMS.c
 
 ..\..\Robot Alex\m_bus.c
 
@@ -15,6 +17,4 @@
 ..\..\Robot Alex\m_usb.c
 
 ..\..\Robot Alex\m_wii.c
-
-..\..\Robot Spyros\Localize.c
 

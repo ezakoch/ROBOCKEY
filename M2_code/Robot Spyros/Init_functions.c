@@ -173,9 +173,9 @@ void set_timer0(void)
 {
     OCR0A = TIME_TO_TURN;
     
-    //Set to UP to FF
+    //Set to UP to OCR0A
     clear(TCCR0B,WGM02);
-    clear(TCCR0A,WGM01);
+    set(TCCR0A,WGM01);
     clear(TCCR0A,WGM00);
     
     //Set timer prescaler to /0
@@ -183,16 +183,16 @@ void set_timer0(void)
     clear(TCCR0B,CS01);
     clear(TCCR0B,CS00);
     
-    //Demask OCR3A interrupt
+    //Demask Overflow interrupt
     set(TIMSK0,TOIE0);
 }
 
 void start_timer0(void)
 {
     //Set timer prescaler to /256
-    clear(TCCR0B,CS02);
+    set(TCCR0B,CS02);
     clear(TCCR0B,CS01);
-    set(TCCR0B,CS00);
+    clear(TCCR0B,CS00);
     
     
 }

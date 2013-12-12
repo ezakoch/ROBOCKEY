@@ -5,8 +5,6 @@
 #include "Init_functions.h"
 #include "m_general.h"
 
-
-
 void turnOnBlueLED(void)
 {
 	set(PORTD,5);
@@ -121,7 +119,7 @@ void get_analog_val(int id)
 void set_timer4(void)
 {
     //Set the counter variable
-    OCR4C = 195;
+    OCR4C = 125;
     
     //Set UP to OCR4C
     clear(TCCR4D,WGM41);
@@ -130,9 +128,9 @@ void set_timer4(void)
     //Set the interruption to overflow
     set(TIMSK4,TOIE4);
     
-    //Set prescaler to /4096
+    //Set prescaler to /256
     set(TCCR4B,CS43);
-    set(TCCR4B,CS42);
+    clear(TCCR4B,CS42);
     clear(TCCR4B,CS41);
     set(TCCR4B,CS40);
 }
@@ -173,8 +171,8 @@ void set_timer1(void)
     set(DDRB,7);
     
     OCR1A = PWM_MAXIMUM;
-    OCR1B = 0;
-    OCR1C = 0;
+    OCR1B = 4000;
+    OCR1C = 4000;
     
     //Set to UP to OCR1A
     set(TCCR1B,WGM13);

@@ -36,14 +36,14 @@ SUBDIRS :=
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS +=  \
-../../../Debug_code.c \
 ../../../Robot\ Alex/Init_functions.c \
+../../../Robot\ Alex/Localize_Alex.c \
+../../../Robot\ Alex/M2_TX_ROBOT1_COMMS.c \
 ../../../Robot\ Alex/m_bus.c \
 ../../../Robot\ Alex/m_imu.c \
 ../../../Robot\ Alex/m_rf.c \
 ../../../Robot\ Alex/m_usb.c \
-../../../Robot\ Alex/m_wii.c \
-../../../Robot\ Spyros/Localize.c
+../../../Robot\ Alex/m_wii.c
 
 
 PREPROCESSING_SRCS += 
@@ -53,44 +53,44 @@ ASM_SRCS +=
 
 
 OBJS +=  \
-Debug_code.o \
 Init_functions.o \
+Localize_Alex.o \
+M2_TX_ROBOT1_COMMS.o \
 m_bus.o \
 m_imu.o \
 m_rf.o \
 m_usb.o \
-m_wii.o \
-Localize.o
+m_wii.o
 
 OBJS_AS_ARGS +=  \
-Debug_code.o \
 Init_functions.o \
+Localize_Alex.o \
+M2_TX_ROBOT1_COMMS.o \
 m_bus.o \
 m_imu.o \
 m_rf.o \
 m_usb.o \
-m_wii.o \
-Localize.o
+m_wii.o
 
 C_DEPS +=  \
-Debug_code.d \
 Init_functions.d \
+Localize_Alex.d \
+M2_TX_ROBOT1_COMMS.d \
 m_bus.d \
 m_imu.d \
 m_rf.d \
 m_usb.d \
-m_wii.d \
-Localize.d
+m_wii.d
 
 C_DEPS_AS_ARGS +=  \
-Debug_code.d \
 Init_functions.d \
+Localize_Alex.d \
+M2_TX_ROBOT1_COMMS.d \
 m_bus.d \
 m_imu.d \
 m_rf.d \
 m_usb.d \
-m_wii.d \
-Localize.d
+m_wii.d
 
 OUTPUT_FILE_PATH +=wireless_comms.elf
 
@@ -103,9 +103,21 @@ OUTPUT_FILE_DEP:= ./makedep.mk
 LIB_DEP+= 
 
 # AVR32/GNU C Compiler
-
-
 ./Init_functions.o: ../../../Robot\ Alex/Init_functions.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 3.4.2
+	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DDEBUG  -I"../../.."  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32u4 -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
+	@echo Finished building: $<
+	
+
+./Localize_Alex.o: ../../../Robot\ Alex/Localize_Alex.c
+	@echo Building file: $<
+	@echo Invoking: AVR/GNU C Compiler : 3.4.2
+	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DDEBUG  -I"../../.."  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32u4 -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
+	@echo Finished building: $<
+	
+
+./M2_TX_ROBOT1_COMMS.o: ../../../Robot\ Alex/M2_TX_ROBOT1_COMMS.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 3.4.2
 	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DDEBUG  -I"../../.."  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32u4 -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
@@ -147,29 +159,8 @@ LIB_DEP+=
 	@echo Finished building: $<
 	
 
-./Localize.o: ../../../Robot\ Spyros/Localize.c
-	@echo Building file: $<
-	@echo Invoking: AVR/GNU C Compiler : 3.4.2
-	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DDEBUG  -I"../../.."  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32u4 -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
-	@echo Finished building: $<
-	
-
-
-./%.o: ../../../%.c
-	@echo Building file: $<
-	@echo Invoking: AVR/GNU C Compiler : 3.4.2
-	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DDEBUG  -I"../../.."  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32u4 -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
-	@echo Finished building: $<
-	
 
 ./%.o: ../../../Robot\ Alex/%.c
-	@echo Building file: $<
-	@echo Invoking: AVR/GNU C Compiler : 3.4.2
-	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DDEBUG  -I"../../.."  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32u4 -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"
-	@echo Finished building: $<
-	
-
-./%.o: ../../../Robot\ Spyros/%.c
 	@echo Building file: $<
 	@echo Invoking: AVR/GNU C Compiler : 3.4.2
 	$(QUOTE)C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR8 GCC\Native\3.4.2.1002\avr8-gnu-toolchain\bin\avr-gcc.exe$(QUOTE)  -funsigned-char -funsigned-bitfields -DDEBUG  -I"../../.."  -O1 -ffunction-sections -fdata-sections -fpack-struct -fshort-enums -g2 -Wall -mmcu=atmega32u4 -c -std=gnu99 -MD -MP -MF "$(@:%.o=%.d)" -MT"$(@:%.o=%.d)" -MT"$(@:%.o=%.o)"   -o "$@" "$<"

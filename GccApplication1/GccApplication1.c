@@ -17,15 +17,19 @@
 #define STOP_STATE 21
 #define BLUE_LED_STATE 22
 #define SEN_ADDRESS_SYSTEM 0xDA
-#define ALEX_ADDRESS_SYSTEM 0x40
+#define ALEX_ADDRESS_SYSTEM 0x42
 #define PACKET_LENGTH_SYSTEM 10
+
+#define TIME_TO_TURN 125
 
 void turnOnBlueLED(void);
 void turnOffBlueLED(void);
-void stop_motor(void);
-void celebrate(void);
+void set_timer0(void);
+void start_timer0(void);
+void stop_timer0(void);
 
 volatile int flag_system  = 0;
+volatile int GO = 0;
 
 int state = STOP_STATE;
 
@@ -36,13 +40,11 @@ char buffer_rec[PACKET_LENGTH_SYSTEM] = {0};
 
 int main(void)
 {
-	int enemy_rob1_x = 0,enemy_rob1_y = 0,enemy_rob2_x = 0,enemy_rob2_y = 0,enemy_rob3_x = 0,enemy_rob3_y = 0;
-	int scoreA = 0,scoreB = 0;
-	long stop_counter = 0;
-	
+
 	m_bus_init();
 	m_rf_open(CHANNEL_SYSTEM,ALEX_ADDRESS_SYSTEM,PACKET_LENGTH_SYSTEM);
-	m_red(ON);
+	m_red(OFF);
+	m_green(OFF);
 	sei();
 	 
     while(1)
@@ -55,6 +57,8 @@ int main(void)
 			flag_system = 0;
 			
 		}
+		if (GO == 1)
+			m_green(TOGGLE);
 		
         switch (state)
         {
@@ -62,13 +66,14 @@ int main(void)
 				;
 				break;
 			case SYSTEM_STATE:
-				m_wait(500);
-				m_red(TOGGLE);
 				switch (buffer_rec[0])
 				{
 					//Comm test
 					case 0xA0:
 					state = BLUE_LED_STATE;
+					m_red(TOGGLE);
+					m_wait(1500);
+					m_red(TOGGLE);
 					break;
 				
 					//Play
@@ -80,29 +85,12 @@ int main(void)
 					//}else
 					//{
 					//state = INITIAL_STATE;
-					//}
+					//}.
 					state = INITIAL_STATE;
 					turnOnBlueLED();
-					break;
-				
-					//Goal A
-					case 0xA2:
-					if (check(PINB,2))
-					celebrate();
-					stop_motor();
-					scoreA = buffer_rec[1];
-					scoreB = buffer_rec[2];
-					state = STOP_STATE;
-					break;
-				
-					//Goal B
-					case 0xA3:
-					if (!check(PINB,2))
-					celebrate();
-					stop_motor();
-					scoreA = buffer_rec[1];
-					scoreB = buffer_rec[2];
-					state = STOP_STATE;
+					m_green(TOGGLE);
+					m_wait(1500);
+					m_green(TOGGLE);
 					break;
 				
 					//Pause
@@ -112,33 +100,12 @@ int main(void)
 				
 					//Halftime
 					case 0xA6:
-					stop_counter = 0;
 					state = STOP_STATE;
 					break;
-				
-							//Game over
+					
+					//Game over
 					case 0xA7:
-					if (check(PINB,2))
-					{
-						if (scoreA > scoreB)
-						celebrate();
-					}else
-					{
-						if (scoreA < scoreB)
-						celebrate();
-					}
-					stop_motor();
 					state = STOP_STATE;
-					break;
-				
-					//Enemy positions
-					case 0xA8:
-					enemy_rob1_x = buffer_rec[2];
-					enemy_rob1_y = buffer_rec[3];
-					enemy_rob2_x = buffer_rec[5];
-					enemy_rob2_y = buffer_rec[6];
-					enemy_rob3_x = buffer_rec[8];
-					enemy_rob3_y = buffer_rec[9];
 					break;
 				
 					default:
@@ -151,7 +118,6 @@ int main(void)
 			// BLUE LED STATE
 			// --------------------------------------------------------------
 			case BLUE_LED_STATE:
-			stop_motor();
 			turnOnBlueLED();
 			m_wait(3000);
 			turnOffBlueLED();
@@ -163,9 +129,7 @@ int main(void)
 			// STOP STATE
 			// --------------------------------------------------------------
 			case STOP_STATE:
-			m_green(ON);
 			turnOffBlueLED();
-			stop_motor();
 			break;
 			// --------------------------------------------------------------
 			
@@ -175,7 +139,6 @@ int main(void)
 			// DEFAULT STATE
 			// --------------------------------------------------------------
 			default:
-			stop_motor();36
 			break;
 			//while(1)
 			//{
@@ -189,17 +152,6 @@ int main(void)
     }
 }
 
-void stop_motor(void)
-{
-	OCR1B = 0;
-	OCR1C = 0;
-}
-
-void celebrate(void)
-{
-	
-}
-
 void turnOnBlueLED(void)
 {
 	set(PORTD,5);
@@ -209,6 +161,44 @@ void turnOffBlueLED(void)
 {
 	clear(PORTD,5);
 }
+void set_timer0(void)
+{
+	OCR0A = TIME_TO_TURN;
+	
+	//Set to UP to OCR0A
+	clear(TCCR0B,WGM02);
+	set(TCCR0A,WGM01);
+	clear(TCCR0A,WGM00);
+	
+	//Set to OFF
+	clear(TCCR0B,CS02);
+	clear(TCCR0B,CS01);
+	clear(TCCR0B,CS00);
+	
+	//Demask Overflow interrupt
+	set(TIMSK0,TOIE0);
+}
+
+void start_timer0(void)
+{
+	//Set timer prescaler to /256
+	set(TCCR0B,CS02);
+	clear(TCCR0B,CS01);
+	clear(TCCR0B,CS00);
+	
+	
+}
+
+void stop_timer0(void)
+{
+	//Set timer prescaler to /0
+	clear(TCCR0B,CS02);
+	clear(TCCR0B,CS01);
+	clear(TCCR0B,CS00);
+	
+	TCNT0 = 0;
+	
+}
 
 ISR(INT2_vect)
 {
@@ -217,4 +207,8 @@ ISR(INT2_vect)
 	//state = SYSTEM_STATE;
 	flag_system = 1;
 	m_green(TOGGLE); // Indicator receiving from RF
+}
+
+ISR(TIMER0_OVF_vect){
+	GO = 1;
 }

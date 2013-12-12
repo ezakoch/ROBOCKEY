@@ -16,6 +16,4 @@ void get_analog_val(int id);
 void init_analog(void);
 void set_timer4(void);
 void set_timer1(void);
-
-
 #endif
